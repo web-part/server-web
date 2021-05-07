@@ -1,0 +1,77 @@
+
+[data-panel="/FileList/Sidebar/Stat"] {
+    /*展示的是目录。*/
+    &.dir {
+        tr.md5,
+        tr.size {
+            display: none;
+        }
+    }
+
+    table {
+        font-size: 14px;
+
+        th {
+            text-align: right;
+            box-sizing: border-box;
+
+            &:after {
+                content: ':';
+            }
+        }
+
+        td {
+            padding-left: 10px;
+        }
+
+        tr.sname {
+            td {
+                color: #FF9800;
+            }
+        }
+
+        tr.name {
+            td {
+                color: #2196F3;
+
+                span {
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    white-space: nowrap;
+                    width: 255px;
+                    display: inline-block;
+                }
+            }
+        }
+
+        tr.md5 {
+            td {
+                color: #8BC34A;
+                font-size: 13px;
+            }
+        }
+
+        tr.spliter {
+            height: 32px;
+            vertical-align: bottom;
+        }
+
+
+        tr.size,
+        tr.dir-size {
+            .value {
+                color: red;
+            }
+        }
+
+        .desc {
+            color: #d0d0d0;
+        }
+
+        tr.time {
+            td {
+                color: #aaa;
+            }
+        }
+    }
+}

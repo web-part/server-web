@@ -1,0 +1,32 @@
+﻿
+<div data-view="/Terminal" class="view" style="display: none;">
+   
+    
+
+    <div data-panel="/Terminal/Logs">
+        <ul data-panel="/Terminal/Logs/Header">
+            <li data-cmd="close" class="clear">
+                <i class="far fa-stop-circle"></i>
+                <span>断开</span>
+            </li>
+            <li data-cmd="clear" class="clear">
+                <i class="fas fa-trash-alt"></i>
+                <span>清空日志</span>
+            </li>
+
+            <li data-id="chk-time"></li>
+            <li data-id="chk-color"></li>
+            <li data-id="chk-highlight"></li>
+            <li data-id="chk-border"></li>
+        </ul>
+        <ul data-panel="/Terminal/Logs/List">
+            <template>
+                <li data-index="{index}" class="{type}"><span class="time {same-time}">{time}</span>{icon}<span class="msg">{msg}</span></li>
+            </template>
+        </ul>
+    </div>
+    <footer data-panel="/Terminal/Footer">
+        <i class="fas fa-terminal"></i>
+        <input data-panel="/Terminal/Footer/Input" type="text"  />
+    </footer>
+</div>

@@ -1,0 +1,4 @@
+
+define('MenuTreeSidebar.defaults', {
+    
+});

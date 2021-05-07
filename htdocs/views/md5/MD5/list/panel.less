@@ -1,0 +1,74 @@
+
+
+[data-panel="/MD5/List"]{
+
+    margin: 0px 0px 0px 4px ;
+    // overflow: scroll;
+    // height: calc(100% - 85px);
+
+    [data-panel="/MD5/List/Header"] {
+        position: relative;
+
+        li {
+            display: inline-block;
+            margin-right: 20px;
+            margin-bottom: 5px;
+
+            h1 {
+                font-size: 16px;
+
+                i {
+                    margin-right: 8px;
+                    color: #4b70b0;
+                }
+            }
+
+            &:last-child {
+                margin-right: 0px;
+                position: absolute;
+                right: 10px;
+                top: 10px;
+            }
+        }
+    }
+
+    & > div{
+        margin-bottom: 25px;
+    }
+
+    a[data-cmd] {
+        text-decoration: none;
+        color: unset;
+
+        &:hover{
+            color:rgb(81, 163, 218);
+            text-decoration: underline;
+
+        }
+
+        
+    }
+
+    
+
+    .GridView { 
+        td.name {
+            font-family: monospace;
+            font-size: 14px;
+        }
+
+        tr.multi {
+            td.name {
+                color: red;
+            }
+        }
+
+        
+
+        
+    }
+}
+
+
+
+

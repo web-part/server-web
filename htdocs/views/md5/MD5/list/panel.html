@@ -1,0 +1,28 @@
+﻿<div data-panel="/MD5/List" class="tab-content" style="display: none;">
+    
+
+    <ul data-panel="/MD5/List/Header">
+        <li>
+            <h1><i class="fa fa-folder"></i>全部文件</h1>
+        </li>
+        <li data-id="chk-repeat"></li>
+    </ul>
+    
+    <div data-panel="/MD5/List/GridView">
+        <template name="file">
+            <a data-cmd="file" data-index="{index}" href="javascript:">{file}</a>
+        </template>
+        
+        <template name="files">
+            <ul>
+                <template name="item" placeholder="items">
+                    <li>
+                        <a data-cmd="file" data-index="{index}" href="javascript:">{file}</a>
+                    </li>
+                </template>
+            </ul>
+        </template>
+
+    </div>
+
+</div>

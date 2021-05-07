@@ -1,0 +1,181 @@
+﻿
+.TextTree {
+    font-size: 16px;
+    line-height: 16px;
+    font-family: auto;
+
+  
+    &.hide-secondary {
+        .secondary {
+            display: none;
+        }
+    }
+
+    &.hide-icon {
+        .icon {
+            display: none;
+        }
+    }
+
+    &.hide-tab {
+        .grouper {
+            height: 0px;
+        }
+    }
+
+    &.hide-color {
+        li {
+            .key {
+                color: #000 !important;
+            }
+        }
+    }
+
+    &.hide-hover {
+        li:hover {
+            background-color: unset;
+        }
+    }
+
+    li {
+        line-height: 16px;
+
+        &:hover {
+            background-color: #f9f9f9;
+        }
+
+        &.dir {
+            .key {
+                color: #b75400;
+            }
+        }
+
+        &.file {
+            .key {
+                color:#005f0c;
+            }
+        }
+
+        span {
+            padding: 0px;
+            margin: 0px;
+            display: inline-block;
+            color:#a2a2a2;
+        }
+
+
+         .icon {
+            width: 8px;
+
+            i {
+                position: relative;
+                left: -2px;
+                transform-origin: 44% 83%;
+                transform: rotate(0deg);
+            }
+
+            .file {
+                font-size: 12px;
+            }
+
+            .dir {
+                cursor: pointer;
+                transition: all 0.4s ease;
+                &:hover {
+                    color:#000;
+                }
+
+                
+            }
+
+
+
+            &.closed {
+                i {
+                    transform-origin: 44% 83%;
+                    transform: rotate(-90deg);
+                    transition: all 0.4s ease;
+                
+
+                }
+            }
+
+            
+            
+        }
+            
+        .linker {
+            width: 48px;
+        }
+
+        .key {
+            color: black;
+            margin-left: 5px;
+           
+
+            a[data-cmd] {
+                text-decoration: none;
+                color: unset;
+
+                &.on {
+                    font-weight: bold;
+                    // background: #fdf59a;
+                    color: #4b70b0;
+                }
+
+                &:hover{
+                    color:rgb(81, 163, 218);
+                    text-decoration: underline;
+                    cursor: pointer;
+
+                }
+
+
+                &.secondary {
+                    color: #dadada;
+                    margin-left: 10px;
+                    font-size: 14px;
+                    line-height: 14px;
+
+                    &:hover{
+                        color:rgb(142, 201, 241);
+
+                    }
+
+                }
+                
+            }
+        }
+
+        
+        
+        b {
+            display: inline-block;
+            width: 12px;
+            // background: #f9f2f2;
+            height: 16px;
+            margin: 0px;
+            padding: 0px;
+            vertical-align: top;
+
+            &.grouper {
+                background-color: #e0e0e0;
+                // background-color: #a2a2a2;
+                margin-right: 3px;
+                margin-left: 8px;
+                width: 1px;
+                position: relative;
+                top: -8px;
+            }
+        }
+
+        i {
+            display: inline-block;
+            height: 10px;
+            width: 12px;
+            font-style: normal;
+        }
+
+        
+    }
+}

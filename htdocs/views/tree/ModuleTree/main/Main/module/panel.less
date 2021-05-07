@@ -1,0 +1,130 @@
+
+
+[data-panel="/ModuleTree/Main/ModuleInfo"]{
+    h1{
+        font-size: 16px;
+        i{
+            margin-right: 8px;
+            color: #4b70b0;
+        }
+    }
+
+    & > div{
+        margin-bottom: 25px;
+    }
+
+    a[data-cmd] {
+        text-decoration: none;
+        color: unset;
+
+        &:hover{
+            color:rgb(81, 163, 218);
+            text-decoration: underline;
+
+        }
+
+        
+    }
+
+    [data-panel="/ModuleTree/Main/ModuleInfo/Base"] {
+        /*展示的是目录。*/
+        &.dir {
+            tr.md5,
+            tr.size {
+                display: none;
+            }
+        }
+
+        table {
+            font-size: 14px;
+
+            th {
+                text-align: right;
+                box-sizing: border-box;
+                // font-weight: normal;
+                // color: gainsboro;
+
+                &:after {
+                    content: ':';
+                }
+            }
+
+            td {
+                padding-left: 10px;
+            }
+
+            tr.sname {
+                td {
+                    color: #FF9800;
+                }
+            }
+
+            tr.name {
+                td {
+                    color: #2196F3;
+
+                    span {
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                        white-space: nowrap;
+                        // width: 255px;
+                        display: inline-block;
+                    }
+                }
+            }
+
+            
+
+            tr.md5 {
+                td {
+                    color: #8BC34A;
+                    font-size: 13px;
+                }
+            }
+
+            tr.spliter {
+                height: 32px;
+                vertical-align: bottom;
+            }
+
+
+            tr.size,
+            tr.dir-size {
+                .value {
+                    color: red;
+                }
+            }
+
+            .desc {
+                color: #d0d0d0;
+            }
+
+            tr.time {
+                td {
+                    color: #aaa;
+                }
+            }
+        }
+    }
+
+    .GridView { 
+        tr.not-used {
+            td.name,
+            td.used {
+                color: red;
+            }
+        }
+
+        td.used {
+            text-align: center;
+        }
+
+        td {
+            
+        }
+    }
+}
+
+
+
+

@@ -1,0 +1,22 @@
+﻿<div data-view="/Log" class="view" style="display: none;">
+
+    <ul data-panel="/Log/Header">
+        <li data-cmd="clear" class="clear">
+            <i class="fas fa-trash-alt"></i>
+            <span>清空</span>
+        </li>
+
+        <li data-id="chk-time"></li>
+        <li data-id="chk-color"></li>
+        <li data-id="chk-highlight"></li>
+        <li data-id="chk-border"></li>
+    </ul>
+
+    <ul data-panel="/Log/List">
+        <template>
+            <li data-index="{index}" class="{type}"><span class="time {same-time}">{time}</span>{icon}<span class="msg">{msg}</span></li>
+        </template>
+    </ul>
+
+
+</div>

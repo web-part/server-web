@@ -1,0 +1,33 @@
+﻿<template id="tpl-TextTree">
+    <ul id="{id}" class="TextTree {hide-icon} {hide-secondary} {hide-tab} {hide-color}">
+        <template name="item" placeholder="items">
+            <li data-index="{index}" data-id="{id}" class="{type}">{tabs}{linker}{key}</li>
+        </template>
+
+        <template name="tabs">
+            <span class="tabs">{tabs}</span>
+        </template>
+
+        <template name="linker">
+            <span class="linker">{linker}</span>
+        </template>
+
+        <template name="b">
+            <b class="{class}">{text}</b>
+        </template>
+
+        <template name="key">
+            <span class="key">
+                <template name="icon" placeholder="icon">
+                    <span data-cmd="icon-{type}" data-index="{index}" class="icon">
+                        <i class="{type} {icon}"></i>
+                    </span>
+                </template>
+                <a data-cmd="id" title="{id}" data-index="{index}">{key}</a>
+                <template name="secondary" placeholder="secondary">
+                    <a data-cmd="{secondaryKey}" title="{secondary}" data-index="{index}" class="secondary">{secondary}</a>
+                </template>
+            </span>
+        </template>
+    </ul>
+</template>

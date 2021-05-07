@@ -1,0 +1,95 @@
+﻿
+
+
+[data-panel="/Master/PageTabs"] {
+    > ul {
+        margin-right: 30px;
+        overflow: hidden;
+        white-space: nowrap;
+        font-size: 0;
+        height: 30px;
+        margin-left: 35px;
+
+        > li {
+            line-height: 28px;
+            display: inline-block;
+            background-color: #fff;
+            padding: 0 28px 0 8px;
+            font-size: 14px;
+            color: #AAB4BE;
+            vertical-align: top;
+            cursor: pointer;
+            border-left: none;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            position: relative;
+            box-sizing: border-box;
+            height: 30px;
+            font-size: 12px;
+            margin-left: 2px;
+            float: left;
+            padding-left: 10px;
+            color: #000;
+            cursor: pointer;
+            border-radius: 5px 5px 0 0;
+
+            &.home {
+                width: 64px;
+                background-position: 6px -228px;
+                background-image: url(../img/operate.svg);
+                background-repeat: no-repeat;
+                vertical-align: top;
+                padding: 0 8px 0 25px;
+                cursor: pointer;
+                margin-left: 0;
+            }
+
+            > i.icon {
+                margin-right: 2px;
+                font-size: 16px;
+                position: relative;
+                top: 2px;
+                color: #61a7e5;
+            }
+
+            > i.close {
+                position: absolute;
+                right: 4px;
+                display: inline-block;
+                height: 28px;
+                width: 20px;
+                vertical-align: top;
+                background-image: none;
+                cursor: pointer;
+                transition: background-image 0.3s ease;
+                background-repeat: no-repeat;
+                background-position: 3px -20px;
+            }
+
+            &.on {
+                color: #fff;
+                background-color: #61a7e5;
+                border-color: transparent;
+
+                i.icon {
+                    color: #fff;
+                }
+
+                &.home {
+                    background-position: 6px -46px;
+                }
+
+                i.close {
+                    background-position: 3px -150px;
+                }
+            }
+
+            &:hover {
+                > i.close {
+                    background-image: url(../img/operate.svg);
+                }
+            }
+        }
+    }
+}

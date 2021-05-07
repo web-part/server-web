@@ -1,0 +1,191 @@
+
+
+[data-view="/Log"] {
+   
+    height: 100%;
+
+    [data-panel="/Log/Header"]{
+        padding: 5px 0px;
+        border-bottom: solid 1px gainsboro;
+        background: #f9f9f9;
+
+        li {
+            display: inline-block;
+            margin-left: 10px;
+        }
+
+        .clear {
+            font-size: 14px;
+            cursor: pointer;
+            color: #b8b8b8;
+            &:hover {
+                color: #f17b6e;
+            }
+        }
+    }
+
+    [data-panel="/Log/List"] {
+        padding: 0px 10px;
+
+        height: calc(100% - 86px);
+        overflow-y: scroll;
+        
+        &.hide-time {
+            .time {
+                display: none;
+            }
+        }
+
+        &.show-highlight {
+            li:hover {
+                background: rgb(255, 246, 233);
+            }
+        }
+
+        &.show-border {
+            li {
+                border-bottom: solid 1px #ececec;
+            }
+        }
+
+        li {
+            color: black;
+            font-size: 14px;
+            line-height: 16px;
+            border-bottom: solid 1px #ececec00;
+
+            &:last-child{
+                border-bottom: none;
+            }
+
+            &.input {
+                background: #eeeeee;
+                /* border-top: solid 1px #e6cf00; */
+                margin-top: 12px;
+                font-weight: bold;
+
+                .time {
+                    font-weight: normal;
+                    color: #7b7b7b;
+                }
+
+                i {
+                    margin-right: 10px;
+                    color: #607d8b;
+                }
+            }
+
+            &.error {
+                background: #ffe4e2;
+                color: red;
+            }
+
+            &.stderr {
+                background: #fffcdd;
+                
+            }
+
+            &.info {
+                font-style: italic;
+                color: #607d8b;
+                i {
+                    margin-right: 5px;
+                    color: #a56a2c;
+                }
+            }
+            
+
+            .time {
+                display: inline-block;
+                vertical-align: top;
+                margin-right: 8px;
+                // color: #dadada;
+                color: #7b7b7b;
+
+                //时间跟上一个相同，则隐藏。
+                &.same {
+                    // color: #fff;
+                    visibility: hidden;
+                }
+            }
+
+            .msg {
+                display: inline-block;
+                vertical-align: top;
+                font-family: monospace;
+            }
+
+            b {
+                width: 9px;
+                display: inline-block;
+            }
+        }
+
+        a[data-cmd] {
+            text-decoration: none;
+            color: unset;
+
+            &:hover{
+                text-decoration: underline;
+                cursor: pointer;
+                background: #e0f1ff;
+
+            }
+        }
+
+        &.show-color {
+            .colors {
+                &.reset { }
+                &.bold { font-weight: bold; }
+                &.dim { }
+                &.italic { font-style: italic; }
+                &.underline { text-decoration: underline; }
+                &.inverse { }
+                &.hidden { }
+                &.strikethrough { }
+                &.black { color:black;  }
+                &.red { color:red; }
+                &.green { color: #00c100; }
+                &.yellow { color: #d2a600; }
+
+                &.blue { color: blue; }
+                &.magenta { color: magenta; }
+                &.cyan { color: #1491ff; }
+                &.white { color: white; }
+                &.gray { color: gray; }
+                &.brightRed { color: hotpink; }
+                &.brightGreen { }
+                &.brightYellow { }
+                &.brightBlue { }
+                &.brightMagenta { }
+                &.brightCyan { }
+                &.brightWhite { }
+                &.bgBlack { background: black; }
+                &.bgRed { background: red; }
+                &.bgGreen { background: #00c100; }
+                &.bgYellow { background: #d2a600; }
+                &.bgBlue { background: blue; }
+                &.bgMagenta { background: magenta; }
+                &.bgCyan { background: #1491ff; }
+                &.bgWhite { background: white; }
+                &.bgGray { background: gray; }
+                &.bgBrightRed { }
+                &.bgBrightGreen { }
+                &.bgBrightYellow { }
+                &.bgBrightBlue { }
+                &.bgBrightMagenta { }
+                &.bgBrightCyan { }
+                &.bgBrightWhite { }
+
+            }
+        }
+
+        
+    }
+
+
+    
+   
+}
+
+

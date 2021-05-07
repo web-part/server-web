@@ -1,0 +1,11 @@
+
+/node_modules
+/output
+/**/.DS_Store
+
+/htdocs/babel
+/htdocs/packages
+/htdocs/style/css
+/htdocs/index.html
+
+package-lock.json
