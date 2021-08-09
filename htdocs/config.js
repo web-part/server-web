@@ -1,6 +1,4 @@
-﻿
-
-; (function (definejs) {
+﻿; (function (definejs) {
     let AppModule = definejs.require('AppModule');
     let define = window.define = AppModule.define;
     
@@ -17,11 +15,17 @@
     //业务端模块的默认配置。
     define.data([
         '/ModuleTree/API/Data',
-        '/ModuleTree/Tree/Main/Data',
+        '/ModuleTree/Tree/Data',
         '/ModuleTree/Tree',
         '/ModuleTree/Main/ModuleInfo/Base',
     ], {
         none: '(app)',
+    });
+
+    define.data({
+        'Settings.Header': 'hide',
+        'Settings.Language': 'chinese',
+        'Settings.Theme': 'light',
     });
 
 
@@ -51,12 +55,7 @@
         },
 
     });
-
-
-
-
-
-
+    
 
 })(window.definejs);
 

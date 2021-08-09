@@ -7,7 +7,6 @@ define('GridView', function (require, module, exports) {
     const Emitter = require('@definejs/emitter');
     const $Array = require('@definejs/array');
     const $Object = require('@definejs/object');
-    const Defaults = require('Defaults');
 
     const Template = module.require('Template');
     const Table = module.require('Table');
@@ -17,7 +16,7 @@ define('GridView', function (require, module, exports) {
     const Check = module.require('Check');
     const Meta = module.require('Meta');
 
-
+    const defaults = require('GridView.defaults');
     let mapper = new Map();
     let emitterCounter = 0;
 
@@ -58,14 +57,15 @@ define('GridView', function (require, module, exports) {
     *   };
     */
     function GridView(config) {
-        config = Defaults.clone(module, config);
+        config = Object.assign({}, defaults, config);
 
         let emitter = new Emitter(this);
         let fields = Fields.get(config);
         let width = config.width;
+        let sumWidth = Fields.sumWidth(fields);
 
         if (width == 'auto') {
-            width = Fields.sumWidth(fields) + 264;
+            width = sumWidth + 264;
         }
 
         emitter.id = `GridView-Emitter-${emitterCounter++}`;
@@ -73,7 +73,8 @@ define('GridView', function (require, module, exports) {
         let meta = Meta.create(config, {
             'emitter': emitter,         //
             'fields': fields,
-            'width': width,
+            'width': width, //
+            'sumWidth': sumWidth,
             'this': this,
             'checkItem': function (item, checked) {
                 return Check.item(meta, item, checked);
@@ -118,25 +119,33 @@ define('GridView', function (require, module, exports) {
 
         /**
         * 渲染。
+        *   opt = {
+        *       container: '',  //可选，渲染时再指定容器。
+        *   };
         */
-        render: function () {
+        render: function (opt = {}) {
             let meta = mapper.get(this);
+            let container = meta.container = opt.container || meta.container;
 
-            let tpl = meta.tpl = Template.create(meta);
-            let html = tpl.fill(meta);
+            meta.tpl = Template.create(meta);
+            meta.$container = $(container);
+            
+            // let containerWidth = meta.$container.width() - 10;
+            // meta.sumWidth = Math.max(containerWidth, meta.sumWidth);
 
-            meta.$ = this.$ = $(meta.container);
-            meta.$.html(html);
+            let html = meta.tpl.fill(meta);
 
+            meta.$container.html(html);
+            meta.$ = this.$ = meta.$container.find(`#${meta.id}`);
+            meta.$nodata = meta.$.find(`#${meta.nodataId}`);
 
-            let table = meta.table = Table.create(meta);
-            table.render();
+            meta.table = Table.create(meta);
+            meta.resizer = Resizer.create(meta);
+            meta.pager = Pager.create(meta);
 
-            let resizer = meta.resizer = Resizer.create(meta);
-            resizer.render();
-
-            let pager = meta.pager = Pager.create(meta);
-            pager.render();
+            meta.table.render();
+            meta.resizer.render();
+            meta.pager.render();
 
             //切换显示已选模式和正常模式。
             meta.$.on('click', '#' + meta.counterId, function () {
@@ -162,6 +171,8 @@ define('GridView', function (require, module, exports) {
 
             meta.oldList = list;
             meta.table.fill(list);
+            meta.$nodata.toggle(list.length == 0);
+            
             meta.emitter.fire('fill', [list]);
         },
 

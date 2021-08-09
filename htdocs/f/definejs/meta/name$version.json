@@ -3,7 +3,7 @@
     "@definejs/api": "1.0.1",
     "@definejs/app": "1.0.1",
     "@definejs/app-module": "1.0.0",
-    "@definejs/array": "1.0.0",
+    "@definejs/array": "1.1.0",
     "@definejs/confirm": "1.0.1",
     "@definejs/date": "1.0.0",
     "@definejs/defaults": "1.0.0",

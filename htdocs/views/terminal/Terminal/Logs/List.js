@@ -1,9 +1,9 @@
-﻿
+
 define.panel('/Terminal/Logs/List', function (require, module, panel) {
     const $Date = require('@definejs/date');
     const Colors = module.require('Colors');
     const File = module.require('File');
-    const HTML = module.render('HTML');
+    const HTML = module.require('HTML');
    
     let tpl = null;
     let list = [];

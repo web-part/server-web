@@ -4,15 +4,15 @@ define('CheckBox', function (require, module, exports) {
     const $Object = require('@definejs/object');
     const Template = require('@definejs/template');
     const Emitter = require('@definejs/emitter');
-    const Defaults = require('Defaults');
-
+    let defaults = require('CheckBox.defaults');
+    
     let mapper = new Map();
     let tpl = new Template('#tpl-CheckBox');
 
 
     class CheckBox {
         constructor(config) {
-            config = Defaults.clone(module, config);
+            config = Object.assign({}, defaults, config);
 
             let emitter = new Emitter(this);
 

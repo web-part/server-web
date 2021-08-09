@@ -6,7 +6,6 @@ define('Table', function (require, module, exports) {
     const $ = require('$');
     const Emitter = require('@definejs/emitter');
     const $Object = require('@definejs/object');
-    const Defaults = require('Defaults');
 
     const Reaction = module.require('Reaction');
     const Static = module.require('Static');
@@ -15,6 +14,7 @@ define('Table', function (require, module, exports) {
     const Order = module.require('Order');
     const Meta = module.require('Meta');
 
+    const defaults = require('Table.defaults');
     let mapper = new Map();
 
 
@@ -22,7 +22,7 @@ define('Table', function (require, module, exports) {
     * 构造器。
     */
     function Table(config) {
-        config = Defaults.clone(module, config);
+        config = Object.assign({}, defaults, config);
         config = Order.normalize(config);
 
         let emitter = new Emitter(this);
@@ -75,13 +75,13 @@ define('Table', function (require, module, exports) {
             let rows = meta.rows;
             let html = meta.tpl.fill({});
 
-            meta.$ctn = $(meta.ctn);
+            meta.$container = $(meta.container);
 
-            if (!meta.$ctn.length) {
-                throw new Error('不存在容器节点: ' + meta.ctn);
+            if (!meta.$container.length) {
+                throw new Error('不存在容器节点: ' + meta.container);
             }
 
-            meta.$ctn.html(html);
+            meta.$container.html(html);
 
             meta.rows.map(function (row) {
                 row.element = document.getElementById(row.id);

@@ -1,5 +1,8 @@
 
 [data-panel="/FileList/Sidebar/Stat"] {
+    height: calc(100% - 37px);
+    overflow-y: scroll;
+    
     /*展示的是目录。*/
     &.dir {
         tr.md5,
@@ -38,7 +41,6 @@
                     overflow: hidden;
                     text-overflow: ellipsis;
                     white-space: nowrap;
-                    width: 255px;
                     display: inline-block;
                 }
             }
@@ -46,8 +48,9 @@
 
         tr.md5 {
             td {
-                color: #8BC34A;
-                font-size: 13px;
+                color: #c13d2d;
+                font-size: 12px;
+                
             }
         }
 

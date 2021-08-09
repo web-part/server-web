@@ -1,0 +1,17 @@
+﻿<template id="tpl-MenuNav">
+    <nav data-panel="{id}" class="MenuNav">
+        <span data-panel="{id}/Icon" class="icon"></span>
+        <div class="list">
+            <ul data-panel="{id}/List">
+                <li style="visibility: hidden;">用来加载过程中的高度占位</li>
+
+                <template name="item">
+                    <li data-index="{index}">{name}</li>
+                </template>
+            </ul>
+            <div data-panel="{id}/Text" style="display: none;">
+                <input type="text" />
+            </div>
+        </div>
+    </nav>
+</template>

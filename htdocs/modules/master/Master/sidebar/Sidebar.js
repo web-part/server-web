@@ -5,8 +5,6 @@ define.panel('/Master/Sidebar', function (require, module, panel) {
     const Header = module.require('Header');
     const List = module.require('List');
 
-    let name = 'data.Sidebar';
-
 
     panel.on('init', function () {
 
@@ -17,8 +15,14 @@ define.panel('/Master/Sidebar', function (require, module, panel) {
         });
 
         List.on({
+            'render': function (list) {
+                panel.fire('render', [list]);
+            },
             'item': function (item) {
                 panel.fire('item', [item]);
+            },
+            'refresh': function (item) {
+                panel.fire('refresh', [item]);
             },
         });
 
@@ -31,13 +35,12 @@ define.panel('/Master/Sidebar', function (require, module, panel) {
 
     panel.on('render', function () {
 
-        Package.load(name, function () {
-            let list = require(name);
+        Package.load('data.Sidebar', function () {
+            let list = require('data.Sidebar');
 
             Header.render();
             List.render(list);
 
-            panel.fire('render', []);
         });
 
     });
@@ -46,8 +49,20 @@ define.panel('/Master/Sidebar', function (require, module, panel) {
 
 
     return {
-        'active': List.active,
-        'get': List.get,
+
+        active(item) {
+            if (typeof item == 'string') {
+                item = List.get(item);
+            }
+
+            if (!item) {
+                return;
+            }
+
+            List.active(item);
+
+            return item;
+        },
     };
 
 });

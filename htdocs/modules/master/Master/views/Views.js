@@ -3,209 +3,198 @@
 define.panel('/Master/Views', function (require, module, panel) {
     const Package = require('@definejs/package');
 
-    let current = null; //当前激活的视图模块对象。
-    let name$view = {};
-    let name$bind = {};
-    let view$args = new Map();
-    let view$opt = new Map();
+    
+    let meta = {
+        current: null,              //当前激活的视图。
+        view$bind: new Map(),       //记录视图是否已被绑定事件。
+        view$rendered: new Map(),   //记录视图是否已经 render 过了。 用于辅助要 show() 还是要 render()。
+    };
 
 
-    //获取指定名称的视图，并执行一些初始化操作。
-    function get(name, opt) {
-        let view = name$view[name];
-
-        if (view) {
-            return view;
-        }
-
-
+    function get(name) {
         let values = panel.fire('require', [name]);
-        view = values[0];
+        let view = values[0];
 
         if (!view) {
             return;
         }
 
-
-        name$view[name] = view;
-        view$opt.set(view, opt);
-
-        if (!name$bind[name]) {
-            name$bind[name] = true;
+        //未绑定事件。
+        if (!meta.view$bind.get(view)) {
+            meta.view$bind.set(view, true);
 
             //接收来自 view 内部触发的事件。
             //即以下事件是 view 内部业务层的代码触发的。
-            view.on('close', function () {
 
-                delete name$view[name];
-                view$args.delete(view);
+            //视图内部发出信号想要关闭。
+            view.on('close', function (...args) {
+                panel.fire('close', [name]);
+            });
+           
 
-                let args = [...arguments];
-                panel.fire('close', args);
+            view.on('fullscreen', function (...args) {
+                panel.fire('fullscreen', args);
             });
 
-            view.on('title', function (title) {
-                let opt = view$opt.get(view);
-                opt.title = title;
-                panel.fire('title', [opt.id, title]);
-            });
-
-            view.on('refresh', function () {
-
-                let args = view$args.get(view) || [];
-                view.render(...args);
-
-            });
-
-            view.on('fullscreen', function () {
-                panel.fire('fullscreen');
+            //视图内部发出信号想要设置 title。
+            view.on('title', function (...args) {
+                panel.fire('title', args);
             });
         }
+     
 
+    
         return view;
     }
 
 
-    //激活指定的视图，用 render 或 show 的方式。
-    function active(view, opt) {
-        let args = opt.args || [];
-        let render = opt.render;
 
-        current && current.hide();
-        current = view;
+    //激活指定的视图。
+    function active(view, opt = {}) {
+        let { args = [], render = null, title = '', } = opt;
 
+        if (meta.current) {
+            meta.current.hide();
+        }
 
-        //try{
-            if (render) {
-                view$args.set(view, args);
-                view.render(...args);
-            }
-            else {
-                view.show();
-            }
+        meta.current = view;
 
-            panel.fire('active', [opt]);
-        //}
-        //catch (ex) {
-        //    panel.fire('error', [opt, ex]);
-        //}
+        //未指定是否要渲染。
+        if (render === null) {
+            render = !meta.view$rendered.get(view);
+        }
+
+        //这句放在 view.render() 的前面。
+        //因为 view 内部可能有要修改 title 的逻辑。
+        //让 view 内部的发出的 title 优先级更高。
+        panel.fire('title', [title]);
+
+        if (render) {
+            meta.view$rendered.set(view, true);
+            view.render(...args);
+        }
+        else {
+            view.show();
+        }
+
+        
+
     }
+
+
+
+    panel.on('init', function () {
+        
+    });
+  
+
+
+
+    panel.on('render', function (name, opt) {
+        //重载 render(item, opt);
+        if (typeof name == 'object') {
+            let item = name;
+            name = item.view;
+
+            opt = {
+                'title': item.name,
+                ...opt,
+            };
+        }
+
+
+        let view = get(name);
+
+        if (view) {
+            active(view, opt);
+            return;
+        }
+
+        //尝试以异步方式去加载。
+        Package.load(name, function (pack) {
+            if (!pack) {
+                console.warn(`不存在视图 ${name} 对应的 package 文件。`);
+                panel.fire('404', [name, opt]);
+                return;
+            }
+
+            //要先添加 html 内容。
+            let html = pack['html'];
+            if (html) {
+                panel.$.append(html.content);
+            }
+
+            //再去加载 js 模块。
+            let view = get(name);
+
+            if (!view) {
+                console.warn(`无法获取到视图 ${name}`);
+                panel.fire('404', [name, opt]);
+                return;
+            }
+
+            active(view, opt);
+
+        });
+
+    });
 
 
 
     return {
         /**
-        * 打开指定的视图。
-        * @param {String} name 要打开的视图名称。
-        * @param {Array} [args] 要传递给目标视图的参数数组。
-        * @param {boolean} [render] 是否强制刷新。 
-        *   如果指定为 true，则调用目标视图的 render() 方法；否则调用 show() 方法。
-        *   如果不指定或指定为 false，则根据视图是否已打开自动指定。
-        */
-        'open': function (name, options) {
-            
-            let opt = options || {};
-            let args = opt.args || [];
-
-            opt = {
-                'name': name,
-                'args': args,
-                'render': name$view[name] ? opt.render : true,  //如果之前未打开过或已关闭，则强制刷新。
-                'title': opt.title,
-                'id': opt.id || '',
-            };
-
-
-
-            let view = get(name, opt);
-
-            //已加载过，或者是同步方式存在的。
-            if (view) {
-                active(view, opt);
-                return;
-            }
-
-
-            //尝试以异步方式去加载。
-            Package.load(name, function (pack) {
-                if (!pack) {
-                    console.warn('不存在视图 ' + name + ' 对应的 package 文件。');
-                    panel.fire('404', [opt]);
-                    return;
-                }
-
-                //要先添加 html 内容。
-                let html = pack['html'];
-                if (html) {
-                    panel.$.append(html.content);
-                }
-
-                //再去加载 js 模块。
-                let view = get(name, opt);
-
-                if (!view) {
-                    console.warn('无法获取到视图: ' + name);
-                    panel.fire('404', [opt]);
-                    return;
-                }
-
-                active(view, opt);
-
-            });
-
-
-        },
-
-        /**
         * 关闭指定名称的视图，并传递一些参数。
         */
-        'close': function (name, args) {
-            let view = name$view[name];
+        close(name, args) {
+            
+            let view = get(name);
+
             if (!view) {
                 return;
             }
 
             //目标视图中有阻止关闭的，或需要确认关闭的，则先取消关闭。
             //调用 view.close(); 会触发 view 内部的 `close` 事件，从而执行 view 内部的业务代码。
-            //目标视图通过调用 view.on('close', function() { return false; }); 通过返回 false 即可阻止关闭。
+            //目标视图包含：
+            //  view.on('close', function () { 
+            //      return false;
+            //  });
+            //通过返回 false 即可阻止关闭。
             let values = view.close(...args);
 
             if (values.includes(false)) {
                 return false;
             }
 
-            view$args.delete(view);
+            view.$.fadeOut('slow', function () {
+                view.hide();
+            });
 
-            delete name$view[name];
+            //关闭的是当前被激活的视图。
+            if (meta.current === view) {
+                meta.current = null;
+            }
+            
+            meta.view$rendered.delete(view);
         },
 
         /**
         * 刷新指定的或当前视图。
         */
-        'refresh': function (view) {
-
-            view = view || current;
+        refresh(view) {
+            view = view || meta.current;
 
             if (typeof view == 'string') {
-                let values = panel.fire('require', [view]);
-                view = values[0];
+                view = get(view);
             }
 
             if (!view) {
                 return;
             }
 
-            //目标视图中有阻止刷新的，或需要确认的，则先取消。
-            //调用 view.refresh(); 会触发 view 内部的 `refresh` 事件，从而执行 view 内部的业务代码。
-            //目标视图通过调用 view.on('refresh', function() { return false; }); 通过返回 false 即可阻止刷新。
-            let args = view$args.get(view) || [];
-            let values = view.refresh(...args);
-
-            if (values.includes(false)) {
-                return false;
-            }
-
-            view.render(...args);
+          
+            view.refresh();
+            meta.view$rendered.set(view, true);
         },
     };
 

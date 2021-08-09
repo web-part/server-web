@@ -1,0 +1,111 @@
+
+
+[data-panel="/HtmlTree/Main/HtmlBlock/BaseInfo"]{
+    h1 {
+        font-size: 16px;
+        i {
+            margin-right: 8px;
+            color: #4b70b0;
+        }
+    }
+
+    & > div {
+        margin-bottom: 25px;
+    }
+
+    a[data-cmd] {
+        text-decoration: none;
+        color: unset;
+        cursor: pointer;
+
+        &:hover{
+            color:rgb(81, 163, 218);
+            text-decoration: underline;
+
+        }
+
+        
+    }
+
+    [data-panel="/HtmlTree/Main/HtmlBlock/BaseInfo/Base"] {
+        table {
+            font-size: 14px;
+
+            th {
+                text-align: right;
+                box-sizing: border-box;
+
+                &:after {
+                    content: ':';
+                }
+            }
+
+            td {
+                padding-left: 10px;
+            }
+
+         
+
+            tr.name {
+                td {
+                    color: #2196F3;
+
+                }
+            }
+
+            tr.tag {
+                td {
+                    color: green;
+                }
+            }
+
+            tr.patterns {
+                th {
+                    vertical-align: top;
+                }
+                td {
+                    color: #bc421b;
+                    font-size: 16px;
+
+                    pre {
+                        margin: 0px;
+                    }
+                }
+            }
+           
+        }
+
+     
+
+        div.source-code {
+            margin: 0px;
+            // font-size: 16px;
+
+            pre {
+                height: 18px !important;
+                margin-left: 0px !important;
+                margin: 0px;
+            }
+
+        }
+    }
+
+    .gridview {
+        overflow-x: scroll;
+    }
+
+    .GridView { 
+        
+        td {
+            &.number {
+                text-align: center !important;
+            }
+        }
+    }
+
+    
+}
+
+
+
+

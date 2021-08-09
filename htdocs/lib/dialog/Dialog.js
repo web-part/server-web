@@ -1,7 +1,6 @@
 ﻿
 define('Dialog', function (require, module, exports) {
     const $ = require('$');
-    const Defaults = require('Defaults');
 
     const Emitter = require('@definejs/emitter');
     const Masker = require('@definejs/masker');
@@ -14,14 +13,15 @@ define('Dialog', function (require, module, exports) {
     const Style = module.require('Style');
     const Events = module.require('Events');
 
+    let defaults = require('Dialog.defaults');
+
     let mapper = new Map();
 
 
 
 
     function Dialog(config) {
-
-        config = Defaults.clone(module, config);
+        config = Object.assign({}, defaults, config);
 
         let emitter = new Emitter(this);
 

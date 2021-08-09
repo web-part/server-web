@@ -106,6 +106,7 @@ define('MarkDoc', function (require, module, exports) {
                 },
             });
 
+
             //提供一个机会可以在 render 时重新传配置。
             if (options.code) {
                 Object.assign(meta.code, options.code);
@@ -140,7 +141,6 @@ define('MarkDoc', function (require, module, exports) {
                 }
 
                 let content = element.innerText; //在格式化后重新获取。
-                
                 let height = Lines.getHeight(content);
 
                 Code.wrap(meta, {

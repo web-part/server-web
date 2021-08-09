@@ -11,7 +11,6 @@ define('Table/Meta', function (require, module, exports) {
     return {
 
         create: function (config, others) {
-
             let count = config.count || config.details.length;
             let name$column = {};
             let id$column = {};
@@ -45,7 +44,7 @@ define('Table/Meta', function (require, module, exports) {
                 'columnName': config.columnName,    //列名所在的字段名。
                 'captionName': config.captionName,  //列标题所在的字段名。
                 'details': config.details,          //原始的详情列表数据。
-                'ctn': config.container,            //表格的容器。
+                'container': config.container,            //表格的容器。
                 'width': config.width,              //表格宽度。
                 'class': config.class,              //css 类名。
                 'order': config.order,              //序号列。
@@ -65,7 +64,7 @@ define('Table/Meta', function (require, module, exports) {
                 'element': null,                    //对应的 DOM 元素。
                 '$': null,
                 '$tbody': null,                     //方便内部使用。
-                '$ctn': null,                       //$(ctn)
+                '$container': null,                 //$(container)
                 'this': null,                       //方便内部使用。
             };
 

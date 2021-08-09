@@ -1,0 +1,22 @@
+﻿<template id="tpl-DropCheckList">
+    <div id="{id}" class="DropCheckList">
+        <button>{text}</button>
+        
+        <div data-id="main" style="display: none;">
+            <nav data-id="all">
+                <template name="all">
+                    <span data-id="chk-all" class="item {checked}"><i class="far fa-{icon}square"></i>{text}</span>
+                    <span class="stat">
+                        <b>{count}</b>/<b>{total}</b>
+                    </span>
+                </template>
+            </nav>
+            
+            <ul data-id="list">
+                <template name="item">
+                    <li data-index="{index}" class="item {checked}"><i class="far fa-{icon}square"></i>{text}</li>
+                </template>
+            </ul>
+        </div>
+    </div>
+</template>

@@ -36,7 +36,7 @@ define('TextTree/Template', function (require, module, exports) {
 
                 'item': function (item, index) {
                     let { tabs, key, linker, id, } = item;
-                    let children = meta.id$children[id];
+                    let children = meta.id$children[id] || [];
                     let isDir = children.length > 0;
 
                     key = key || meta.emptyText;
@@ -50,7 +50,8 @@ define('TextTree/Template', function (require, module, exports) {
                         linker,
                         key,
                         index,
-                        type: isDir ? 'dir' : 'file',
+                        'type': isDir ? 'dir' : 'file',
+                        'not-found': meta.id$item[id] ? '' : 'not-found', //该项可能不存在。
                     };
                 },
 
@@ -117,6 +118,10 @@ define('TextTree/Template', function (require, module, exports) {
 
                         let index = data.index;
                         let item = meta.id$item[data.id];
+                        if (!item) {
+                            return {}
+                        }
+
                         let secondary = item[secondaryKey];
 
                         return { secondary, secondaryKey, index, };

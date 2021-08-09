@@ -36,6 +36,13 @@ define('MarkDoc/Content', function (require, module, exports) {
 
 
             if (language) {
+                //注意，content 里可能含有 html 标签，因此需要转义。
+                let reg = /[&'"<>\/\\\-\x00-\x09\x0b-\x0c\x1f\x80-\xff]/g;
+
+                content = content.replace(reg, function (r) {
+                    return "&#" + r.charCodeAt(0) + ";"
+                });
+
                 content = $String.format(meta.samples['pre'], {
                     'language': language,
                     'content': content,

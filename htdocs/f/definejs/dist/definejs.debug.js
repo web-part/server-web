@@ -1,7 +1,7 @@
 
 /**
 * definejs library
-* build time: 2021-05-07 15:35:46
+* build time: 2021-08-09 14:36:59
 * build tool: @definejs/packer
 * source packages (39):
 * {
@@ -9,7 +9,7 @@
 *     "@definejs/api@1.0.1": "API",
 *     "@definejs/app-module@1.0.0": "AppModule",
 *     "@definejs/app@1.0.1": "App",
-*     "@definejs/array@1.0.0": "Array",
+*     "@definejs/array@1.1.0": "Array",
 *     "@definejs/confirm@1.0.1": "Confirm",
 *     "@definejs/date@1.0.0": "Date",
 *     "@definejs/defaults@1.0.0": "Defaults",
@@ -2560,7 +2560,7 @@ define('String', function (require, module, exports) {
 });
 /**
 * src: @definejs/array/modules/Array.js
-* pkg: @definejs/array@1.0.0
+* pkg: @definejs/array@1.1.0
 */
 define('Array', function (require, module, exports) { 
     
@@ -2746,6 +2746,75 @@ define('Array', function (require, module, exports) {
             }
     
             return a;
+    
+        },
+    
+        /**
+        * 添加元素到多级分组列表中。
+        * 已重载 add(key$list, keys, item);
+        * 已重载 add(key$list, key0, key1, ..., keyN, item);
+        * @param {Object}} key$list 多级结构的容器普通对象。
+        * @param {Array} keys 节点对应的键数组。
+        * @param {*} item 要添加的元素。
+        * @example
+        *   let city$area$town = {};
+        *   add(city$area$town, '深圳市', '宝安区', '沙井', 100);
+        *   add(city$area$town, '深圳市', '宝安区', '沙井', 200);
+        *   add(city$area$town, '深圳市', '宝安区', '西乡', 300);
+        *   add(city$area$town, '深圳市', '宝安区', '西乡', 400);
+        *   add(city$area$town, '深圳市', '南山区', '后海', 500);
+        *   add(city$area$town, '深圳市', '南山区', '后海', 600);
+        *   add(city$area$town, '深圳市', '南山区', '前海', 700);
+        * 则 
+        *   city$area$town = {
+        *       '深圳市': {
+        *           '宝安区': {
+        *               '沙井': [100, 200],
+        *               '西乡': [300, 400],
+        *           },
+        *           '南山区': {
+        *               '后海': [500, 600],
+        *               '前海': [700],
+        *           },
+        *       },
+        *   };
+        */
+        add(key$list, keys, item) {
+            //重载 add(key$list, key0, key1, ..., keyN, item); 的形式。
+            if (!Array.isArray(keys)) {
+                let args = [...arguments];
+                keys = args.slice(1, -1);
+                item = args.slice(-1)[0]; //最后一项。
+            }
+    
+    
+            let maxIndex = keys.length - 1; //判断是否为最后一个。
+            let obj = key$list;
+    
+            keys.forEach((key, index) => {
+                let list = obj[key];
+    
+                if (index < maxIndex) {
+                    if (!list) {
+                        obj[key] = {};
+                    }
+    
+                    obj = obj[key];
+                    return;
+                }
+    
+    
+                //最后一项。
+                if (!list) {
+                    list = obj[key] = [];
+                }
+                else if (!Array.isArray(list)) {
+                    //防止添加到中间节点上。
+                    throw new Error(`Can not add the item to a Non-Array node.`);
+                }
+    
+                list.push(item);
+            });
     
         },
     };

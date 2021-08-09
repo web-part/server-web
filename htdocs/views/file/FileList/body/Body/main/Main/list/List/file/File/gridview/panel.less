@@ -1,0 +1,91 @@
+[data-panel="/FileList/Body/Main/List/File/GridView"] { 
+    height: calc(100% - 38px);
+    font-size: 14px;
+    box-sizing: border-box;
+    overflow-x: scroll;
+
+    .GridView {
+
+        &.md5-repeat-mode {
+            td.md5 {
+                color: #ff000036 !important;
+            }
+
+            tr.md5-group-bottom {
+                td {
+                    border-bottom: solid 1px #000;
+                }
+
+                td.md5 {
+                    color: red !important;
+                }
+            }
+        }
+
+        td.order {
+            color: #aaa;
+        }
+
+        td.name {
+            color: #61a7e5;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+
+            i {
+                font-size: 22px;
+            }
+
+            a.detail {
+                position: relative;
+                top: -2px;
+                display: inline-block;
+                height: 19px;
+
+                color: #000;
+            }
+
+        
+        }
+
+       
+
+        td.utf8 {
+            text-align: center !important;
+        }
+        
+        td.md5 {
+            font-family: monospace;
+            font-size: 14px;
+
+            &.repeat {
+                color: red;
+            }
+        }
+
+        td.number {
+            text-align: right !important;
+        }
+
+        
+
+        span.filename {
+            color: #000;
+        }
+
+        span.keyword {
+            /* color: #fff; */
+            /* background: #6b9629; */
+            font-weight: bold;
+            background: #ececec;
+        }
+
+        a {
+            cursor: pointer;
+
+            &:hover {
+                background: #FFEB3B;
+            }
+        }
+    }
+}

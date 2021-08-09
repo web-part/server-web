@@ -2,7 +2,6 @@
 
 define('/Log/API', function (require, module, exports) {
     const Emitter = require('@definejs/emitter');
-    const $String = require('@definejs/string');
     const Loading = require('@definejs/loading');
     const API = require('API');
 
@@ -35,9 +34,6 @@ define('/Log/API', function (require, module, exports) {
                 },
 
                 'success': function (list, json, xhr) {
-                    list = list.filter((item) => {
-                        return !!item;
-                    });
                     emitter.fire('success', 'get', [list]);
                 },
 

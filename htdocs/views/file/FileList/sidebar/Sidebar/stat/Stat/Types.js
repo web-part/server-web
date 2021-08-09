@@ -29,6 +29,8 @@ define('/FileList/Sidebar/Stat/Types', function (require, module, exports) {
                 'file': 0,
                 'image': 0,
                 'size': 0,
+                'isUTF8': 0,
+                'notUTF8': 0,
             };
 
             let ext$count = {};
@@ -45,6 +47,7 @@ define('/FileList/Sidebar/Stat/Types', function (require, module, exports) {
 
 
                 let ext = item.ext.toLowerCase();
+                let utf8Key = item.isUTF8 ? 'isUTF8' : 'notUTF8';
                
                 ext$count[ext] = (ext$count[ext] || 0) + 1;
 
@@ -54,13 +57,15 @@ define('/FileList/Sidebar/Stat/Types', function (require, module, exports) {
                 }
 
                 type$count['size'] += item.stat.size;
+                type$count[utf8Key]++;
+
 
             });
 
 
 
 
-            let items = [{ 'name': '全部', 'value': list.length, desc: '个', class: 'spliter', }];
+            let items = [ { 'name': '全部', 'value': list.length, desc: '个', class: 'spliter', }, ];
 
             let size = type$count['size'];
 
@@ -71,10 +76,12 @@ define('/FileList/Sidebar/Stat/Types', function (require, module, exports) {
 
             type$count['dir'] && items.push({ 'name': '目录', 'value': type$count['dir'], desc: '个', });
             type$count['file'] && items.push({ 'name': '文件', 'value': type$count['file'], desc: '个', });
+
+            items.push({ 'name': 'UTF8 编码', 'value': type$count['isUTF8'], desc: '个', });
+            items.push({ 'name': '其它编码', 'value': type$count['notUTF8'], desc: '个', });
+
             type$count['image'] && items.push({ 'name': '图片', 'value': type$count['image'], desc: '个', });
 
-
-            
 
             Object.keys($Object.sort(ext$count)).forEach(function (ext, index) {
                 let count = ext$count[ext];

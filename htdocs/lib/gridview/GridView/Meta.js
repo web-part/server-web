@@ -26,8 +26,11 @@ define('GridView/Meta', function (require, module, exports) {
                 'counterId': $String.random(),
                 'countId': $String.random(),
                 'checkAllId': $String.random(),
+                'nodataId': $String.random(),
 
-                '$': null,              //jQuery 实例 $(container)。
+                '$': null,              //jQuery 实例 。
+                '$container': null,     //$(container)。
+                '$nodata':  null,       //$(#nodataId)
                 'table': null,          //Table 组件实例
                 'pager': null,          //Pager 组件实例。
                 'tpl': null,            //Template 组件实例。
@@ -40,11 +43,10 @@ define('GridView/Meta', function (require, module, exports) {
 
                 'container': config.container,      //容器。
                 'class': config.class,              //
-
-
                 'no': config.no,                    //当前的页码。
                 'size': config.size,                //正常模式下的分页大小。
                 'sizes': config.sizes,              //可供选择的页码列表。
+                'sumWidth': 0,                      //全部列的总宽。
 
                 'check': config.check,              //是否启用复选框列。 可以指定为 true 或一个 {} 配置。
                 'order': config.order,              //是否启用序号列。 可以指定为 true 或一个 {} 配置。

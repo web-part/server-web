@@ -1,0 +1,47 @@
+﻿
+<div data-panel="/HtmlTree/Main/HtmlLink/FileInfo" class="tab-content" style="display: none;">
+    <template>
+        <table>
+            <tr class="sname">
+                <th>文件名称</th>
+                <td>{name}</td>
+            </tr>
+            <tr class="file">
+                <th>文件路径</th>
+                <td><a href="javascript:" data-cmd="file">{file}</a></td>
+            </tr>
+            <tr class="">
+                <th>所在目录</th>
+                <td><a href="javascript:" data-cmd="dir">{dir}</a></td>
+            </tr>
+            <tr class="type">
+                <th>文件类型</th>
+                <td>{type}</td>
+            </tr>
+            <tr class="md5">
+                <th>md5</th>
+                <td>{md5}</td>
+            </tr>
+            <tr class="size">
+                <th>文件大小</th>
+                <td><span class="value">{size}</span> <span class="desc">{sizeDesc}</span></td>
+            </tr>
+            <tr class="">
+                <th>内容行数</th>
+                <td>{lines}</td>
+            </tr>
+            <tr class="time">
+                <th>创建时间</th>
+                <td>{birthtime}</td>
+            </tr>
+            <tr class="time">
+                <th>修改时间</th>
+                <td>{mtime}</td>
+            </tr>
+            <tr class="">
+                <th>UTF8 编码</th>
+                <td>{isUTF8}</td>
+            </tr>
+        </table>
+    </template>
+</div>

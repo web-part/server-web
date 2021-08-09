@@ -2,28 +2,21 @@
     const Master = module.require('Master');
 
     return {
-        'edit': function (id) {
-            Master.open('DocAdd', '写文档', [{
-                'id': id,
-            }]);
+        'demo': function (file) {
+            let url = `#!${file}`;
+            window.open(url);
         },
 
-        'use': function (data) {
-            Master.open('DocAdd', '写文档', [{
-                'content': data.content,
-                'ext': data.ext,
-            }]);
+        'open': function (url) {
+            window.open(url);
         },
-        'sidebar': function (file) {
-
-            Master.open('SideMenus', [file]);
-
+        
+        'edit': function (name) {
+            Master.open('DocAdd', [{ name, }]);
         },
 
-        'topmenu': function (file) {
-
-            Master.open('TopMenus', [file]);
-        },
+       
+      
 
        
     };

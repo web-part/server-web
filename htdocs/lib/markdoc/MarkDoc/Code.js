@@ -44,12 +44,16 @@ define('MarkDoc/Code', function (require, module, exports) {
             if (language == 'json') {
                 let text = el.innerText;
                 let json = JSON.parse(text);
-
                 if (json) {
                     json = window.JSON.stringify(json, null, 4);
                     el.innerHTML = json;
+
+                    
                 }
+                return json;
             }
+
+            
 
         },
 

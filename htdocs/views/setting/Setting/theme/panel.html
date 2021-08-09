@@ -1,0 +1,19 @@
+﻿<section data-panel="/Setting/Theme">
+    <header>
+        <h1>外观主题</h1>
+        <p>自定义应用程序的外观主题和颜色。</p>
+    </header>
+    <main>
+        <ul data-panel="/Setting/Theme/List">
+            <template>
+                <li data-index="{index}">
+                    <label>
+                        <div class="color {value}"></div>
+                        <input type="radio" name="theme" value="{value}">
+                        {name}
+                    </label>
+                </li>
+            </template>
+        </ul>
+    </main>
+</section>

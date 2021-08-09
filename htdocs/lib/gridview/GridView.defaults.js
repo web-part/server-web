@@ -24,5 +24,7 @@ define('GridView.defaults', {
         dragable: true,
         class: 'order',
     },
+
+    
 });
 

@@ -1,0 +1,117 @@
+﻿
+.DropCheckList {
+    position: relative;
+    &.show {
+        button {
+            &::after {
+                transform: rotate(-180deg);
+                transition: all 0.2s ease;
+                top: -2px;
+            }
+        }
+    }
+
+    //没有全选。
+    &.not-all-checked {
+        button {
+            border-color: #ff9800;
+            background-color: #fffad2;
+        }
+    }
+
+    button {
+        font-size: 14px;
+        cursor: pointer;
+        border: solid 1px #cecece;
+        border-radius: 4px;
+        padding: 2px 10px;
+        background-color: #fff;
+
+
+
+        &:hover {
+            color: #3292e6;
+        }
+        &::after {
+            content: '';
+            border: 4px solid transparent;
+            border-top-color: #5A646E;
+            display: inline-block;
+            transition: all 0.2s ease;
+            margin-left: 5px;
+            position: relative;
+            top: 2px;
+        }
+    }
+
+
+
+    [data-id="main"] {
+        position: absolute;
+        background: #fff;
+        top: 27px;
+        right: 0px;
+        z-index: 1025;
+        background-color: #546072;
+        padding: 5px 0px;
+        border: 1px solid #3e4755;
+        border-radius: 4px;
+        width: 160px;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.225);
+
+        
+
+        [data-id="all"] {
+            position: fixed;
+            border-bottom: solid 1px #6f8196;
+         
+            padding: 4px 0px;
+
+            .item {
+                
+            }
+
+            .stat {
+                float: right;
+                position: relative;
+                top: 3px;
+                right: 9px;
+                font-size: 16px;
+                color: #fff;
+            }
+        }
+
+        [data-id="list"] {
+            max-height: 400px;
+            overflow-y: auto;
+            margin-top: 34px;
+        }
+
+        .item {
+            padding: 5px 10px;
+            cursor: pointer;
+            font-size: 16px;
+            color: #b5b5b5;
+
+           
+            
+            &:hover {
+                background: #3c4552;
+            }
+
+            &.checked {
+                color: #fff;
+
+                i {
+                    font-weight: bold;
+                }
+            }
+
+            i {
+                margin-right: 6px;
+                position: relative;
+                top: 1px;
+            }
+        }
+    }
+}

@@ -1,7 +1,6 @@
 ﻿
 define('TableResizer', function (require, module) {
     const $ = require('$');
-    const Defaults = require('Defaults');
     const $String = require('@definejs/string');
     const Emitter = require('@definejs/emitter');
     const Template = require('@definejs/template');
@@ -12,12 +11,13 @@ define('TableResizer', function (require, module) {
     const Fields = module.require('Fields');
     const Meta = module.require('Meta');
 
+    const defaults = require('TableResizer.defaults');
     let mapper = new Map();
     let tpl = new Template('#tpl-TableResizer');
 
 
     function TableResizer(config) {
-        config = Defaults.clone(module, config);
+        config = Object.assign({}, defaults, config);
 
         let emitter = new Emitter(this);
         let fields = Fields.normalize(config.fields);
@@ -98,7 +98,7 @@ define('TableResizer', function (require, module) {
             
             meta.cols = Cols.fill(meta.$, meta.fields);
 
-            table.style.width = meta.width + 'px';
+            meta.$.width(meta.width);
             meta.emitter.fire('render', [meta.width, meta.fields]);
 
         },
@@ -117,7 +117,7 @@ define('TableResizer', function (require, module) {
             meta.cols[index].width = tdWidth;
             meta.width = width;
 
-            meta.table.style.width = width + 'px';
+            meta.$.width(width);
 
         },
 

@@ -4,7 +4,6 @@
 */
 define('DropList', function (require, module) {
     const $ = require('$');
-    const Defaults = require('Defaults');
     
     const Emitter = require('@definejs/emitter');
     const $Array = require('@definejs/array');
@@ -19,11 +18,13 @@ define('DropList', function (require, module) {
     const Table = module.require('Table');
     const Template = module.require('Template');
 
+    const defaults = require('DropList.defaults');
     let mapper = new Map();
 
 
     function DropList(config) {
-        config = Defaults.clone(module, config);
+        config = Object.assign({}, defaults, config);
+
 
         let emitter = new Emitter(this);
         let current = Current.create();

@@ -1,0 +1,55 @@
+
+[data-panel="/Markdoc/Tools"] {
+    position: fixed;
+    bottom: 10px;
+    right: 10px;
+    background-color: rgba(0, 0, 0, 0.1);
+    border-radius: 6px;
+    color: #fff;
+    font-size: 12px;
+    z-index: 1024;
+    font-family: 'Helvetica Neue', Arial, 'Hiragino Sans GB', STHeiti, 'Microsoft YaHei', 'WenQuanYi Micro Hei', SimSun, Song, sans-serif;
+
+    &:hover {
+        background-color: rgba(0, 0, 0, 0.75);
+        transition: background linear 0.6s;
+    }
+
+    li {
+        width: 38px;
+        height: 32px;
+        line-height: 32px;
+        cursor: pointer;
+        text-align: center;
+
+        &:first-child {
+            margin-top: 5px;
+        }
+
+        i {
+            display: inline-block;
+            font-size: 20px;
+        }
+
+        span {
+            display: none;
+            position: relative;
+            bottom: 2px;
+            font-size: 12px;
+
+            &:first-child {
+                bottom: initial;
+            }
+        }
+
+        &:hover {
+            i {
+                display: none;
+            }
+
+            span {
+                display: inline-block;
+            }
+        }
+    }
+}

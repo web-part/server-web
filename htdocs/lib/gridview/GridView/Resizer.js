@@ -1,4 +1,4 @@
-﻿
+
 /**
 * 
 */
@@ -8,9 +8,7 @@ define('GridView/Resizer', function (require, module, exports) {
 
 
     return {
-
         create: function (meta) {
-
             //表体的调整器。
             let rsz = null;
 
@@ -19,8 +17,6 @@ define('GridView/Resizer', function (require, module, exports) {
                 'table': '#' + meta.headerId,
                 'fields': meta.fields,
             });
-
-
 
             //表头的全选。
             resizer.on('render', function () {
@@ -53,6 +49,12 @@ define('GridView/Resizer', function (require, module, exports) {
 
                 'change': function (data) {
                     rsz.set(data);
+
+                    // let containerWidth = meta.$container.width();
+                    // let width = Math.max(containerWidth, data.width + 10);
+                    // meta.$.width(width);
+
+                    meta.$.width(data.width + 10);
                 },
             });
 

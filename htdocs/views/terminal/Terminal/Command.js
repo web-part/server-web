@@ -2,7 +2,7 @@
 define('/Terminal/Command', function (require, module, exports) {
     const Emitter = require('@definejs/emitter');
     const Source = module.require('Source');
-    const FS = module.require('FS');
+    const FileList = module.require('FileList');
 
     let emitter = new Emitter();
 
@@ -21,7 +21,7 @@ define('/Terminal/Command', function (require, module, exports) {
 
         meta.init = true;
 
-        FS.on('success', function (fs) {
+        FileList.on('success', function (fs) {
             meta.fs = fs;
             Source.open(meta.cmd);
         });
@@ -57,7 +57,7 @@ define('/Terminal/Command', function (require, module, exports) {
                 Source.open(cmd);
             }
             else {
-                FS.get();
+                FileList.get();
             }
         },
 

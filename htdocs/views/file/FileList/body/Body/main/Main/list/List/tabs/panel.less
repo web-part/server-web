@@ -1,0 +1,36 @@
+[data-panel="/FileList/Body/Main/List/Tabs"] {
+    position: absolute;
+    left: 5px;
+    top: 5px;
+
+    li {
+        display: inline-block;
+        padding: 4px 28px;
+        cursor: pointer;
+        background: #d0d0d0;
+        color: #fff;
+        margin-left: -5px;
+        font-size: 14px;
+
+        &:first-child {
+            border-radius: 4px 0px 0px 4px;
+        }
+
+        &:last-child {
+            border-radius: 0px 4px 4px 0px;
+        }
+
+        &.on {
+            background: #03A9F4;
+            color: #fff;
+
+            &:hover {
+                background: #03A9F4;
+            }
+        }
+
+        &:hover {
+            background: #b5b5b5;
+        }
+    }
+}

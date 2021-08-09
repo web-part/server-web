@@ -1,0 +1,45 @@
+[data-panel="/ModuleTree/Main"] {
+    width: calc(100% - 300px);
+    display: inline-block;
+    /* overflow: scroll; */
+    height: 100%;
+    box-sizing: border-box;
+
+    .tab-content{
+        margin: 0px 0px 0px 4px ;
+        overflow: scroll;
+        height: calc(100% - 60px);
+    }
+    
+    [data-panel="/ModuleTree/Main/Tabs"] {
+        width: 100%;
+        vertical-align: middle;
+        color: #5A646E;
+        overflow: hidden;
+        background-color: #fff;
+        display: inline-block;
+        border-bottom: solid 1px #e8ecf0;
+        // margin-bottom: 10px;
+
+        li {
+            margin-left: 10px;
+            display: inline-block;
+            font-size: 16px;
+            cursor: pointer;
+            padding: 5px 14px;
+
+            i {
+                margin-right: 5px;
+            }
+
+            &.on {
+                color: #61a7e5;
+                border-bottom: 4px solid #61a7e5;
+            }
+        }
+    }
+
+    [data-panel="/ModuleTree/Main/MarkDoc"] {
+        
+    }
+}

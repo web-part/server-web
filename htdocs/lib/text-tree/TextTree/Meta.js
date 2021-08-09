@@ -49,7 +49,6 @@ define('TextTree/Meta', function (require, module, exports) {
         });
 
 
-
         ids.forEach((id, index) => {
             //收集指定模块下的所有子模块（包括间接子模块）。
             let children = ids.filter((mid) => {

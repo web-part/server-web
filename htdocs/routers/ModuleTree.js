@@ -2,11 +2,8 @@
     const Master = module.require('Master');
 
     return {
-        'cmd': {
-            'file': function (item) {
-                Master.open('FileList', [item.file]);
-            },
-
+        'file': function (file) {
+            Master.open('FileList', [file]);
         },
     };
 

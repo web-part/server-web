@@ -8,7 +8,6 @@ define.panel('/Master/Sidebar/Header', function (require, module, panel) {
 
 
     panel.on('init', function () {
-
         storage = new Storage(module.id);
         visible = storage.get('visible');
 
@@ -20,7 +19,6 @@ define.panel('/Master/Sidebar/Header', function (require, module, panel) {
 
 
         panel.$.on('click', function () {
-            
             visible = !visible;
 
             storage.set('visible', visible);

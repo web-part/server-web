@@ -1,0 +1,79 @@
+
+
+
+
+[data-panel="/Markdoc"] {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    overflow-y: scroll;
+    height: 100vh;
+    overflow-y: scroll;
+
+    //打印模式
+    &.print {
+        height: unset;
+
+        [data-panel="/Markdoc/Tools"]  {
+            display: none;
+        }
+
+        [data-panel="/Markdoc/Outline"] {
+            display: none;
+        }
+
+        [data-panel="/Markdoc/Header"]  {
+            display: none;
+        }
+    }
+
+    //源码模式。
+    &.source {
+        [data-panel="/Markdoc/Content"] {
+            max-width: none;
+            width: 100%;
+        }
+
+        [data-panel="/Markdoc/Tools"] {
+            [data-cmd="outline"] {
+                display: none;
+            }
+        }
+    }
+
+    &.no-comment {
+        .hljs-comment {
+            display: none;
+        }
+    }
+
+    &.no-numbers {
+        .line-numbers {
+            display: none;
+        }
+
+        pre {
+            margin-left: 5px !important;
+        }
+    }
+
+
+
+    .current-line {
+        width: 100%;
+        height: 20px;
+        border: solid 2px #EAEAF2;
+        display: block;
+        position: absolute;
+        left: 0px;
+        top: 0px;
+        background: none;
+        cursor: text;
+        pointer-events: none;
+        border-radius: 3px;
+        box-sizing: border-box;
+        /*margin-left: 60px;*/
+        /*background: rgba(0, 0, 0, 0.05);*/
+    }
+
+}

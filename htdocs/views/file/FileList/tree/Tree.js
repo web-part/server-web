@@ -1,102 +1,58 @@
 ﻿
 
 define.panel('/FileList/Tree', function (require, module, panel) {
-    const Header = module.require('Header');
-    const Main = module.require('Main');
-    const Resizer = module.require('Resizer');
+    const SidebarTree = require('SidebarTree');
+    const Data = module.require('Data');
+
  
+    let tree = null;
 
     panel.on('init', function () {
-        Main.on({
-            'item': function (item, status) {
-                panel.fire('item', [item]);
-                Header.render(status);
-            },
-
-            'dir': function (item) {
-                panel.fire('dir', [item]);
-            },
-
-            'file': function (item) {
-                panel.fire('dir', [item]);
-            },
+       
+        tree = new SidebarTree({
+            'container': panel.$,
+            'width': panel.$.width(),
         });
 
-        Header.on({
-            'back': function () {
-                Main.back();
+        tree.on({
+            'item': function (...args) {
+
+                panel.fire('item', args);
             },
-            'forward': function () {
-                Main.forward();
+            'dir': function (...args) {
+                panel.fire('dir', args);
             },
-            'up': function () {
-                Main.up();
-            },
-            'root': function () {
-                Main.root();
-            },
-            'dir-only': function (sw) {
-                Main.dirOnly(sw);
+            'resize': function (...args) {
+                let w = tree.$.outerWidth();
+
+                panel.$.width(w);
+                panel.fire('resize', args);
             },
         });
-
        
 
     });
 
-    panel.on('init', function () {
-        function get() {
-            let width = panel.$.outerWidth();
-            return width;
-        }
-
-        function set(width) {
-            panel.$.outerWidth(width);
-        }
-
-        let width = get();
-        let minWidth = 220;
-
-        Resizer.on({
-            'change': function (dx) {
-                let w = width + dx;
-
-                if (w < minWidth) {
-                    set(minWidth)
-                    return;
-                }
-
-                set(w);
-
-                panel.fire('resize', 'change', [dx, w]);
-            },
-
-            'stop': function () {
-                width = get();
-                panel.fire('resize', 'stop');
-            },
-        });
-    });
+   
 
 
     /**
     * 渲染。
-    *   options = {
+    *   opt = {
     *       dir$dirs: {},   //某个目录对应的子目录列表（仅当前层级，不包括子目录的）。
     *       dir$files: {},  //某个目录对应的文件列表（仅当前层级，不包括子目录的）。
     *   };
     */
-    panel.on('render', function (options) {
+    panel.on('render', function (opt) {
+        let list = Data.make(opt);
 
-        Header.render();
-        Main.render(options);
-        Resizer.render();
+        tree.render(list);
         
     });
 
     return {
         open: function (id) {
-            Main.open(id);
+            tree.open(id);
         },
     };
 

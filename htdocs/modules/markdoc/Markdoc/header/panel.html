@@ -1,0 +1,15 @@
+﻿
+<div data-panel="/Markdoc/Header" style="display: none;">
+    <template name="html">
+        <a href="{url}" target="_blank" title="{url}">{name}</a>
+        <ul>
+            <template name="item" placeholder="items">
+                <li>
+                    <input type="checkbox" id="{id}" data-index="{index}" checked="{checked}" />
+                    <i></i>
+                    <label for="{id}">{text}</label>
+                </li>
+            </template>
+        </ul>
+    </template>
+</div>

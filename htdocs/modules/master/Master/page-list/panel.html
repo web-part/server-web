@@ -1,15 +1,16 @@
 ﻿<div data-panel="/Master/PageList">
     <i class="icon-dropdown" title="所有页签列表"></i>
 
-    <div class="more-tabs" style="display: none; z-index: 1025;">
-        <ul data-panel="/Master/PageList/List" class="ul-list">
-            <!--
-            <li data-cmd="active" data-index="{index}">
-                {name}<i data-cmd="close" data-index="{index}"></i>
-            </li>
-            -->
+    <div class="droplist" style="display: none;">
+        <ul data-panel="/Master/PageList/Tabs">
+            <template>
+                <li data-index="{index}">
+                    <i class="icon {icon}"></i>
+                    <span>{name}</span>
+                    <i data-cmd="close" class="close fas fa-times" title="关闭本页" style="{close-display}"></i>
+                </li>
+            </template>
         </ul>
-        <p data-cmd="clear" class="close">关闭所有标签</p>
         <p data-cmd="refresh" class="refresh">刷新当前页</p>
     </div>
 </div>

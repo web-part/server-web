@@ -2,9 +2,17 @@
 
 define.panel('/Master/Sidebar/List', function (require, module, panel) {
     const Tabs = require('@definejs/tabs');
+    const Language = require('Settings.Language');
+    const Data = module.require('Data');
 
-    let list = [];
     let tabs = null;
+
+    let meta = {
+        index: -1,   //
+        list: [],
+    };
+
+
 
     panel.on('init', function () {
 
@@ -12,35 +20,26 @@ define.panel('/Master/Sidebar/List', function (require, module, panel) {
             container: panel.$,
             selector: '>li',
             activedClass: 'on',
+            repeated: true,
+        });
+
+        tabs.on('change', function (item, index) {
+            //点击的是当前已激活的项，则当成是刷新，有意而为之。
+            if (index == meta.index) {
+                panel.fire('refresh', [item]);
+                return;
+            }
+
+            item = meta.list[index];
+            meta.index = index;
+
+            panel.fire('item', [item]);
         });
 
       
-        panel.$.on('click', '[data-index]', function () {
-            let li = this;
-            let index = +li.getAttribute('data-index');
-            let item = list[index];
+       
 
-            tabs.active(index);
-
-            panel.fire('item', [item]);
-
-        });
-
-    });
-
-
-
-
-    panel.on('render', function (data) {
-
-        list = data;
-
-
-        panel.fill(list, function (item, index) {
-            item.id = item.view;    //这里以 view 作为 id，需要具有唯一性。
-            item.index = index;
-
-
+        panel.template(function (item, index) {
             return {
                 'index': index,
                 'name': item.name,
@@ -48,6 +47,26 @@ define.panel('/Master/Sidebar/List', function (require, module, panel) {
                 'class': item.border ? 'group' : '',
             };
         });
+
+        Language.on('change', function (value, old) {
+            Data.set(meta.list, value);
+            panel.fill(meta.list);
+
+            tabs.reset();
+            tabs.active(meta.index);
+        });
+
+
+    });
+
+
+
+
+    panel.on('render', function (items) {
+        let list = meta.list = Data.make(items);
+
+        tabs.render(list);
+        panel.fire('render', [list]);
 
 
     });
@@ -65,11 +84,12 @@ define.panel('/Master/Sidebar/List', function (require, module, panel) {
                 index = -1;
             }
 
-            tabs.active(index);
+            meta.index = index;
+            tabs.active(index, false);
         },
 
         get: function (view) {
-            let item = list.find(function (item, index) {
+            let item = meta.list.find(function (item, index) {
                 return item.view === view;
             });
 

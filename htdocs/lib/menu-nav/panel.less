@@ -1,0 +1,79 @@
+﻿.MenuNav {
+    // border-bottom: solid 1px #eee;
+    // background: #f7f7f7;
+
+    & > span {
+        position: absolute;
+        top: -1px;
+        width: 44px;
+        font-size: 30px;
+        text-align: center;
+    }
+
+    & > div {
+        display: inline-block;
+        position: relative;
+        left: 44px;
+        width: calc(100% - 44px);
+    }
+
+
+
+    &.no-icon {
+        & > div {
+            left: 0px;
+        }
+    }
+
+    ul {
+        
+        font-size: 14px;
+        line-height: 31px;
+        
+        li {
+            display: inline-block;
+            padding: 0px 5px;
+            cursor: pointer;
+
+            &:hover {
+                background: #f1f1f1;
+            }
+
+            &::after {
+                content: '';
+                border: 4px solid transparent;
+                border-left-color: #99a3ad;
+                display: inline-block;
+                position: relative;
+                left: 10px;
+            }
+
+            &.icon {
+                cursor: default;
+                &:hover {
+                    background: unset;
+                }
+
+                
+            }
+
+            &.icon::after,
+            &:last-child::after {
+                display: none;
+            }
+        }
+    }
+
+    input {
+        line-height: 31px;
+        width: calc(100% - 38px);
+        outline: none;
+        border: none;
+        font-size: 14px;
+        padding: 0px 6px;
+    }
+   
+    
+    
+
+}

@@ -28,6 +28,7 @@ define('GridView/Template', function (require, module, exports) {
                         'header': header,
                         'id': meta.id,
                         'class': meta.class,
+                        'sumWidth': meta.sumWidth + 10,
                         'no-footer': meta.footer ? '' : 'no-footer',
                         'headerId': meta.headerId,
                         'tableId': meta.tableId,
@@ -35,6 +36,7 @@ define('GridView/Template', function (require, module, exports) {
                         'counterId': meta.counterId,
                         'countId': meta.countId,
                         'checkAllId': meta.checkAllId,
+                        'nodataId': meta.nodataId,
                     };
                 },
 

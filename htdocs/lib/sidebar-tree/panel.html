@@ -1,0 +1,22 @@
+﻿<template id="tpl-SidebarTree">
+    <div data-panel="{id}" class="SidebarTree" style="width: {width}px;">
+        <ul data-panel="{id}/Header" class="header" style="{header-display}">
+            <li data-cmd="back" class="back" title="后退">
+                <i class="fas fa-arrow-alt-circle-left"></i>
+            </li>
+            <li data-cmd="forward" class="forward" title="前进">
+                <i class="fas fa-arrow-alt-circle-right"></i>
+            </li>
+            <li data-cmd="up" class="up" title="向上">
+                <i class="fas fa-arrow-alt-circle-up"></i>
+            </li>
+            <li data-cmd="root" class="root" title="根目录">
+                <i class="fas fa-dollar-sign"></i>
+            </li>
+            <li data-cmd="dirOnly" class="dir-only" title="仅目录"></li>
+        </ul>
+
+        <div data-panel="{id}/Main" class="main"></div>
+        <div data-panel="{id}/Resizer" class="resizer" title="调整菜单树栏的宽度" style="{resizer-display}"></div>
+    </div>
+</template>

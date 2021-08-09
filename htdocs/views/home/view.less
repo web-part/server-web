@@ -1,4 +1,134 @@
 
 [data-view="/Home"] {
-   
+    
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    overflow-y: scroll;
+
+    .box {
+        width: calc(50% - 20px);
+        background: #5392cc;
+        min-height: 400px;
+        flex-flow: column nowrap;
+        border-radius: 4px;
+        margin: 10px;
+        color: #fff;
+        font-size: 14px;
+        display: flex;
+
+        &.blue {
+            background: #5392cc;
+        }
+
+        &.green{
+            background: #8cc96e;
+
+        }
+
+        &.orange {
+            background: #ee894f;
+        }
+
+        &.pink {
+            background: #ef68a5;
+        }
+
+        &.cyan {
+            background: #77bbd2;
+        }
+
+        &.yellow {
+            background: #f6c259;
+        }
+
+        .loading {
+            flex: 1;
+            text-align: center;
+            align-items: center;
+            display: flex;
+
+            p {
+                width: 100%;
+
+                i {
+                    animation: spin 2s infinite linear;
+                }
+
+                span {
+                    font-size: 12px;
+                }
+            }
+
+            
+
+            @keyframes spin {
+                0% {
+                    transform: rotate(0deg);
+                }
+                100% {
+                    transform: rotate(359deg);
+                }
+            }
+        }
+
+    
+
+        header {
+            margin-bottom: 10px;
+
+            span {
+                display: inline-block;
+                background: rgba(255, 255, 255, 0.3);
+                padding-left: 17px;
+                padding-right: 17px;
+                line-height: 34px;
+                border-top-left-radius: 3px;
+                border-bottom-right-radius: 3px;
+                font-size: 16px;
+            }
+
+        }
+
+        ul {
+            margin: 0px 10px;
+            border-bottom: solid 1px #ffffff45;
+
+            li {
+                // border: solid 1px #ffffff8c;
+                display: inline-block;
+                border-radius: 4px;
+                margin: 5px 3px;
+                padding: 4px 0px;
+                background: #00000012;
+                width: 80px;
+                text-align: center;
+
+                &.exwidth {
+                    width: 120px;
+
+                    .value {
+                        display: inline-block;
+                    }
+                }
+
+                .key {
+                    color: #ffffffa8;
+                    display: block;
+                    margin-bottom: 4px;
+
+                    
+                }
+
+                .value {
+                    display: block;
+                    color: #fff;
+                    font-size: 22px;
+                    font-weight: bold;
+                }
+            }
+        }
+    }
+
+
 }

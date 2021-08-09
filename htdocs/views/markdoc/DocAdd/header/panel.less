@@ -1,0 +1,201 @@
+
+[data-panel="/DocAdd/Header"] {
+    position: relative;
+
+  
+    > ul.left {
+        display: inline-block;
+        width: calc(50% - 3px);
+        position: relative;
+        font-size: 18px;
+        padding: 9px 0px 7px 10px;
+        background: #444;
+        box-sizing: border-box;
+        color: #bbbbbb;
+        border-bottom: solid 1px #6b6055;
+        .icon {
+            cursor: pointer;
+            margin-left: 12px;
+
+            &:hover {
+                color: #fff;
+            }
+        }
+
+        li {
+            display: inline-block;
+            cursor: pointer;
+            margin-left: 20px;
+
+
+
+            &.spliter {
+                margin-left: 171px;
+            }
+
+            &.right {
+                position: absolute;
+                right: 15px;
+            }
+        }
+    }
+
+
+    > ul.right {
+        display: inline-block;
+        width: calc(50% - 3px);
+        
+        background: #fff;
+        border-bottom: solid 1px #e8ecf0;
+
+        li {
+            display: inline-block;
+            margin-top: 2px;
+            margin-left: 10px;
+
+            &.title {
+                margin-left: 8px;
+                margin-top: 6px;
+
+                input {
+                    height: 26px;
+                    width: 400px;
+                    padding: 0 15px 0 10px;
+                    border: 1px solid #ddd;
+                    outline: none;
+                    border-radius: 15px;
+                    margin-right: 10px;
+                    /*background: #fff url(../img/true.png) 8px 5px no-repeat;*/
+                    background-size: 14px;
+                    background-position: 10px 50%;
+                    box-shadow: 0px 0px 0px 1px transparent;
+                    /*color: #FF9800;*/
+                    font-size: 15px;
+                    font-weight: bold;
+
+                    &:focus {
+                        background-color: #fff7e6;
+                    }
+
+                    &.on {
+                        background: #FF5722;
+                        color: #fff;
+                        font-weight: normal;
+                    }
+                }
+            }
+
+            &.right {
+                position: absolute;
+                right: 0px;
+
+                .icon {
+                    cursor: pointer;
+                    color: #b0bdc7;
+
+                    &:hover {
+                        color: #607D8B;
+                    }
+                }
+
+                i {
+                    margin-right: 5px;
+                }
+
+                .save{
+                    cursor: pointer;
+                    padding: 0 14px;
+                    font-size: 14px;
+                    color: #fff;
+                    height: 30px;
+                    border-radius: 4px;
+                    line-height: 30px;
+                    background: #ffaf4a;
+
+                    &:hover {
+                        background: #ff9209;
+                    }
+
+                    &:active {
+                        background: #f18702;
+                    }
+                }
+
+                .saved {
+                    padding: 0 1px;
+                    font-size: 14px;
+                    height: 30px;
+                    border-radius: 4px;
+                    line-height: 30px;
+                    color: #8BC34A;
+                    border-radius: 0;
+                    display: none;
+
+                    i {
+                        margin-right: 5px;
+                    }
+                }
+
+                .demo {
+                    display: none;
+                }
+            }
+        }
+    }
+
+    .icon.on{
+        color: #00BCD4;
+
+        &:hover{
+            color: #00BCD4 !important;
+        }
+    }
+
+    .icon.format{
+        display: none;
+    }
+
+    &.json{
+        .icon.format{
+            display: inline-block;
+        }
+    }
+
+    &.saved {
+        .save {
+            display: none;
+        }
+
+        .saved,
+        .demo {
+            display: inline-block !important;
+        }
+    }
+
+    [data-panel="/DocAdd/Header/Table"] {
+        position: absolute;
+        top: 40px;
+        left: 400px;
+        background: #546072;
+        z-index: 1025;
+        padding: 6px 6px;
+
+        div {
+            color: #fff;
+            font-size: 14px;
+            text-align: center;
+            padding: 2px 5px;
+        }
+
+        table {
+            td {
+                padding: 8px 10px;
+                border: solid 1px #b7b9bb;
+
+                &.on {
+                    background: #74b936;
+                }
+            }
+        }
+    }
+}

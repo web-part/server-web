@@ -1,0 +1,41 @@
+
+[data-panel="/Markdoc/Outline"] {
+    width: 320px;
+
+    .wrap {
+        position: fixed;
+        left: 0px;
+        top: 0px;
+        width: 320px;
+        height: 100%;
+        border-right: solid 1px #eee;
+        overflow-x: hidden;
+    }
+
+   
+
+    header {
+        font-size: 20px;
+        border-bottom: dashed 1px #eee;
+        padding: 20px 10px;
+        margin: 0px 0px 10px 0px;
+        color: #535353;
+        font-weight: normal;
+    }
+
+    > div {
+        height: calc(100% - 87px);
+
+        ::-webkit-scrollbar {
+            display: none; /*Òþ²Ø¹ö¶¯Ìõ*/
+        }
+    }
+
+    ul.Outline {
+        padding: 0px 14px 0px 20px;
+
+        li {
+            padding: 1px 0px;
+        }
+    }
+}

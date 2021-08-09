@@ -55,16 +55,17 @@ define.panel('/Terminal/Footer/Input', function (require, module, panel) {
     panel.on('render', function (value) {
 
         txt.value = value || '';
-        txt.focus();
+
+        setTimeout(() => {
+            txt.focus();
+        }, 200);
 
     });
 
 
 
     return {
-        focus() {
-            txt.focus();
-        },
+        
     };
 
 

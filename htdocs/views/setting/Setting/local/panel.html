@@ -1,0 +1,19 @@
+﻿<section data-panel="/Setting/Local">
+    <header>
+        <h1>本地化</h1>
+        <p>自定义语言和区域相关设置。</p>
+    </header>
+    <main>
+        <ul data-panel="/Setting/Local/List">
+            <template>
+                <li data-index="{index}">
+                    <label>
+                        <i class="{icon}"></i>
+                        <input type="radio" name="language" value="{value}">
+                        {name}
+                    </label>
+                </li>
+            </template>
+        </ul>
+    </main>
+</section>

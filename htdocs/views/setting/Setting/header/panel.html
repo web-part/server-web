@@ -1,0 +1,19 @@
+﻿<section data-panel="/Setting/Header">
+    <header>
+        <h1>顶部区域</h1>
+        <p>自定义顶部页签列表区域的相关设置。</p>
+    </header>
+    <main>
+        <ul data-panel="/Setting/Header/List">
+            <template>
+                <li data-index="{index}">
+                    <label>
+                        <i class="{icon}"></i>
+                        <input type="radio" name="header" value="{value}">
+                        {name}
+                    </label>
+                </li>
+            </template>
+        </ul>
+    </main>
+</section>

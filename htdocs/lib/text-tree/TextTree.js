@@ -6,18 +6,17 @@ define('TextTree', function (require, module, exports) {
     const Emitter = require('@definejs/emitter');
     const $Object = require('@definejs/object');
     const $ = require('$');
-    const Defaults = require('Defaults');
     const Events = module.require('Events');
     const Meta = module.require('Meta');
     const Template = module.require('Template');
 
-
+    const defaults = require('TextTree.defaults');
     let mapper = new Map();
 
     class TextTree {
 
         constructor(config) {
-            config = Defaults.clone(module, config);
+            config = Object.assign({}, defaults, config);
 
             let emitter = new Emitter(this);
 

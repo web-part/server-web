@@ -1,0 +1,20 @@
+﻿<ul data-panel="/ModuleTree/Main/Dependent/List">
+    <template name="none">
+        <li class="none">该模块没有依赖于任何公共模块。</li>
+    </template>
+    <template name="item">
+        <li data-no="{no}" class="group found-{found} total-{total}">
+            <header>
+                <h3 class="id">{id}</h3>
+                <span class="total">({total})</span>
+                <template name="tip" placeholder="tip">
+                    <span class="tip">{tip}</span>
+                </template>
+            </header>
+            <main data-id="main" style="display: none;">
+                <p>依赖于 <a data-cmd="id" href="javascript:">{id}</a> 的模块列表：</p>
+                <div data-id="gridview"></div>
+            </main>
+        </li>
+    </template>
+</ul>

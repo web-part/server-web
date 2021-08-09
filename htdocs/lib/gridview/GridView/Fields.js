@@ -3,9 +3,9 @@
 * 
 */
 define('GridView/Fields', function (require, module, exports) {
-    const Defaults = require('Defaults');
 
-    let defaults = Defaults.get(module.parent.id);
+
+    const defaults = require('GridView.defaults');
 
 
 

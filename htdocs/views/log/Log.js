@@ -1,13 +1,29 @@
 ﻿
 define.view('/Log', function (require, module, view) {
     const API = module.require('API');
+    const SSE = module.require('SSE');
+    const Data = module.require('Data');
+    const Filter = module.require('Filter');
     const Header = module.require('Header');
     const List = module.require('List');
+
+    let meta = {
+        list: [],
+    };
+
+
 
     view.on('init', function () {
 
         Header.on({
+            'check': function (key, checked) {
+                List.check(key, checked);
+            },
+
             'cmd': {
+                'reload': function () {
+                    API.get();
+                },
                 'clear': function () {
                     definejs.confirm('确认要清空服务器端的日志列表？', function () {
                         API.clear();
@@ -18,21 +34,16 @@ define.view('/Log', function (require, module, view) {
                 },
             },
 
-            'check': {
-                'time': function (checked) {
-                    List.showTime(checked);
-                },
-                'color': function (checked) {
-                    List.showColor(checked);
-                },
-                'highlight': function (checked) {
-                    List.showHighlight(checked);
-                },
-                'border': function (checked) {
-                    List.showBorder(checked);
-                },
+            
+        });
+
+        Filter.on({
+            'change': function (opt) {
+                let data = Data.parse(meta.list, opt);
+                List.render(data);
             },
         });
+        
 
 
 
@@ -43,12 +54,39 @@ define.view('/Log', function (require, module, view) {
         });
 
         API.on('success', {
-            'get': function (list, fs) {
+            'get': function (list) {
+                let data = Data.parse(list);
+
+                meta.list = list;
                 Header.render();
-                List.render(list, fs);
+                Filter.render(data);
+                
+                SSE.open();
             },
+
             'clear': function () {
                 List.clear();
+            },
+        });
+       
+
+        SSE.on({
+            'reset': function (list) {
+                List.render(list);
+            },
+
+            'add': function (list) {
+                let data = Data.parse(list);
+                let added = List.add(data);
+
+                //添加失败
+                if (!added) {
+                    meta.list = [...meta.list, ...list];
+                    data = Data.parse(meta.list);
+                    Filter.render(data);
+                    List.render(data);
+                }
+
             },
         });
   
@@ -56,9 +94,8 @@ define.view('/Log', function (require, module, view) {
 
 
     view.on('render', function () {
-        
-
         API.get();
+
     });
 
 

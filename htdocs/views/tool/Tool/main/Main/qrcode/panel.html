@@ -1,0 +1,37 @@
+﻿
+<div data-panel="/Tool/Main/QRCode" style="display: none;">
+  
+   <main data-panel="/Tool/Main/QRCode/Main">
+      <div data-panel="/Tool/Main/QRCode/Main/Input">
+         <textarea placeholder="请输入内容"></textarea>
+         <button>生成二维码</button>
+      </div>
+
+      <ul data-panel="/Tool/Main/QRCode/Main/Output">
+         <template>
+            <li>
+               <a href="{href}" target="_blank">
+                  <img src="{src}">
+               </a>
+            </li>
+            <li class="label">
+               <a href="{url}">{url}</a>
+            </li>
+         </template>
+      </ul>
+   </main>
+
+   <aside data-panel="/Tool/Main/QRCode/Statics">
+      <ul data-panel="/Tool/Main/QRCode/Statics/List">
+         <template>
+            <li data-index="{index}">
+               <a href="{href}" target="_blank">
+                  <img src="{src}" />
+               </a>
+               <a href="{url}" target="_blank">{url}</a>
+            </li>
+         </template>
+      </ul>
+   </aside>
+  
+</div>

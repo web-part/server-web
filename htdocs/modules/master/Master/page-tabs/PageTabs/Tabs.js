@@ -3,12 +3,17 @@
 define.panel('/Master/PageTabs/Tabs', function (require, module, panel) {
     const $ = require('$');
     const Tabs = require('@definejs/tabs');
+    const Language = require('Settings.Language');
+
 
 
     let tabs = null;
-    let list = [];
 
 
+    let meta = {
+        index: 0,
+        list: [],
+    };
 
     panel.on('init', function () {
         tabs = new Tabs({
@@ -20,34 +25,45 @@ define.panel('/Master/PageTabs/Tabs', function (require, module, panel) {
         });
 
         tabs.on('change', function (item, index) {
+            meta.index = index;
             panel.fire('active', [item, index]);
         });
 
-    });
+
+        tabs.template(function (item, index) {
+            return {
+                'index': index,
+                'name': item.name,
+                'icon': item.icon,
+                'close-display': item.view == 'Home' ? 'display: none;' : '',
+            };
+        });
 
 
-    panel.on('init', function () {
+        Language.on('change', function (value, old) {
+            panel.render(meta.list);
+            tabs.reset();
+            tabs.active(meta.index);
+        });
 
-        //点击关闭按钮
-        panel.$.on('click', '[data-cmd="close"]', function (event) {
-            event.stopPropagation();
+        panel.$on('click', {
+            '[data-cmd="close"]': function (event) {
+                event.stopPropagation();
 
-            let li = this.parentNode;
-            let index = +li.getAttribute('data-index');
-            let item = list[index];
+                let li = this.parentNode;
+                let index = +li.getAttribute('data-index');
+                let item = meta.list[index];
 
-            if (!item || item.isHome) {
-                return;
-            }
+                //发出信号告诉外面即将要关闭了。
+                let values = panel.fire('before-close', [item, index]);
 
-            //视图中的 close 事件中有返回 false 时，取消关闭。
-            let values = panel.fire('close', [item, index]);
+                //外面有返回 false 时，取消关闭。
+                if (values.includes(false)) {
+                    return false;
+                }
 
-            if (values.includes(false)) {
-                return false;
-            }
-
-            exports.close(index);
+                exports.close(index, true); //主动关闭的，需要触发事件。
+            },
         });
 
     });
@@ -56,121 +72,61 @@ define.panel('/Master/PageTabs/Tabs', function (require, module, panel) {
 
 
     panel.on('render', function (items) {
+        let language = Language.get();
 
-        list = items;
-
-        tabs.render(list, {
-            '': function (item, index) {
-                let name = item.isHome ? 'home' : 'item'; 
-                let html = this.fill(name, item, index);
-
-                return {
-                    'item': html,
-                };
-            },
-
-            'home': function (item, index) {
-                return {
-                    'index': index,
-                };
-            },
-
-            'item': function (item, index) {
-                return {
-                    'index': index,
-                    'name': item.name,
-                    'actived-class': item.actived ? 'hover' : '',
-                    'title': item.name, //test
-                    'icon': item.icon,
-                };
-            },
+        let list = meta.list = items.map((item) => {
+            item.name = item.language$name[language];
+            return item;
         });
 
-        panel.fire('render', [list]);
+
+        tabs.render(list);
        
     });
 
 
 
+    let exports = null;
 
-    let next = null;
+    return exports = {
 
-    let exports = {
-
-        active: function (index, fireEvent) {
-
-            tabs.active(index, !fireEvent);
+        active(index, fireEvent) {
+            meta.index = index;
+            tabs.active(index, fireEvent);
 
             let li = panel.$.find('>li').get(index);
-            let scroll = li.scrollIntoViewIfNeeded || li.scrollIntoView;   //优先使用前者，但在 IE 下不存在该方法。
-            scroll.call(li);
+
+            if (li) {
+                let scroll = li.scrollIntoViewIfNeeded || li.scrollIntoView;   //优先使用前者，但在 IE 下不存在该方法。
+                scroll.call(li);
+            }
         },
 
-        index: function () {
+        index() {
             return tabs.getActivedIndex();
         },
 
-        close: function (index) {
+        close(index, fireEvent) {
+            //这两句不要放在动画的回调函数内，因为外面可能已给更改了 list。
+            let item = meta.list[index];
+            tabs.remove(index); //让 tabs 设置到正确的状态
 
-            //未指定 index，则关闭当前激活的。
-            if (index === undefined) {
-                index = exports.index();
-            }
-
-            let li = '>li[data-index="' + index + '"]';
-
-            panel.$.find(li).animate({
+            panel.$.find(`>li[data-index="${index}"]`).animate({
                 width: 0,
                 padding: 0,
-
             }, function () {
-                $(this).hide();
-                tabs.remove(index); //让 tabs 设置到正确的状态
-                next && next();
 
-                panel.fire('after-close', [index]);
+                $(this).hide();
+
+                if (fireEvent) {
+                    panel.fire('after-close', [item, index]);
+                }
+
             });
         },
 
-
-
-        clear: function () {
-
-            let max = list.length - 1;
-            close(max);
-
-
-            function close(index) {
-                if (index < 0) {
-                    next = null;
-                    return;
-                }
-
-
-                next = function () {
-                    close(index - 1);
-                };
-
-                let item = list[index];
-
-                if (!item || item.isHome) {
-                    next();
-                    return;
-                }
-
-
-                //视图中的 close 事件中有返回 false 时，取消关闭。
-                let values = panel.fire('close', [item, index]);
-                if (values.includes(false)) {
-                    return;
-                }
-
-                exports.close(index);
-            }
-
-
-        },
+        
+      
     };
 
-    return exports;
 });

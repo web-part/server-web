@@ -1,5 +1,5 @@
 ﻿<template id="tpl-GridView">
-    <div id="{id}" class="GridView {no-footer} {class}">
+    <div id="{id}" class="GridView {no-footer} {class}" style="width: {sumWidth}px;">
         <template name="header" placeholder="header">
             <table id="{headerId}" class="header">
                 <tr>
@@ -9,7 +9,11 @@
                 </tr>
             </table>
         </template>
-        <div id="{tableId}" class="body"></div>
+        <div class="body">
+            <div id="{tableId}" class="table-container"></div>
+            <p id="{nodataId}" class="nodata">无数据</p>
+        </div>
+        
         <div class="footer">
             <p id="{counterId}"class="count" title="切换显示已选或正常模式">
                 <span>

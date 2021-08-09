@@ -2,6 +2,14 @@
 
 
 [data-panel="/Master/PageTabs"] {
+    background-color: #fff;
+    height: 31px;
+    position: relative;
+    box-sizing: border-box;
+    border-bottom: solid 1px #5392CC;
+    // margin-top: 22px;
+
+
     > ul {
         margin-right: 30px;
         overflow: hidden;
@@ -34,16 +42,7 @@
             cursor: pointer;
             border-radius: 5px 5px 0 0;
 
-            &.home {
-                width: 64px;
-                background-position: 6px -228px;
-                background-image: url(../img/operate.svg);
-                background-repeat: no-repeat;
-                vertical-align: top;
-                padding: 0 8px 0 25px;
-                cursor: pointer;
-                margin-left: 0;
-            }
+           
 
             > i.icon {
                 margin-right: 2px;
@@ -55,16 +54,10 @@
 
             > i.close {
                 position: absolute;
-                right: 4px;
-                display: inline-block;
-                height: 28px;
-                width: 20px;
-                vertical-align: top;
-                background-image: none;
+                right: 8px;
                 cursor: pointer;
-                transition: background-image 0.3s ease;
-                background-repeat: no-repeat;
-                background-position: 3px -20px;
+                top: 9px;
+                visibility: hidden;
             }
 
             &.on {
@@ -76,18 +69,12 @@
                     color: #fff;
                 }
 
-                &.home {
-                    background-position: 6px -46px;
-                }
-
-                i.close {
-                    background-position: 3px -150px;
-                }
+               
             }
 
             &:hover {
                 > i.close {
-                    background-image: url(../img/operate.svg);
+                    visibility: visible;
                 }
             }
         }

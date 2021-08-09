@@ -6,13 +6,13 @@ define('Pager', function (require, module) {
     const $ = require('$');
     const Emitter = require('@definejs/emitter');
     const $String = require('@definejs/string');
-    const Defaults = require('Defaults');
 
     const Events = module.require('Events');
     const JumpNo = module.require('JumpNo');
     const Regions = module.require('Regions');
     const Sizes = module.require('Sizes');
 
+    const defaults = require('Pager.defaults');
     let mapper = new Map();
 
 
@@ -33,8 +33,7 @@ define('Pager', function (require, module) {
         该函数会接受到错误消息的参数；并且内部的 this 指向当前 Pager 实例。
     */
     function Pager(config) {
-        config = Defaults.clone(module, config);
-
+        config = Object.assign({}, defaults, config);
 
         let id = $String.random();
         let emitter = new Emitter(this);

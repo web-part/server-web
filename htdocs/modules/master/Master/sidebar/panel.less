@@ -23,7 +23,7 @@
 
     .header {
         color: #fff;
-        font-size: 17px;
+        font-size: 22px;
         background-color: #5392CC;
         line-height: 52px;
         height: 52px;
@@ -61,7 +61,7 @@
             float: right;
             background-position: center;
             background-size: 22px 22px;
-            background-image: url(../img/to-left.svg);
+            //background-image: url(../img/to-left.svg);
             background-repeat: no-repeat;
             opacity: 0.25;
         }
@@ -70,7 +70,7 @@
             float: left;
             width: 62px;
             background-position: center;
-            /*background-image: url("../img/logo.png");*/
+            //background-image: url("../img/logo.png");
             background-repeat: no-repeat;
             text-align: center;
             font-size: 39px;
@@ -80,7 +80,6 @@
     .list {
         color: #fff;
         font-size: 14px;
-        margin: 30px 0 20px 0;
 
         > li {
             padding: 0 30px 0 10px;
@@ -139,7 +138,7 @@
     width: 60px;
 
     .header {
-        width: 60px;
+        width: 59px;
         transition: width 0.1s ease-in-out;
 
         &:hover {
@@ -162,6 +161,8 @@
 
 
         &:after {
+            display: none; //暂时不需要。
+            // display: inline-block;
             content: '';
             position: absolute;
             background-position: center;
@@ -169,7 +170,6 @@
             background-image: url("../img/to-right.svg");
             background-repeat: no-repeat;
             background-color: rgba(97, 167, 229, 0.8);
-            display: inline-block;
             height: 24px;
             width: 24px;
             border-radius: 0 4px 4px 0;
@@ -234,8 +234,3 @@
     }
 }
 
-[data-panel="/Master"].fullscreen [data-panel="/Master/Sidebar"] {
-    width: 0px;
-    overflow: hidden;
-    /*transition: all 3s ease;*/
-}

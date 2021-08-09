@@ -1,13 +1,35 @@
 ﻿
 
 define.panel('/FileList/Sidebar/Operation', function (require, module, panel) {
-    const JSON = require('@definejs/json');
+    const Storage = require('@definejs/local-storage');
+
+    let meta = {
+        visible: true,
+    };
+
+    let storage = null;
 
 
     panel.on('init', function () {
-        panel.$.on('click', 'button', function () {
-            var cmd = this.getAttribute('data-cmd');
-           
+        storage = new Storage(module.id);
+        meta.visible = storage.get('visible');
+
+        //修正一下初始状态的值。
+        if (meta.visible === undefined) {
+            meta.visible = true;
+        }
+
+
+        panel.$.on('click', '[data-cmd]', function () {
+            let cmd = this.getAttribute('data-cmd');
+
+            if (cmd == 'detail') {
+                meta.visible = !meta.visible;
+                panel.refresh();
+                return;
+            }
+
+            
             panel.fire('cmd', [cmd]);
         });
     });
@@ -15,30 +37,21 @@ define.panel('/FileList/Sidebar/Operation', function (require, module, panel) {
 
 
 
-    panel.on('render', function (options) {
-        var item = options.item; //菜单树中的 item。
-        var detail = options.detail;
-        var cssClass = !item.parent ? 'root' : item.data.type;
+    panel.on('render', function ({ detail, item, }) {
+        let visible = meta.visible;
+        let isFile = detail.type == 'file';
+        let isRoot = !item.parent;
 
-        var isJSON = detail.type == 'file' && detail.ext.toLowerCase() == '.json';
-        var isSideMenu = false; //尝试判断是否可以作为 sidebar 菜单列表。
-        var isTopMenu = false;  //
+        panel.fill({
+            'detail-class': visible ? 'right' : 'left',
+            'open-display': isFile ? '' : 'display: none;',
+            'edit-display': isFile ? '' : 'display: none;',
+            'demo-display': isFile ? '' : 'display: none;',
+            'delete-display': isRoot ? 'display: none;' : '',
+        });
 
-        if (isJSON) {
-            var json = JSON.parse(detail.content);
-
-            isSideMenu = json && Array.isArray(json.groups);
-            isTopMenu = json && json.header && Array.isArray(json.header.menus);
-        }
-
-
-        panel.$.removeClass('root dir file').addClass(cssClass);
-        panel.$.toggleClass('image', !!detail.isImage);
-        panel.$.toggleClass('side-menu', !!isSideMenu);
-        panel.$.toggleClass('top-menu', !!isTopMenu);
-
-
-
+        panel.fire('detail', [visible]);
+        storage.set('visible', visible);
     });
 
 

@@ -1,4 +1,4 @@
-﻿
+
 define('DropList/Masker', function (require, module, exports) {
     const Masker = require('@definejs/masker');
 
@@ -43,7 +43,6 @@ define('DropList/Masker', function (require, module, exports) {
                           !meta.current.item &&   //尚未选中任何项。
                           !!meta.text;              //输入框中有内容。
 
-                    console.log('invalid: =========  ', invalid);
 
                     if (invalid) {
                         meta.$txt.addClass('error');

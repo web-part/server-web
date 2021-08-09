@@ -2,28 +2,57 @@
 
 define.panel('/Master', function (require, module, panel) {
     const Sidebar = module.require('Sidebar');
+    const Container = module.require('Container');
     const PageTabs = module.require('PageTabs');
     const PageList = module.require('PageList');
     const Views = module.require('Views');
 
 
+  
+    let meta = {
+        rendered: false,
+        view: '', //记录在 Sidebar 就绪后要进一步打开的视图。
+    };
+
+    function open(view) {
+        if (!view) {
+            return;
+        }
+
+        console.log(view);
+
+        let item = Sidebar.active(view);
+
+        PageTabs.open(item);
+        PageList.open(item);
+        Views.render(item);
+    }
+
 
     panel.on('init', function () {
         Sidebar.on({
             'render': function (list) {
+                let home = list[0].view;
                 PageTabs.render();
+                PageList.render();
+
+
+                open(home);
+
+                if (meta.view != home.view) {
+                    open(meta.view);
+                    meta.view = '';
+                }
+
+                panel.fire('ready');
             },
 
             'item': function (item) {
-                let index = PageTabs.open(item);
-                PageList.active(index);
+                location.hash = '#' + item.view;
+            },
 
-
-                // Views.open(item.view, {
-                //     'title': item.name,
-                //     'id': item.id,
-                //     'render': true,
-                // });
+            'refresh': function (item) {
+                Views.refresh();
             },
 
             'toggle': function (visible) {
@@ -33,57 +62,38 @@ define.panel('/Master', function (require, module, panel) {
         });
 
         PageTabs.on({
-            'render': function (list) {
-                PageList.render(list);
-            },
             'active': function (item, index) {
-               
-                Sidebar.active(item);
-                PageList.active(index);
-
-                Views.open(item.view, {
-                    'title': item.name,
-                    'id': item.id,
-                });
+                location.hash = '#' + item.view;
             },
-            'ready': function () {
-                setTimeout(function () {
-                    panel.fire('ready');
-                }, 100);
-            },
-            //关闭前触发。
-            'close': function (item, index) {
+            //主动关闭前触发。
+            'before-close': function (item, index) {
                 return Views.close(item.view, [index]);
+            },
+
+            //主动关闭后触发。
+            'after-close': function (item, index) {
+                PageList.close(item.id);
             },
         });
 
         PageList.on({
-            'render': function (list) {
-                
-            },
             'active': function (item, index) {
-                Sidebar.active(item);
-                PageTabs.active(index);
-                Views.open(item.view, {
-                    'title': item.name,
-                    'id': item.id,
-                });
+                location.hash = '#' + item.view;
+            },
+            //关闭前触发。
+            'before-close': function (item, index) {
+                return Views.close(item.view, [index]);
             },
 
-            'clear': function () {
-                PageTabs.clear();
+            'after-close': function (item, index) {
+                PageTabs.close(item.id);
             },
 
             'refresh': function () {
                 Views.refresh();
             },
 
-            'close': function (item, index) {
-                PageTabs.close(index);
-            },
         });
-
-
 
         Views.on({
             'require': function (name) {
@@ -91,38 +101,25 @@ define.panel('/Master', function (require, module, panel) {
                 return values[0];
             },
 
-            //当前视图确实要关闭时触发。
-            'close': function () {
-                PageTabs.close(...arguments);
-                //PageList.close(...arguments);
-            },
-
-            '404': function (options) {
-                Views.open('404', {
-                    'args': [options.title],
+            '404': function (name, opt) {
+                Views.render('404', {
+                    'args': [name],
                     'render': true,
-                    'title': '404-' + options.title,
+                    'title': `404 - ${opt.title}`,
                 });
             },
 
-            'error': function (opt, ex) {
-                Views.open('Error', {
-                    'args': [opt, ex],
-                    'render': true,
-                    'title': 'error-' + opt.title,
-                });
+            'close': function (name) {
+                PageTabs.close(name);
+                PageList.close(name);
             },
 
-            'active': function (options) {
-                document.title = options.title;
+            'title': function (title) {
+                document.title = `webpart - ${title}`;
             },
 
-            'title': function (id, title) {
-                PageTabs.set(id, title);
-            },
-
-            'fullscreen': function () {
-                panel.$.toggleClass('fullscreen');
+            'fullscreen': function (...args) {
+                panel.$.toggleClass('fullscreen', ...args);
             },
         });
 
@@ -132,8 +129,25 @@ define.panel('/Master', function (require, module, panel) {
     /**
     *
     */
-    panel.on('render', function () {
+    panel.on('render', function (view) {
+        if (!view) {
+            location.hash = '#Home';
+            return;
+        }
+
+        if (meta.rendered) {
+            open(view);
+            return;
+        }
+        
+        
+        meta.view = view;
+        meta.rendered = true;
+
         Sidebar.render();
+        Container.render();
+        
+      
     });
 
 
@@ -143,47 +157,17 @@ define.panel('/Master', function (require, module, panel) {
 
     });
 
+
+
     return {
-
-        open: function (view, name, args) {
-            // debugger
-
-            //重载 open(view, args); 未指定页签标题的情况。
-            if (Array.isArray(name)) {
-                args = name;
-                name = '';
-            }
-
-            let item = { 'view': view };
-            let sitem = Sidebar.get(view);
-
-            //尝试根据 view 从菜单栏中查找，看能否对得上。
-            if (sitem) {
-                item = Object.assign({}, sitem);
-                Sidebar.active(sitem);
-            }
-
-            item.name = name || item.name || view;
-            item.id = item.id || view;
-
-            let index = PageTabs.open(item);
-            PageList.active(index);
-
-
-            Views.open(view, {
+        open: function (view, args) {
+            Views.render(view, {
                 'args': args,
                 'render': true,
-                'title': item.name,
-                'id': item.id,
             });
-        },
 
-        close: function () {
-            //todo
-        },
+            location.hash = '#' + view;
 
-        refresh: function (view) {
-            Views.refresh(...arguments);
         },
 
     };

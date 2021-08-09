@@ -1,0 +1,19 @@
+[data-panel="/ModuleTree/Main/List/GridView"] {
+    height: calc(100% - 43px);
+    overflow-x: scroll;
+
+    .GridView { 
+        
+        tr.error {
+            &.dependents td.dependents,
+            &.privates td.privates,
+            &.childs td.childs { color: red; font-weight: bold; background: #fff9c5;};
+        }
+
+        td {
+            &.number {
+                text-align: center;
+            }
+        }
+    }
+}

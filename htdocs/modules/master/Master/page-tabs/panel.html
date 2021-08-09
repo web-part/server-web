@@ -2,19 +2,12 @@
 
 <div data-panel="/Master/PageTabs">
     <ul data-panel="/Master/PageTabs/Tabs">
-        <!--{item}-->
-
-        <template name="home">
-            <li class="home" data-index="{index}">首页</li>
-        </template>
-
-        <template name="item">
-            <li class="{actived-class}" data-index="{index}" title="{title}">
-                <i class="icon fa fa-{icon}"></i>
-                <span>{name}</span><i data-cmd="close" class="close" title="关闭本页"></i>
+        <template>
+            <li data-index="{index}">
+                <i class="icon {icon}"></i>
+                <span>{name}</span>
+                <i data-cmd="close" class="close fas fa-times" title="关闭本页" style="{close-display}"></i>
             </li>
         </template>
     </ul>
-
-
 </div>

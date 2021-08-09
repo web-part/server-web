@@ -1,0 +1,68 @@
+﻿<div data-panel="/HtmlTree/Main/HtmlBlock/BaseInfo" class="tab-content" style="display: none;">
+    <div data-panel="/HtmlTree/Main/HtmlBlock/BaseInfo/Base">
+        <template>
+            <table> 
+                <tr class="type">
+                    <th>类型</th>
+                    <td>HtmlBlock</td>
+                </tr>
+                <tr class="parent">
+                    <th>父节点</th>
+                    <td>
+                        <a data-cmd="parent">{parent}</a>
+                    </td>
+                </tr>
+                <tr class="tabs">
+                    <th>缩进</th>
+                    <td>{tabs}</td>
+                </tr>
+                <tr class="no">
+                    <th>开始行号</th>
+                    <td>{beginNo}</td>
+                </tr>
+                <tr class="no">
+                    <th>结束行号</th>
+                    <td>{endNo}</td>
+                </tr>
+                <tr class="tag">
+                    <th>开始标记</th>
+                    <td>{beginTag}</td>
+                </tr>
+                <tr class="tag">
+                    <th>结束标记</th>
+                    <td>{endTag}</td>
+                </tr>
+                
+                <tr class="patterns">
+                    <th>原始模式</th>
+                    <td>
+                        <pre>{patterns}</pre>
+                    </td>
+                </tr>
+              
+            </table>
+        </template>
+
+       
+    </div>
+
+    <div data-panel="/HtmlTree/Main/HtmlBlock/BaseInfo/Childs">
+        <h1><i class="fa fa-folder"></i>直接子节点</h1>
+        <div data-panel="/HtmlTree/Main/HtmlBlock/BaseInfo/Childs/GridView" class="gridview">
+            <template name="href">
+                <a data-cmd="{cmd}">{text}</a>
+            </template>
+        </div>
+    </div>
+
+    <div data-panel="/HtmlTree/Main/HtmlBlock/BaseInfo/Children">
+        <h1><i class="fa fa-folder"></i>全部子节点</h1>
+        <div data-panel="/HtmlTree/Main/HtmlBlock/BaseInfo/Children/GridView" class="gridview">
+            <template name="href">
+                <a data-cmd="{cmd}">{text}</a>
+            </template>
+        </div>
+    </div>
+   
+
+</div>

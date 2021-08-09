@@ -2,15 +2,24 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 
 <head>
-    <title>ServerMP</title>
+    <title>webpart-server</title>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 
-    <!-- <link href="f/fontawesome-free-5.0.8/web-fonts-with-css/css/fontawesome-all.debug.css" rel="stylesheet" /> -->
-    <link href="f/fontawesome-free-5.15.2-web/css/all.debug.css" rel="stylesheet" />
-    <link href="f/definejs/dist/definejs.debug.css" rel="stylesheet" />
-    <link href="f/highlight/styles/default.css" rel="stylesheet" />
-    <link href="f/datetimepicker/datetimepicker.mod.debug.css" rel="stylesheet" />
-    
+    <link rel="stylesheet" href="f/fontawesome-free-5.15.2-web/css/all.debug.css" />
+    <link rel="stylesheet" href="f/definejs/dist/definejs.debug.css" />
+    <link rel="stylesheet" href="f/highlight/styles/default.css" />
+    <link rel="stylesheet" href="f/datetimepicker/datetimepicker.mod.debug.css" />
+    <link rel="stylesheet" href="f/codemirror-5.61.1/lib/codemirror.css" />
+
+    <!--webpart.less.begin-->
+    <script>
+        [
+            'f/codemirror-5.61.1/theme/*.css',
+        ]
+    </script>
+    <!--webpart.less.end-->
+
+  
 
     <!--webpart.less.begin-->
     <script>
@@ -19,7 +28,6 @@
             'style/less/confirm.less',
             'style/less/component.less',
             'style/less/editor.less',
-
 
             'lib/**/*.less',
             'modules/**/*.less',
@@ -32,10 +40,11 @@
 
 <body>
     <link rel="html" href="modules/loading/panel.html" />
-    
+    <link rel="html" href="modules/markdoc/panel.html" />
+
     <div data-panel="/Master" style="display: none">
         <link rel="html" href="modules/master/Master/sidebar/panel.html" />
-        <div class="container">
+        <div data-panel="/Master/Container" class="container">
             <header>
                 <div class="top-tabs">
                     <link rel="html" href="modules/master/Master/page-tabs/panel.html" />
@@ -54,6 +63,8 @@
             </div>
         </div>
     </div>
+
+    
     
     
     
@@ -66,6 +77,8 @@
     </script>
     <!--webpart.html.end-->
 
+    
+
    
     <script src="f/jquery/dist/jquery.debug.js"></script>
     <script src="f/definejs/dist/definejs.debug.js"></script>
@@ -73,12 +86,29 @@
     <script src="f/marked/marked.mod.debug.js"></script>
     <script src="f/resolve-url/resolve-url.debug.js"></script>
     <script src="f/datetimepicker/datetimepicker.mod.debug.js"></script>
+    <script src="f/codemirror-5.61.1/lib/codemirror.js"></script>
 
-    <script src="config.js"></script>
 
     <!--webpart.js.begin-->
     <script>
         [
+            'f/codemirror-5.61.1/addon/mode/overlay.js',
+            'f/codemirror-5.61.1/addon/selection/active-line.js',
+            
+            'f/codemirror-5.61.1/mode/htmlmixed/htmlmixed.js',
+            'f/codemirror-5.61.1/mode/css/css.js',
+            'f/codemirror-5.61.1/mode/javascript/javascript.js',
+            'f/codemirror-5.61.1/mode/markdown/markdown.js',
+            'f/codemirror-5.61.1/mode/gfm/gfm.js',
+        ]
+    </script>
+    <!--webpart.js.end-->
+
+    
+    <!--webpart.js.begin-->
+    <script>
+        [
+            'config.js', //这个放前面。
             'data/**/*.js',
             'lib/**/*.js',
             'modules/**/*.js',
