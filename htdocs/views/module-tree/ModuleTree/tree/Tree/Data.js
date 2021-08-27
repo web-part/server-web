@@ -77,10 +77,6 @@ define('/ModuleTree/Tree/Data', function (require, module, exports) {
 
             roots = sort(roots);
 
-            console.log(roots);
-
-            // return roots;
-
 
             return [
                 {

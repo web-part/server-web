@@ -9,6 +9,7 @@ define.view('/Tool', function (require, module, view) {
 
     let meta = {
         item: null,
+        args: null,
     };
  
 
@@ -19,9 +20,14 @@ define.view('/Tool', function (require, module, view) {
         Tree.on({
             'item': function (item) {
                 console.log(item);
-                storage.set('id', item.id); //保存到 storage。
+
+                let args = meta.args;
+
                 meta.item = item;
-                Main.render(item);
+                meta.args = null;
+
+                storage.set('id', item.id); //保存到 storage。
+                Main.render(item, args);
 
             },
             'resize': function () {
@@ -33,18 +39,22 @@ define.view('/Tool', function (require, module, view) {
 
 
 
-        Main.on({
-            
+      
 
+        Main.on({
+            'fullscreen': function (on) {
+                view.$.toggleClass('fullscreen', on);
+                view.fire('fullscreen', [on]);
+            },
         });
 
   
     });
 
 
-    view.on('render', function (id) {
-        id = id || storage.get('id') || `1`;
-        meta.item = { 'id': id, }; //使用完全重新的方式。
+    view.on('render', function (id, args) {
+        id = id || storage.get('id') || 1;
+        meta.args = args || null;
 
         Tree.render();
         Tree.open(id);

@@ -2,7 +2,9 @@
 
 module.exports = {
     htdocs: 'htdocs/',
-    output: 'output/stat/',
+    //解析成功后要输出的 json 数据的目录。
+    //如果不指定，则不输出。
+    // output: 'output/stat/',
 
     module: {
         defines: [
@@ -35,6 +37,7 @@ module.exports = {
         ],
 
         patterns: [
+            '**/*.master.html',
             'lib/**/*.html',
             'modules/**/*.html',
             'views/**/*.html',

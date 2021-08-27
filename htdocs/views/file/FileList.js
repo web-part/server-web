@@ -1,6 +1,7 @@
 ﻿
 define.view('/FileList', function (require, module, view) {
     const SessionStorage = require('@definejs/session-storage');
+    const Clipboard = require('Clipboard');
     const API = module.require('API');
     const Tree = module.require('Tree');
     const Sidebar = module.require('Sidebar');
@@ -118,6 +119,15 @@ define.view('/FileList', function (require, module, view) {
             },
             'demo': function () {
                 view.fire('demo', [meta.item.id]);
+            },
+            'copy': function () {
+                Clipboard.copy(meta.detail.content);
+            },
+            'compile-less': function () {
+                view.fire('compile-less', [meta.detail.content]);
+            },
+            'minify-js': function () {
+                view.fire('minify-js', [meta.detail.content]);
             },
         });
 

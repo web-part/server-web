@@ -36,6 +36,10 @@ define('/Tool/Main/QRCode/API', function (require, module, exports) {
                 },
 
                 'success': function (data, json, xhr) {
+                    console.log(data);
+
+                    data.host = data.host || 'localhost';
+
                     emitter.fire('success', 'get', [data,]);
                 },
 

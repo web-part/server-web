@@ -62,9 +62,11 @@ define('MarkDoc/Meta', function (require, module, exports) {
                     'source': tpl.sample('source'),
                     'language': tpl.sample('language'),
                     'pre': tpl.sample('pre'),
+                    'code': tpl.sample('code'),
                     'numbers': tpl.sample('numbers'),
                     'numbers.item': tpl.sample('numbers', 'item'),
                     'title': tpl.sample('title'),
+
                 },
 
                

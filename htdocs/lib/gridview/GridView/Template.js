@@ -53,6 +53,7 @@ define('GridView/Template', function (require, module, exports) {
 
                     'cell': function (item, index) {
                         return {
+                            'index': index,
                             'caption': item.caption,
                         };
                     },

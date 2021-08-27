@@ -36,7 +36,8 @@
             * API 接口 Url 的主体部分。
             */
             // url: 'http://localhost:8000/api/',
-            url: `http://localhost:${location.port}/api/`,
+            // url: `http://localhost:${location.port}/api/`,
+            url: `${location.origin}/api/`,
 
         },
 

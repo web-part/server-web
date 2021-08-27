@@ -16,6 +16,9 @@ define.panel('/ModuleTree/Main/List/Filter/Levels', function (require, module, p
             'check': function (list) {
                 panel.fire('check', [list]);
             },
+            'fill': function (list) {
+                panel.fire('check', [list]);
+            },
         });
 
 

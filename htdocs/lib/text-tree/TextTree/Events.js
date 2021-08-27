@@ -38,6 +38,7 @@ define('TextTree/Events', function (require, module, exports) {
                 index = Number(index);
 
                 let item = meta.items[index];
+                item = meta.id$item[item.id];
 
                 meta.emitter.fire('cmd', cmd, [item]);
                 meta.emitter.fire('cmd', [cmd, item]);

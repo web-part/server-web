@@ -14,8 +14,8 @@ module.exports = {
     //要映射生成的静态虚拟目录。
     //支持一对多的关系，会根据目录的添加顺序查找所需的文件。
     statics: {
-        '/': '',
-        // '/': './htdocs/',
+        // '/': '',
+        '/': './htdocs/',
         '/htdocs': './htdocs/',
         '/build': './output/build/htdocs/',
         
@@ -29,7 +29,7 @@ module.exports = {
     api: {
         api: '/api',
         sse: '/api/sse',
-        allowCrossOrigin: true,
+        allowCrossOrigin: false,
 
         stat,
         master,
@@ -50,7 +50,7 @@ module.exports = {
     proxy,
 
     done: function (app, info) {
-        console.log(info);
+        // console.log(info);
     },
 
 

@@ -1,4 +1,4 @@
-﻿
+
 
 define.panel('/Master', function (require, module, panel) {
     const Sidebar = module.require('Sidebar');
@@ -19,7 +19,7 @@ define.panel('/Master', function (require, module, panel) {
             return;
         }
 
-        console.log(view);
+        
 
         let item = Sidebar.active(view);
 

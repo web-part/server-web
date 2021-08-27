@@ -9,7 +9,7 @@ define('File/Icon', function (require, module, exports) {
         '.doc': 'fas fa-file-word',
         '.docx': 'fas fa-file-word',
         '.html': 'fab fa-html5',
-        '.js': 'fab fa-js-square',
+        '.js': 'fab fa-node-js',
         '.json': 'fab fa-npm',
         '.less': 'fab fa-less',
         '.md': 'fab fa-markdown',
@@ -32,6 +32,7 @@ define('File/Icon', function (require, module, exports) {
                 return { type, icon, className, html, };
             }
 
+            type = 'file';
 
             let extName = ext.slice(1);
             let icon = ext$icon[ext] || ext$icon['file'];

@@ -17,6 +17,9 @@ define.panel('/ModuleTree/Main/List/Filter/Methods', function (require, module, 
             'check': function (list) {
                 panel.fire('check', [list]);
             },
+            'fill': function (list) {
+                panel.fire('check', [list]);
+            },
         });
 
 

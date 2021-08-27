@@ -2,12 +2,13 @@
 define.panel('/ModuleTree/Main', function (require, module, panel) {
     const Nav = module.require('Nav');
     const Tabs = module.require('Tabs');
-    const MarkDoc = module.require('MarkDoc');
+    const Content = module.require('Content');
     const FileInfo = module.require('FileInfo');
     const ModuleInfo = module.require('ModuleInfo');
     const Tree = module.require('Tree');
     const List = module.require('List');
     const Dependent = module.require('Dependent');
+    const Pair = module.require('Pair');
 
     let meta = {
         item: null,
@@ -24,10 +25,11 @@ define.panel('/ModuleTree/Main', function (require, module, panel) {
         Tabs.map({
             'module': ModuleInfo,
             'file': FileInfo,
-            'content': MarkDoc,
+            'content': Content,
             'tree': Tree,
             'list': List,
             'dependent': Dependent,
+            'pair': Pair,
         });
 
         Tabs.on({
@@ -38,7 +40,7 @@ define.panel('/ModuleTree/Main', function (require, module, panel) {
 
 
 
-        [ModuleInfo, FileInfo, Tree, List, Dependent,].forEach((M) => {
+        [ModuleInfo, FileInfo, Tree, List, Dependent, Content, Pair, ].forEach((M) => {
 
             M.on({
                 'item': function (item) {

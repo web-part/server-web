@@ -4,7 +4,7 @@ define.panel('/DocAdd/Editor', function (require, module, panel) {
     const File = module.require('File');
     const CMD = module.require('CMD');
     const Table = module.require('Table');
-    const Headers = module.require('Headers');
+
 
     let passive = false;    //是否被动的滚动。 即是否由于外面调用而引起的滚动。
     let editor = null;

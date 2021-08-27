@@ -20,6 +20,9 @@ define.panel('/ModuleTree/Main/List/Filter/Dependents', function (require, modul
             'check': function (list) {
                 panel.fire('check', [list]);
             },
+            'fill': function (list) {
+                panel.fire('check', [list]);
+            },
         });
 
 

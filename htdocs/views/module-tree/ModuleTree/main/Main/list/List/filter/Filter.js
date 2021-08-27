@@ -1,11 +1,15 @@
 ﻿
 define.panel('/ModuleTree/Main/List/Filter', function (require, module, panel) {
+    const Fields = module.require('Fields');
+    const Childs = module.require('Childs');
     const ChildDependents = module.require('ChildDependents');
     const Dependents = module.require('Dependents');
     const Levels = module.require('Levels');
     const Methods = module.require('Methods');
 
     let meta = {
+        field$checked: null,
+        child$checked: null,
         childDependent$checked: null,
         dependent$checked: null,
         level$checked: null,
@@ -13,6 +17,18 @@ define.panel('/ModuleTree/Main/List/Filter', function (require, module, panel) {
     };
 
     panel.on('init', function () {
+        let tid = null;
+
+        //防抖。
+        function fireChange() {
+            if (tid) {
+                clearTimeout(tid);
+            }
+
+            tid = setTimeout(function () {
+                panel.fire('change', [meta]);
+            }, 200);
+        }
 
         function make(list) {
             let key$checked = {};
@@ -24,24 +40,39 @@ define.panel('/ModuleTree/Main/List/Filter', function (require, module, panel) {
             return key$checked;
         }
 
+        Fields.on({
+            'check': function (list) {
+                meta.field$checked = make(list);
+                fireChange();
+            },
+        });
+
+        Childs.on({
+            'check': function (list) {
+                meta.child$checked = make(list);
+                fireChange();
+            },
+        });
+
+
         ChildDependents.on({
             'check': function (list) {
                 meta.childDependent$checked = make(list);
-                panel.fire('change', [meta]);
+                fireChange();
             },
         });
 
         Dependents.on({
             'check': function (list) {
                 meta.dependent$checked = make(list);
-                panel.fire('change', [meta]);
+                fireChange();
             },
         });
 
         Levels.on({
             'check': function (list) {
                 meta.level$checked = make(list);
-                panel.fire('change', [meta]);
+                fireChange();
             },
         });
 
@@ -49,7 +80,7 @@ define.panel('/ModuleTree/Main/List/Filter', function (require, module, panel) {
         Methods.on({
             'check': function (list) {
                 meta.method$checked = make(list);
-                panel.fire('change', [meta]);
+                fireChange();
             },
         });
 
@@ -59,14 +90,14 @@ define.panel('/ModuleTree/Main/List/Filter', function (require, module, panel) {
 
 
 
-    panel.on('render', function (data) {
-        
+    panel.on('render', function (data, fields) {
+        Fields.render(fields);
+        Childs.render(data.childs);
         ChildDependents.render();
         Dependents.render();
         Levels.render(data.levels);
         Methods.render(data.methods);
 
-        panel.fire('change', [meta]);
 
     });
 

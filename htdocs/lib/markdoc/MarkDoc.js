@@ -79,6 +79,8 @@ define('MarkDoc', function (require, module, exports) {
         *       language: '',       //可选。 语言类型，如 `json`、`javascript` 等。 如果指定，则当成源代码模式展示内容。
         *       baseUrl: '',        //内容里的超链接中的相对 url。 非源代码模式下可用。
         *       imgUrl: '',         //图片 src 属性相对地址的前缀。 即如果 img.src 为相对地址，则加上该前缀补充为完整的 src。
+        *       sample: 'pre',      //可选，要使用地模板名称，值为 `pre` 或 `code`。 默认情况下为 `pre`。 
+        *                           //某些特殊场景下不需要 `pre`，如显示压缩后的、只有一行代码的情况，使用 `code`。
         *       code: {
         *           format: true,   //是否自动格式化（针对 JSON）。
         *           language: true, //是否显示语言类型标签。
@@ -100,6 +102,8 @@ define('MarkDoc', function (require, module, exports) {
             let content = Content.get(meta, {
                 'language': options.language,
                 'content': options.content,
+                'sample': options.sample,
+
                 'process': function (content) {
                     let values = meta.emitter.fire('process', [content]);
                     return values.length > 0 ? values[0] : content;

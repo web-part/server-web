@@ -5,8 +5,6 @@ define('/Home/JsModule/Main/Data', function (require, module, exports) {
     return {
         
         parse(stat) {
-            console.log(module.id, stat)
-
             let { ids, id$module, id$children, singles, level$ids, } = stat.moduleStat;
 
             let nones = [];         //空 id 的模块列表，一般只有一个，index.js 中的 launch()。

@@ -9,6 +9,7 @@ define.panel('/ModuleTree/Main/Tabs', function (require, module, panel) {
         { name: '依赖关系', cmd: 'dependent', root: true, },
         { name: '模块列表', cmd: 'list', root: true, },
         { name: '组织架构', cmd: 'tree', root: true, },
+        { name: '模块配对', cmd: 'pair', root: true, },
         { name: '模块信息', cmd: 'module', },
         { name: '文件信息', cmd: 'file', },
         { name: '文件内容', cmd: 'content', },

@@ -1,0 +1,74 @@
+<div data-panel="/Home/Server" class="box ">
+    <header>
+        <span>服务器</span>
+    </header>
+    <div data-panel="/Home/Server/Loading" class="loading">
+        <p>
+            <i class="fas fa-sync-alt"></i>
+            <span>加载中...</span>
+        </p>
+    </div>
+    <div data-panel="/Home/Server/Main" style="display: none;">
+        <template name="table">
+            <table>
+                <tbody>
+                    <tr class="status">
+                        <th>运行状态</th>
+                        <td data-id="td-status">
+                            <template name="status" placeholder="status">
+                                <i class="{status} far fa-{status}-circle"></i>{text}
+                            </template>
+                        </td>
+                    </tr>
+                    <tr class="">
+                        <th>启动时间</th>
+                        <td>{time}</td>
+                    </tr>
+                    <tr class="">
+                        <th>实际端口</th>
+                        <td>{port}</td>
+                    </tr>
+                    <tr class="">
+                        <th>主机域名</th>
+                        <td>{host}</td>
+                    </tr>
+                    <tr class="">
+                        <th>会话 ID</th>
+                        <td>{sessionId}</td>
+                    </tr>
+                    <tr class="">
+                        <th>API 跨域</th>
+                        <td><i class="{crossOriginClass} fas fa-{crossOriginIcon}"></i>{crossOriginText}</td>
+                    </tr>
+
+                    <tr class="">
+                        <th>虚拟目录(本地)</th>
+                        <td>
+                            <ul>
+                                <template name="local" placeholder="localUrls">
+                                    <li>
+                                        <a href="http://localhost:{port}{dir}" target="_blank">http://localhost:{port}{dir}</a>
+                                    </li>
+                                </template>
+                            </ul>
+                        </td>
+                    </tr>
+                    <tr class="">
+                        <th>虚拟目录(网络)</th>
+                        <td>
+                            <ul>
+                                <template name="network" placeholder="networkUrls">
+                                    <li>
+                                        <a href="http://{host}:{port}{dir}" target="_blank">http://{host}:{port}{dir}</a>
+                                        <img src="http://{host}:{port}{qrcode.path}?url={url}&size=10" />
+                                    </li>
+                                </template>
+                            </ul>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </template>
+        
+    </div>
+</div>

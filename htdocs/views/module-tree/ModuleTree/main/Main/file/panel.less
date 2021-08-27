@@ -8,13 +8,37 @@
         }
     }
 
+    li {
+        border-bottom: solid 1px #f7f7f7;
+    }
+
+    h2 {
+        background: #fafafa;
+        margin: 0px;
+        padding: 5px 0px;
+
+        i {
+            font-size: 22px;
+            position: relative;
+            top: 2px;
+            left: 4px;
+        }
+
+        span {
+            font-size: 16px;
+            margin-left: 10px;
+
+        }
+    }
+
     table {
         font-size: 14px;
+        margin-left: 20px;
 
         th {
             text-align: right;
             box-sizing: border-box;
-            // font-weight: normal;
+            font-weight: normal;
             // color: gainsboro;
 
             &:after {
@@ -49,6 +73,7 @@
         a[data-cmd] {
             text-decoration: none;
             color: #2196F3;
+            cursor: pointer;
 
             &:hover{
                 color:rgb(81, 163, 218);

@@ -1,0 +1,104 @@
+
+
+[data-panel="/Home/Server"] {
+    
+    
+    [data-panel="/Home/Server/Main"] {
+        position: relative;
+        table {
+            font-size: 14px;
+            margin-left: 20px;
+
+           
+
+
+            th {
+                text-align: right;
+                box-sizing: border-box;
+                vertical-align: top;
+                padding: 2px 0px;
+
+                &:after {
+                    content: ':';
+                }
+            }
+
+            td {
+                padding: 2px 0px 2px 10px;
+
+                i {
+                    margin-right: 5px;
+                    font-size: 16px;
+
+                    &.play {
+                        color: #4caf50;
+
+                    }
+
+                    &.stop {
+                        color: #f44336;
+                    }
+
+                    &.cross-origin-true {
+                        color: #4caf50;
+                    }
+
+                    &.cross-origin-false {
+                        color: #ff9800;
+                    }
+                }
+
+                ul {
+
+                    margin: 0px;
+                    
+
+                    li {
+                        display: list-item;
+                        padding: 0px 0px 8px 0px;
+                        margin: 0px;
+                        width: unset;
+                        text-align: unset;
+
+                        a {
+                            text-decoration: none;
+                            color: #2196F3;
+                            cursor: pointer;
+
+                            &:hover{
+                                color:rgb(81, 163, 218);
+                                text-decoration: underline;
+
+                            }
+                            
+                        }
+
+                        img {
+                            display: none;
+                            position: absolute;
+                            top: 0px;
+                            right: 0px;
+                            width: 200px;
+                        }
+
+                        &:hover {
+                            img {
+                                display: block;
+                            }
+                        }
+                    }
+                }
+            }
+
+        
+
+            
+
+
+        }
+    }
+
+}
+
+
+

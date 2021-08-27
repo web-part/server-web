@@ -1,30 +1,8 @@
 ﻿
 <ul data-panel="/FileList/Sidebar/Operation" style="display: none;">
     <template>
-        <li data-cmd="detail" class="detail">
-            <i class="fas fa-angle-double-{detail-class}"></i><span>详情</span>
-        </li>
-
-        <li data-cmd="refresh" class="refresh">
-            <i class="fa fa-sync-alt"></i><span>刷新</span>
-        </li>
-
-        <li data-cmd="open" class="open" style="{open-display}">
-            <i class="fa fa-external-link-alt"></i><span>打开</span>
-        </li>
-
-        <li data-cmd="edit" class="edit" style="{edit-display}">
-            <i class="fa fa-edit"></i><span>编辑</span>
-        </li>
-
-        <li data-cmd="demo" class="edit" style="{demo-display}">
-            <i class="fas fa-desktop"></i><span>效果</span>
-        </li>
-
-     
-
-        <li data-cmd="delete" class="delete" style="{delete-display}">
-            <i class="fa fa-times"></i><span>删除</span>
+        <li data-index="{index}" class="{cmd}">
+            <i class="{icon}"></i><span>{name}</span>
         </li>
     </template>
 

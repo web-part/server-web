@@ -16,12 +16,14 @@ define.panel('/ModuleTree/Main/List', function (require, module, panel) {
             'change': function (opt) {
                 let list = Data.filter(opt);
                 GridView.render(list);
+
+                console.log(opt)
+                GridView.toggleFields(opt.field$checked);
             },
         });
 
         GridView.on({
-            'cmd': function (cmd, item) {
-                let value = item[cmd];      //cmd 为 `id`、`file`。
+            'cmd': function (cmd, value) {
                 panel.fire(cmd, [value]);
             },
         });
@@ -34,13 +36,10 @@ define.panel('/ModuleTree/Main/List', function (require, module, panel) {
 
     panel.on('render', function (opt) {
         let data = Data.init(opt);
-
-        console.log('==============', module.id, opt, data);
+        let fields = GridView.fields;
 
         Header.render();
-
-        Filter.render(data);
-        
+        Filter.render(data, fields);
         
         panel.show();
     });

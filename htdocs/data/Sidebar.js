@@ -12,8 +12,8 @@ define('data.Sidebar', function (require, module, exports) {
         { language$name: { chinese: '写文档', english: 'Markdoc' }, icon: 'fa fa-edit', view: 'DocAdd', },
         { language$name: { chinese: '终端', english: 'Terminal', }, icon: 'fas fa-terminal', view: 'Terminal', args: [], },
         { language$name: { chinese: '常用工具', english: 'Tools', }, icon: 'fas fa-tools', view: 'Tool', args: [], },
-        { language$name: { chinese: '偏好设置', english: 'Settings', }, icon: 'fas fa-cogs', view: 'Setting', args: [], },
         { language$name: { chinese: '代理', english: 'Proxy', }, icon: 'fas fa-network-wired', view: 'Proxy', args: [], },
+        { language$name: { chinese: '偏好设置', english: 'Settings', }, icon: 'fas fa-cogs', view: 'Setting', args: [], },
         { language$name: { chinese: '帮助手册', english: 'Help', }, icon: 'fa fa-question-circle', view: 'Help', args: [], },
     ];
 

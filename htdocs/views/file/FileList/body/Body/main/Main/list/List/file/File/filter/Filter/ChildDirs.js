@@ -21,7 +21,6 @@ define.panel('/FileList/Body/Main/List/File/Filter/ChildDirs', function (require
         chk = new DropCheckList({
             'container': panel.$,
             'text': '直接子目录',
-            'fireNow': true,    //rende() 后立即触发 `check` 事件。 因为每次 render() 后，list 可能已发生变化。
         });
 
         chk.on({

@@ -35,18 +35,15 @@ define('/HtmlTree/Main/JsLink/Compile/API', function (require, module, exports) 
                 },
 
                 'success': function (data, json, xhr) {
-                    // debugger
-                    console.log(data);
                     emitter.fire('success', 'compile', [data]);
                 },
 
                 'fail': function (code, msg, json, xhr) {
-                    // definejs.alert('获取解析数据失败: {0}', msg);
-                    // emitter.fire('success', 'get', [json]);
+                    definejs.alert('编译 less 失败: {0}', msg);
                 },
 
                 'error': function (code, msg, json, xhr) {
-                    definejs.alert('获取解析错误: 网络繁忙，请稍候再试');
+                    definejs.alert('编译 less 错误: 网络繁忙，请稍候再试');
                 },
             });
 

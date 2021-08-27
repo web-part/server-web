@@ -15,6 +15,19 @@
             Master.open('DocAdd', [{ name, }]);
         },
 
+        'compile-less': function (content) {
+            let id = 'Less';
+            let args = [content];
+            Master.open('Tool', [id, args]);
+        },
+
+
+        'minify-js': function (content) {
+            let id = 'JS';
+            let args = [content];
+            Master.open('Tool', [id, args]);
+        },
+
        
       
 

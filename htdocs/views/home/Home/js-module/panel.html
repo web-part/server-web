@@ -1,0 +1,38 @@
+<div data-panel="/Home/JsModule" class="box orange">
+    <header>
+        <span>JS 模块</span>
+    </header>
+    <div data-panel="/Home/JsModule/Loading" class="loading">
+        <p>
+            <i class="fas fa-sync-alt"></i>
+            <span>加载中...</span>
+        </p>
+    </div>
+    <div data-panel="/Home/JsModule/Main" style="display: none;">
+        <template name="html">
+            <ul>
+                <li><span class="key">全部</span><span class="value">{all}</span></li>
+            </ul>
+            <ul>
+                <li><span class="key">启动</span><span class="value">{none}</span></li>
+                <li><span class="key">公共</span><span class="value">{public}</span></li>
+                <li><span class="key">私有</span><span class="value">{private}</span></li>
+            </ul>
+            <ul>
+                <li><span class="key">视图</span><span class="value">{view}</span></li>
+                <li><span class="key">面板</span><span class="value">{panel}</span></li>
+                <li><span class="key">常规</span><span class="value">{define}</span></li>
+            </ul>
+            <ul>
+                <li title="单模块是指没有子模块的一级模块。"><span class="key">单模块</span><span class="value">{single}</span></li>
+                <li><span class="key">父模块</span><span class="value">{parent}</span></li>
+                <li><span class="key">子模块</span><span class="value">{child}</span></li>
+            </ul>
+            <ul>
+                <template name="level" placeholder="levels">
+                    <li><span class="key">{level}级</span><span class="value">{count}</span></li>
+                </template>
+            </ul>
+        </template>
+    </div>
+</div>

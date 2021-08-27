@@ -290,6 +290,75 @@ define('GridView', function (require, module, exports) {
             meta.emitter.on(...arguments);
         },
 
+
+        /**
+        * 切换显示指定的列。
+        */
+        toggleFields(index$checked) {
+            if (!index$checked) {
+                return;
+            }
+
+            
+            let meta = mapper.get(this);
+            let json = JSON.stringify(index$checked);
+            
+            if (json == meta.index$checkedJSON) {
+                return;
+            }
+
+            meta.index$checkedJSON = json;
+
+            let $header = $(`#${meta.headerId}`);
+            let $body = $(`#${meta.tableId}>table`);
+            let hideWidth = 0;
+
+            function toggle(el) {
+                let { index, } = el.dataset;
+                let checked = index$checked[index];
+                let field = meta.fields[index];
+
+                if (typeof checked == 'boolean') {
+                    $(el).toggle(checked);
+                    return checked ? 0 : field.width;
+                }
+
+                return 0;
+                
+            }
+
+            $header.find(`col`).each(function () {
+                let width = toggle(this);
+                hideWidth += width;
+            });
+
+            $header.find(`th`).each(function () {
+                toggle(this);
+            });
+
+            $body.find(`col`).each(function () {
+                toggle(this);
+            });
+
+            $body.find('>tbody>tr>td').each(function () {
+                toggle(this);
+            });
+
+            //以下实现跟手动调整列宽时有冲突，体验不好，待改进。
+            let w = meta.sumWidth - hideWidth;
+            // console.log(w);
+            // console.log($header.width());
+            // console.log($body.width());
+            // console.log(meta.$.width());
+            // console.log(meta.sumWidth)
+            
+            $header.width(w);
+            $body.width(w);
+            meta.$.width(w + 10); 
+
+            
+        },
+
     };
 
 

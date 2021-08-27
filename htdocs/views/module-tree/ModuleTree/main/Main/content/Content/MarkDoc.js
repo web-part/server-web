@@ -1,6 +1,6 @@
 
 
-define.panel('/ModuleTree/Main/MarkDoc', function (require, module, panel) {
+define.panel('/ModuleTree/Main/Content/MarkDoc', function (require, module, panel) {
     const MarkDoc = require('MarkDoc');
 
     let markdoc = null;
@@ -19,8 +19,15 @@ define.panel('/ModuleTree/Main/MarkDoc', function (require, module, panel) {
     /**
     * 渲染。
     */
-    panel.on('render', function ({ item, stat, }) {
-        let { info, } = item.data;
+    panel.on('render', function (info) {
+        if (!info) {
+            markdoc.render({
+                'content': '暂无内容',
+                'language': '',
+            });
+            return;
+        }
+
         let { content, ext, } = info;
         let language = ext.slice(1);
 

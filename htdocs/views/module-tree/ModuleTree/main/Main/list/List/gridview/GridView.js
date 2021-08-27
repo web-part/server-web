@@ -4,7 +4,48 @@ define.panel('/ModuleTree/Main/List/GridView', function (require, module, panel)
 
     let tpl = null;
     let gridview = null;
-  
+
+    let fields = [
+        { caption: '模块ID', name: 'id', width: 300, class: 'name', dragable: true, delegate: '[data-cmd]', },
+        { caption: '定义方法', name: 'method', width: 110, class: 'file', dragable: true, delegate: '[data-cmd]', },
+        { caption: '级别', name: 'level', width: 49, class: 'number level', dragable: true, },
+        { caption: '被依赖模块数', name: 'dependents', width: 61, class: 'number dependents', dragable: true, },
+        { caption: '所依赖公共模块数', name: 'publics', width: 73, class: 'number publics', dragable: true, },
+        { caption: '所依赖私有模块数', name: 'privates', width: 73, class: 'number privates', dragable: true, },
+        { caption: '直接子模块数', name: 'childs', width: 61, class: 'number childs', dragable: true, },
+        { caption: '全部子模块数', name: 'children', width: 61, class: 'number children', dragable: true, },
+        { caption: '同级模块数', name: 'siblings', width: 61, class: 'number siblings', dragable: true, },
+        { caption: '所在的 js 文件', name: 'file', width: 400, class: 'file', dragable: true, delegate: '[data-cmd]', },
+        // { caption: '关联的 html 文件', name: 'htmlFile', width: 400, class: 'file', dragable: true, delegate: '[data-cmd]', },
+    ];
+
+
+    function fillFile(file) {
+        if (!file) {
+            return '';
+        }
+
+        let list = Array.isArray(file) ? file : [file];
+
+        let htmls = list.map((file) => {
+            let html = tpl.fill('href', {
+                'cmd': 'file',
+                'text': file,
+            });
+
+            return html;
+        });
+
+        let html = htmls.join('<br />');
+
+
+
+        return {
+            'html': html,
+            'count': list.length,
+        };
+
+    }
 
     panel.on('init', function () {
         tpl = panel.template();
@@ -16,20 +57,7 @@ define.panel('/ModuleTree/Main/List/GridView', function (require, module, panel)
             order: true,
             class: '',
             footer: false,
-
-            fields: [
-                { caption: '模块ID', name: 'id', width: 300, class: 'name', dragable: true, delegate: '[data-cmd]', },
-                { caption: '定义方法', name: 'method', width: 110, class: 'file', dragable: true, delegate: '[data-cmd]', },
-                { caption: '级别', name: 'level', width: 49, class: 'number level', dragable: true, },
-                { caption: '被依赖模块数', name: 'dependents', width: 61, class: 'number dependents', dragable: true, },
-                { caption: '所依赖公共模块数', name: 'publics', width: 73, class: 'number publics', dragable: true, },
-                { caption: '所依赖私有模块数', name: 'privates', width: 73, class: 'number privates', dragable: true, },
-                { caption: '直接子模块数', name: 'childs', width: 61, class: 'number childs', dragable: true, },
-                { caption: '全部子模块数', name: 'children', width: 61, class: 'number children', dragable: true, },
-                { caption: '同级模块数', name: 'siblings', width: 61, class: 'number siblings', dragable: true, },
-                { caption: '所在文件', name: 'file', width: 400, class: 'file', dragable: true, delegate: '[data-cmd]', },
-            ],
-
+            fields: fields,
         });
 
         gridview.on('process', 'row', function (row) {
@@ -64,27 +92,37 @@ define.panel('/ModuleTree/Main/List/GridView', function (require, module, panel)
 
             'file': function (cell) {
                 let item = cell.row.data;
-
-                let html = tpl.fill('href', {
-                    'cmd': 'file',
-                    'text': item.file,
-                });
+                let { html, count, } = fillFile(item.file);
+                if (count > 1) {
+                    cell.class += ' error';
+                }
 
                 return html;
             },
 
-          
+            'htmlFile': function (cell) {
+                let item = cell.row.data;
+                let { html, count, } = fillFile(item.htmlFile);
+                if (count > 1) {
+                    cell.class += ' error';
+                }
+                return html;
+            },
+
 
         });
 
         gridview.on('click', 'cell', function (cell, event) {
             let cmd = event.target.dataset.cmd;
 
-            if (cmd) {
-                event.stopPropagation();
-                panel.fire('cmd', [cmd, cell.row.data]);
+            if (!cmd) {
+                return;
             }
 
+            event.stopPropagation();
+
+            let value = event.target.text;
+            panel.fire('cmd', [cmd, value]);
         });
 
         gridview.render();
@@ -100,12 +138,19 @@ define.panel('/ModuleTree/Main/List/GridView', function (require, module, panel)
     */
     panel.on('render', function (list) {
 
-      
-
         gridview.fill(list);
+
 
     });
 
+
+    return {
+        fields,
+
+        toggleFields(index$checked) {
+            gridview.toggleFields(index$checked);
+        },
+    };
 
 
 });

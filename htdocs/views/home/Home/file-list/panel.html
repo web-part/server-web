@@ -1,0 +1,36 @@
+<div data-panel="/Home/FileList" class="box green">
+    <header>
+        <span>文件资源</span>
+    </header>
+    <div data-panel="/Home/FileList/Loading" class="loading">
+        <p>
+            <i class="fas fa-sync-alt"></i>
+            <span>加载中...</span>
+        </p>
+    </div>
+    <div data-panel="/Home/FileList/Main">
+        <template name="html">
+            <ul>
+                <li><span class="key">全部</span><span class="value">{all}</span></li>
+                <li class="exwidth">
+                    <span class="key">大小</span>
+                    <span class="value">{sizeValue} </span>
+                    <span class="desc">{sizeDesc}</span>
+                </li>
+            </ul>
+            <ul>
+                <li><span class="key">目录</span><span class="value">{dir}</span></li>
+                <li><span class="key">文件</span><span class="value">{file}</span></li>
+                <li><span class="key">图片</span><span class="value">{image}</span></li>
+                <li><span class="key">UTF8 编码</span><span class="value">{isUTF8}</span></li>
+                <li><span class="key">其它编码</span><span class="value">{notUTF8}</span></li>
+            </ul>
+            <ul>
+                <template name="type" placeholder="types">
+                    <li><span class="key">{ext}</span><span class="value">{count}</span></li>
+                </template>
+            </ul>
+        </template>
+    </div>
+</div>
+

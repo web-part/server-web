@@ -21,6 +21,9 @@ define.panel('/ModuleTree/Main/List/Filter/ChildDependents', function (require, 
             'check': function (list) {
                 panel.fire('check', [list]);
             },
+            'fill': function (list) {
+                panel.fire('check', [list]);
+            },
         });
 
 

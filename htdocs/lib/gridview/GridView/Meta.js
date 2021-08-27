@@ -56,6 +56,7 @@ define('GridView/Meta', function (require, module, exports) {
                 'list': [],                         //当前填充到 UI 中的数据。
                 'oldList': null,                    //用于切换到已选模式之前，备份 meta.list 的数据，以便用于切换回正常模式。
                 'selectedMode': false,              //表示是否处于已选模式，如果是，则列表中显示的是已选的数据。
+                'index$checkedJSON': '',                //切换显示指定的列。
 
                 //选中的信息。
                 'current': {

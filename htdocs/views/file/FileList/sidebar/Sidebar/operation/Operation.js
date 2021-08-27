@@ -2,12 +2,17 @@
 
 define.panel('/FileList/Sidebar/Operation', function (require, module, panel) {
     const Storage = require('@definejs/local-storage');
+    const $String = require('@definejs/string');
+    const Data = module.require('Data');
 
     let meta = {
         visible: true,
+        list: [],
     };
 
     let storage = null;
+ 
+
 
 
     panel.on('init', function () {
@@ -20,36 +25,49 @@ define.panel('/FileList/Sidebar/Operation', function (require, module, panel) {
         }
 
 
-        panel.$.on('click', '[data-cmd]', function () {
-            let cmd = this.getAttribute('data-cmd');
+        panel.$on('click', {
+            'li[data-index]': function (event) {
+                let { index, } = this.dataset;
+                let item = meta.list[index];
+                let { cmd, } = item;
+
+                if (cmd == 'detail') {
+                    meta.visible = !meta.visible;
+                    panel.refresh();
+                    return;
+                }
+
+                panel.fire('cmd', [cmd]);
+            },
+        });
+       
+
+        panel.template(function (item, index) {
+            let { cmd, icon, } = item;
 
             if (cmd == 'detail') {
-                meta.visible = !meta.visible;
-                panel.refresh();
-                return;
+                icon = $String.format(icon, {
+                    'icon': meta.visible ? 'right' : 'left',
+                });
             }
 
-            
-            panel.fire('cmd', [cmd]);
+            return {
+                'index': index,
+                'cmd': cmd,
+                'icon': icon,
+                'name': item.name,
+            };
         });
     });
 
 
 
 
-    panel.on('render', function ({ detail, item, }) {
+    panel.on('render', function (opt) {
         let visible = meta.visible;
-        let isFile = detail.type == 'file';
-        let isRoot = !item.parent;
+        let list = meta.list = Data.make(opt);
 
-        panel.fill({
-            'detail-class': visible ? 'right' : 'left',
-            'open-display': isFile ? '' : 'display: none;',
-            'edit-display': isFile ? '' : 'display: none;',
-            'demo-display': isFile ? '' : 'display: none;',
-            'delete-display': isRoot ? 'display: none;' : '',
-        });
-
+        panel.fill(list);
         panel.fire('detail', [visible]);
         storage.set('visible', visible);
     });

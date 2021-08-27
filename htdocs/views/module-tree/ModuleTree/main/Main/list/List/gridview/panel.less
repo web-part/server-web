@@ -7,13 +7,38 @@
         tr.error {
             &.dependents td.dependents,
             &.privates td.privates,
-            &.childs td.childs { color: red; font-weight: bold; background: #fff9c5;};
+            &.childs td.childs {
+                 color: red; 
+                 font-weight: bold; 
+                 background: #fff9c5;
+            };
         }
 
         td {
             &.number {
                 text-align: center;
             }
+
+            &.error {
+                color: red;
+                background: #fff9c5;
+            }
+
+            a[data-cmd] {
+                text-decoration: none;
+                color: unset;
+                cursor: pointer;
+
+                &:hover{
+                    color:rgb(81, 163, 218);
+                    text-decoration: underline;
+
+                }
+
+                
+            }
+
+
         }
     }
 }

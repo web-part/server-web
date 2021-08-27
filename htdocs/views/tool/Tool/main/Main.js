@@ -2,6 +2,8 @@
 define.panel('/Tool/Main', function (require, module, panel) {
     const QRCode = module.require('QRCode');
     const MD5 = module.require('MD5');
+    const Less = module.require('Less');
+    const JS = module.require('JS');
 
 
     let meta = {
@@ -13,6 +15,13 @@ define.panel('/Tool/Main', function (require, module, panel) {
     panel.on('init', function () {
         
 
+        [Less, JS, ].forEach((M) => {
+            M.on({
+                'fullscreen': function (on) {
+                    panel.fire('fullscreen', [on]);
+                },
+            });
+        });
 
 
     });
@@ -22,19 +31,26 @@ define.panel('/Tool/Main', function (require, module, panel) {
     * 渲染内容。
     *   item = {}   //当前菜单项。
     */
-    panel.on('render', function (item) {
+    panel.on('render', function (item, args) {
         let { cmd, } = item.data;
         let M = meta.cmd$module[cmd];
 
-        if (!M) {
-            M = meta.cmd$module[cmd] = module.require(cmd);
-            M.render();
+        if (M) {
+            if (args) {
+                M.render(...args);
+            }
+            else {
+                M.show();
+            }
         }
         else {
-            M.show();
+            args = args || [];
+            M = meta.cmd$module[cmd] = module.require(cmd);
+            M.render(...args);
         }
 
-        [QRCode, MD5,].forEach((item) => {
+
+        [QRCode, MD5, Less, JS, ].forEach((item) => {
             if (item != M) {
                 item.hide();
             }

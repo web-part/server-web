@@ -16,6 +16,7 @@
         "url": "https://github.com/web-part/server-web.git"
     },
     "devDependencies": {
+        "@webpart/cli": "^1.0.0",
         "@webpart/proxy": "^1.0.0"
     },
     "dependencies": {
