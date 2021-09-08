@@ -20,12 +20,12 @@ define('TableResizer/Rows', function (require, module) {
                 let len = cells.length;
 
                 if (len > 0) {
-                    //╡Иур©ун╩║ё
+                    //Ф÷╔Ф┴╬Г╘╨Д╫█Ц─┌
                     baseX = cells.findIndex(function (cell) {
                         return !cell;
                     });
 
-                    //ц╩сп©ун╩ё╛тРтзвН╨С╪сио║ё
+                    //Ф╡║Ф°┴Г╘╨Д╫█О╪▄Е┬≥Е°╗Ф°─Е░▌Е┼═Д╦┼Ц─┌
                     if (baseX < 0) {
                         baseX = len;
                     }

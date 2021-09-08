@@ -1,6 +1,7 @@
 <div data-panel="/Home/Server" class="box ">
     <header>
         <span>服务器</span>
+        <i data-cmd="refresh" class="fas fa-sync" title="刷新当前模块"></i>
     </header>
     <div data-panel="/Home/Server/Loading" class="loading">
         <p>
@@ -23,6 +24,10 @@
                     <tr class="">
                         <th>启动时间</th>
                         <td>{time}</td>
+                    </tr>
+                    <tr>
+                        <th>进程 ID</th>
+                        <td>{pid}</td>
                     </tr>
                     <tr class="">
                         <th>实际端口</th>

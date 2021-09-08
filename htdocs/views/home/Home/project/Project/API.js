@@ -1,6 +1,6 @@
 ﻿
 
-define('/Home/FileList/API', function (require, module, exports) {
+define('/Home/Project/API', function (require, module, exports) {
     const Emitter = require('@definejs/emitter');
     
     const API = require('API');
@@ -18,7 +18,7 @@ define('/Home/FileList/API', function (require, module, exports) {
         * 获取。
         */
         get: function () {
-            let api = new API('FileList.read', {
+            let api = new API('Project.get', {
                 // proxy: '.json',
             });
 
@@ -31,22 +31,20 @@ define('/Home/FileList/API', function (require, module, exports) {
                     // loading.hide();
                 },
 
-                'success': function (stat, json, xhr) {
-                    emitter.fire('success', 'get', [stat]);
+                'success': function (data, json, xhr) {
+                    emitter.fire('success', 'get', [data]);
                 },
 
                 'fail': function (code, msg, json, xhr) {
-                    definejs.alert(`获取文件列表失败: ${msg}`);
+                    definejs.alert(`获取项目信息失败: ${msg}`);
                 },
 
                 'error': function (code, msg, json, xhr) {
-                    definejs.alert('获取文件列表错误: 网络繁忙，请稍候再试');
+                    definejs.alert('获取项目信息错误: 网络繁忙，请稍候再试');
                 },
             });
 
-            api.get({
-                id: '/',
-            });
+            api.get();
 
         },
 

@@ -5,13 +5,13 @@ define('TableResizer/Fields', function (require, module) {
     return {
         normalize: function (list) {
             list = list.map(function (field, index) {
-                field = Object.assign({}, field); //°²È«Æğ¼û£¬±ÜÃâ¶àÊµÀıÖĞ»¥ÏàÓ°Ïì¡£
+                field = Object.assign({}, field); //å®‰å…¨èµ·è§ï¼Œé¿å…å¤šå®ä¾‹ä¸­äº’ç›¸å½±å“ã€‚
 
-                let visible = ('visible' in field) ? field.visible : true;  //Èç¹û²»Ö¸¶¨ÔòÄ¬ÈÏÎª true¡£
+                let visible = ('visible' in field) ? field.visible : true;  //å¦‚æœä¸æŒ‡å®šåˆ™é»˜è®¤ä¸º trueã€‚
                 let width = visible ? field.width || 0 : 0;
 
                 field.visible = !!visible;
-                field.dragable = field.dragable === false ? false : true; //Ö»ÓĞÏÔÊ½Ö¸¶¨ÁËÎª false ²Å½ûÓÃ¡£
+                field.dragable = field.dragable === false ? false : true; //åªæœ‰æ˜¾å¼æŒ‡å®šäº†ä¸º false æ‰ç¦ç”¨ã€‚
 
                 field.width = field.width || 0;
 

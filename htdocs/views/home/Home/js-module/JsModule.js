@@ -7,7 +7,12 @@ define.panel('/Home/JsModule', function (require, module, panel) {
 
 
     panel.on('init', function () {
-
+        panel.$on('click', {
+            '[data-cmd="refresh"]': function (event) {
+                panel.refresh();
+            },
+        });
+        
         API.on('success', {
             'get': function (stat) {
                 Loading.hide();

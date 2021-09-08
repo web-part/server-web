@@ -48,7 +48,7 @@ define('/Log/SSE', function (require, module, exports) {
                 //服务器可能已经关闭了，
                 //这里也要关闭，否则会不断重发请求到服务器。
                 if (data === undefined) {
-                    definejs.alert('服务器可能已经关闭了。')
+                    // definejs.alert('服务器可能已经关闭。aaaaaaa');
                     exports.close();
                     return;
                 }

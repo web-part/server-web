@@ -6,12 +6,12 @@ define('Dialog/Drager', function (require, module, exports) {
 
 
 
-    let x = 0;              //Êó±ê°´ÏÂÊ±µÄ pageX Öµ¡£
-    let y = 0;              //Êó±ê°´ÏÂÊ±µÄ pageY Öµ¡£
+    let x = 0;              //é¼ æ ‡æŒ‰ä¸‹æ—¶çš„ pageX å€¼ã€‚
+    let y = 0;              //é¼ æ ‡æŒ‰ä¸‹æ—¶çš„ pageY å€¼ã€‚
     let marginLeft = 0;
     let marginTop = 0;
 
-    let cursor = '';        //Êó±ê°´ÏÂÊ±µÄ cursor Ö¸ÕëÖµ¡£
+    let cursor = '';        //é¼ æ ‡æŒ‰ä¸‹æ—¶çš„ cursor æŒ‡é’ˆå€¼ã€‚
     let body = document.body;
     let masker = null;
 
@@ -56,7 +56,7 @@ define('Dialog/Drager', function (require, module, exports) {
 
             masker.show();
 
-            //½ûÖ¹Ñ¡ÖĞÎÄ±¾
+            //ç¦æ­¢é€‰ä¸­æ–‡æœ¬
             window.getSelection().removeAllRanges();
 
         },
@@ -67,10 +67,10 @@ define('Dialog/Drager', function (require, module, exports) {
                 return;
             }
 
-            //Êó±ê×ó¼ü°´ÏÂÈ¥Ê±£¬ event.which µÄÖµÎª 1¡£
-            //ÍÏÒ· dialog Ò»Ö±Àë¿ªä¯ÀÀÆ÷ÇøÓò£¬ËÉ¿ªÊó±ê£¬²¢²»»á´¥·¢ mouseup ÊÂ¼ş¡£
-            //È»ºóÊó±êÔÙ»Øµ½ä¯ÀÀÆ÷ÇøÓò£¬mousemove ÊÂ¼ş»¹ÊÇ»á¼ÌĞø´¥·¢£¬µ« event.which µÄÖµÎª 0¡£
-            //ÕâÀï£¬µ± dialog ¸øÍÏÒ·µ½Àë¿ªä¯ÀÀÆ÷ÇøÓòÊ±£¬ÎÒÃÇÖ´ĞĞ¸ú mouseup Ò»ÑùµÄÂß¼­¡£
+            //é¼ æ ‡å·¦é”®æŒ‰ä¸‹å»æ—¶ï¼Œ event.which çš„å€¼ä¸º 1ã€‚
+            //æ‹–æ›³ dialog ä¸€ç›´ç¦»å¼€æµè§ˆå™¨åŒºåŸŸï¼Œæ¾å¼€é¼ æ ‡ï¼Œå¹¶ä¸ä¼šè§¦å‘ mouseup äº‹ä»¶ã€‚
+            //ç„¶åé¼ æ ‡å†å›åˆ°æµè§ˆå™¨åŒºåŸŸï¼Œmousemove äº‹ä»¶è¿˜æ˜¯ä¼šç»§ç»­è§¦å‘ï¼Œä½† event.which çš„å€¼ä¸º 0ã€‚
+            //è¿™é‡Œï¼Œå½“ dialog ç»™æ‹–æ›³åˆ°ç¦»å¼€æµè§ˆå™¨åŒºåŸŸæ—¶ï¼Œæˆ‘ä»¬æ‰§è¡Œè·Ÿ mouseup ä¸€æ ·çš„é€»è¾‘ã€‚
             if (event.which != 1) {
                 stop();
                 return;

@@ -32,12 +32,11 @@ define('/Home/JsModule/API', function (require, module, exports) {
                 },
 
                 'success': function (stat, json, xhr) {
-                    console.log(stat);
                     emitter.fire('success', 'get', [stat]);
                 },
 
                 'fail': function (code, msg, json, xhr) {
-                    definejs.alert('获取统计数据失败: {0}', msg);
+                    definejs.alert(`获取统计数据失败: ${msg}`);
                 },
 
                 'error': function (code, msg, json, xhr) {

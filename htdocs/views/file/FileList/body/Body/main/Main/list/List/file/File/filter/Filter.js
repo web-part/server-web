@@ -94,7 +94,6 @@ define.panel('/FileList/Body/Main/List/File/Filter', function (require, module, 
 
         ChildDirs.on({
             'check': function (list) {
-                console.log(list)
                 change({
                     'childDirs': list,
                 });

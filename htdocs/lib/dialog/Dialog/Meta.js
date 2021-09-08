@@ -33,9 +33,9 @@ define('Dialog/Meta', function (require, module, exports) {
                 'dragable': config.dragable,
                 'resizable': config.resizable,
                 'cssClass': config.cssClass,
-                'autoClose': config.autoClose,  //µã»÷ÈÎºÎÒ»¸ö°´Å¥ºóÊÇ·ñ×Ô¶¯¹Ø±Õ×é¼ş
+                'autoClose': config.autoClose,  //ç‚¹å‡»ä»»ä½•ä¸€ä¸ªæŒ‰é’®åæ˜¯å¦è‡ªåŠ¨å…³é—­ç»„ä»¶
                 'mask': config.mask,
-                'z-index': config['z-index'],    //Éú³ÉÍ¸Ã÷²ãÊ±ÒªÓÃµ½
+                'z-index': config['z-index'],    //ç”Ÿæˆé€æ˜å±‚æ—¶è¦ç”¨åˆ°
                 'width': config.width,
                 'height': config.height,
                 'container': config.container,
@@ -55,9 +55,9 @@ define('Dialog/Meta', function (require, module, exports) {
                 'footerId': id + '-footer',
                 'sizerId': id + '-sizer',
 
-                'rendered': false,  //ÊÇ·ñÒÑäÖÈ¾¹ıÁË¡£
-                'visible': false,   //¼ÇÂ¼µ±Ç°×é¼şÊÇ·ñÒÑÏÔÊ¾
-                '$': null,          //$(this)£¬ÄÚ²¿Ê¹ÓÃµÄÒ»¸ö jQuery ¶ÔÏó¡£
+                'rendered': false,  //æ˜¯å¦å·²æ¸²æŸ“è¿‡äº†ã€‚
+                'visible': false,   //è®°å½•å½“å‰ç»„ä»¶æ˜¯å¦å·²æ˜¾ç¤º
+                '$': null,          //$(this)ï¼Œå†…éƒ¨ä½¿ç”¨çš„ä¸€ä¸ª jQuery å¯¹è±¡ã€‚
                 'this': this,
             };
 

@@ -7,7 +7,7 @@ define('/Home/Server/Status', function (require, module, exports) {
 
     let emitter = new Emitter();
     let toast = new Toast({
-        icon: 'ban',
+        icon: 'times',
         mask: 0.25,
         width: 200,
         text: '服务器已停止运行',
@@ -35,10 +35,10 @@ define('/Home/Server/Status', function (require, module, exports) {
         /**
         * 
         */
-        test: function () {
+        test: function (server) {
             let url = Query.add(`${config.url}sse/Terminal.exec`, {
-                cmd: 'pwd',
-                args: '[]',
+                cmd: 'echo',
+                args: JSON.stringify(['hello']),
             });
 
             let status = true;
@@ -57,7 +57,7 @@ define('/Home/Server/Status', function (require, module, exports) {
                 }
                 else {
                     // true --> false
-                    toast.show('服务器已停止运行');
+                    toast.show();
                     emitter.fire('close');
                 }
 
@@ -77,12 +77,14 @@ define('/Home/Server/Status', function (require, module, exports) {
 
 
             source.addEventListener('error', function (event) {
-                let { data, } = event;
+                let { data, } = event; // data 是一个 string。
 
                 //服务器可能已经关闭了，会不断重发请求到服务器。
                 if (data === undefined) {
                     change(false);
-                    return;
+                }
+                else {
+                    change(true); //在 windows 平台会执行这个。 调试后发现的。
                 }
             });
 

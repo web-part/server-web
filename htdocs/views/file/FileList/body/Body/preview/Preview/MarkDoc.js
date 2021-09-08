@@ -44,9 +44,9 @@ define.panel('/FileList/Body/Preview/MarkDoc', function (require, module, panel)
         let format = true;
 
 
-        //以源码方式展示，需要进行 html 编码。
+        //以源码方式展示
         if (opt.type == 'source') {
-            content = Escape.html(content);
+            // content = Escape.html(content); //需要进行 html 编码。
             language = ext.slice(1);
             format = false; //不格式化代码，以保留源格式。
         }

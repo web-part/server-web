@@ -22,13 +22,14 @@ define.panel('/Home/Server/Main', function (require, module, panel) {
                     let localUrls = this.fill('local', statics, data);
                     let networkUrls = this.fill('network', statics, data);
 
-                    let { session, } = data;
+                    let { session, process, } = data;
                     let { allowCrossOrigin, } = data.api;
                     let time = $Date.format(session.time, 'yyyy-MM-dd HH:mm:ss');
 
                     return {
                         'status': status,
                         'time': time,
+                        'pid': process.pid,
                         'port': data.port,
                         'host': data.host,
                         'sessionId': session.id,

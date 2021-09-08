@@ -5,12 +5,12 @@
 */
 define('API', function (require, module, exports) {
     const $API = require('@definejs/api');
-
+    
 
     function API(name, config) {
-        var api = new $API(name, config);
-        var get = api.get.bind(api);
-        var post = api.post.bind(api);
+        let api = new $API(name, config);
+        let get = api.get.bind(api);
+        let post = api.post.bind(api);
 
       
 

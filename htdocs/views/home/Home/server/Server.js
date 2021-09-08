@@ -8,13 +8,19 @@ define.panel('/Home/Server', function (require, module, panel) {
 
 
     panel.on('init', function () {
+        panel.$on('click', {
+            '[data-cmd="refresh"]': function (event) {
+                panel.refresh();
+            },
+        });
 
         API.on('success', {
             'get': function (data) {
                 Loading.hide();
                 Main.render(data);
+                Status.test(data);
 
-                Status.test('pwd');
+                panel.fire('get', [data]);
             },
         });
 
@@ -36,5 +42,9 @@ define.panel('/Home/Server', function (require, module, panel) {
         API.get();
 
     });
+
+    return {
+        
+    };
 
 });

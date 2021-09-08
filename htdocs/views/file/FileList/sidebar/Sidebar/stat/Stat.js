@@ -59,7 +59,7 @@ define.panel('/FileList/Sidebar/Stat', function (require, module, panel) {
 
 
     panel.on('render', function (data) {
-        console.log(data);
+        
         panel.fill(data);
 
         panel.$.toggleClass('dir', data.type == 'dir');

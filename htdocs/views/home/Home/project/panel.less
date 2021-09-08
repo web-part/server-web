@@ -1,13 +1,33 @@
 
 
-[data-panel="/Home/Server"] {
+[data-panel="/Home/Project"] {
     
     
-    [data-panel="/Home/Server/Main"] {
+    [data-panel="/Home/Project/Main"] {
         position: relative;
         table {
             font-size: 14px;
             margin-left: 20px;
+
+            tr.name {
+               td {
+                   color: #ffeb3b;
+                   font-size: 20px;
+               }
+            }
+
+            tr.cwd {
+                td {
+                    color: #ffc107;
+                }
+            }
+
+            tr.italic {
+                td {
+                    font-style: italic;
+                    color: #fff;
+                }
+            }
 
            
 
@@ -48,6 +68,19 @@
                     }
                 }
 
+                a {
+                    text-decoration: none;
+                    color: #dedede;
+                    cursor: pointer;
+
+                    &:hover{
+                        color:#fff;
+                        text-decoration: underline;
+
+                    }
+                    
+                }
+
                 ul {
 
                     margin: 0px;
@@ -59,25 +92,14 @@
                         margin: 0px;
                         width: unset;
                         text-align: unset;
-                        background: none;
 
-                        a {
-                            text-decoration: none;
-                            color: #dedede;
-                            cursor: pointer;
-
-                            &:hover{
-                                color:#fff;
-                                text-decoration: underline;
-                            }
-                            
-                        }
+                        
 
                         img {
                             display: none;
                             position: absolute;
                             top: 0px;
-                            right: 4px;
+                            right: 0px;
                             width: 200px;
                         }
 

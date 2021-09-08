@@ -1,6 +1,7 @@
 
 const stat = require('./stat');
 const master = require('./master');
+const watch = require('./watch');
 const proxy = require('./server/proxy');
 
 
@@ -30,9 +31,14 @@ module.exports = {
         api: '/api',
         sse: '/api/sse',
         allowCrossOrigin: false,
-
+        //允许访问的域名。
+        //为了安全性，避免同一个局域网的其它机子访问你的项目管理平台，请指定为 `localhost`。
+        //如果不指定，或者列表为空，则不限制。
+        allowHosts: ['localhost',], 
         stat,
         master,
+        //里面只用到 `file` 字段。
+        watch: { 'file': watch.file, },
         
     },
 

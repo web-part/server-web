@@ -17,6 +17,14 @@
         font-size: 14px;
         display: flex;
 
+        &:hover {
+            header {
+                i {
+                    display: block;
+                }
+            }
+        }
+
         &.blue {
             background: #5392cc;
         }
@@ -76,6 +84,7 @@
 
         header {
             margin-bottom: 10px;
+            position: relative;
 
             span {
                 display: inline-block;
@@ -86,6 +95,18 @@
                 border-top-left-radius: 3px;
                 border-bottom-right-radius: 3px;
                 font-size: 16px;
+            }
+
+            i {
+                display: none;
+                position: absolute;
+                right: 10px;
+                top: 10px;
+                cursor: pointer;
+                
+                &:hover {
+                    color: #1ea2f1;
+                }
             }
 
         }

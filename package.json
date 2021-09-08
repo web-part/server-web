@@ -7,7 +7,7 @@
         "watch": "webpart watch",
         "build": "webpart build"
     },
-    "keywords": [],
+    "keywords": ["webserver", "开发服务器", "管理平台"],
     "author": "micty",
     "email": "mictydeng@qq.com",
     "license": "MIT",

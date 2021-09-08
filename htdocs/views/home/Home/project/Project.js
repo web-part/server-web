@@ -1,6 +1,6 @@
 
 
-define.panel('/Home/FileList', function (require, module, panel) {
+define.panel('/Home/Project', function (require, module, panel) {
     const API = module.require('API');
     const Loading = module.require('Loading');
     const Main = module.require('Main');
@@ -12,13 +12,18 @@ define.panel('/Home/FileList', function (require, module, panel) {
                 panel.refresh();
             },
         });
+
         
         API.on('success', {
             'get': function (data) {
                 Loading.hide();
                 Main.render(data);
+
             },
         });
+
+
+      
 
     });
 

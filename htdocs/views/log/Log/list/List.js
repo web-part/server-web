@@ -71,8 +71,6 @@ define.panel('/Log/List', function (require, module, panel) {
 
 
     panel.on('render', function (data) {
-        console.log(module.id, data);
-
         meta.list = data.list;
         meta.groups = data.groups;
         meta.date$list = data.date$list;

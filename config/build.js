@@ -124,7 +124,8 @@ module.exports = {
             jsBlock: {
                 begin: 'partial/begin.js',
                 end: 'partial/end.js',
-                minify: true,
+                // minify: true,
+                minify: false, //这里不压缩，方便后续在实际环境中调试。
                 inline: false,
                 name: '{md5}.js',
                 props: {},
