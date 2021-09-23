@@ -25,6 +25,18 @@
         [data-panel="/Markdoc/Header"]  {
             display: none;
         }
+
+        //打印模式下的最佳宽度。
+        [data-panel="/Markdoc/Content"] {
+            max-width: 710px;
+            min-width: 710px;
+
+            .MarkDoc {
+                img {
+                    max-width: 710px;
+                }
+            }
+        }
     }
 
     //源码模式。

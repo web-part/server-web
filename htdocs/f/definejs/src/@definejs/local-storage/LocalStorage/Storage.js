@@ -1,6 +1,6 @@
 /**
 * src: @definejs/local-storage/modules/LocalStorage/Storage.js
-* pkg: @definejs/local-storage@1.0.0
+* pkg: @definejs/local-storage@1.0.2
 */
 define('LocalStorage/Storage', function (require, module, exports) { 
     const CircularJSON = require('circular-json');

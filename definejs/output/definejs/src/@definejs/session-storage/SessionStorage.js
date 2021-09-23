@@ -1,6 +1,6 @@
 /**
 * src: @definejs/session-storage/modules/SessionStorage.js
-* pkg: @definejs/session-storage@1.0.0
+* pkg: @definejs/session-storage@1.0.2
 */
 define('SessionStorage', function (require, module, exports) { 
     const $Object = require('Object');

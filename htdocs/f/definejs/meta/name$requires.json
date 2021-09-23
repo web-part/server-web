@@ -7,10 +7,9 @@
         "@definejs/emitter",
         "@definejs/fn",
         "@definejs/json",
-        "@definejs/object",
-        "@definejs/proxy",
         "@definejs/query",
-        "@definejs/string"
+        "@definejs/script",
+        "@definejs/url"
     ],
     "@definejs/app": [
         "@definejs/app-module",
@@ -111,13 +110,6 @@
         "@definejs/template",
         "jquery"
     ],
-    "@definejs/proxy": [
-        "@definejs/fn",
-        "@definejs/json",
-        "@definejs/query",
-        "@definejs/script",
-        "@definejs/url"
-    ],
     "@definejs/query": [
         "@definejs/object",
         "@definejs/string"
@@ -137,7 +129,6 @@
         "@definejs/emitter",
         "@definejs/id-maker",
         "@definejs/object",
-        "@definejs/string",
         "@definejs/template",
         "jquery"
     ],

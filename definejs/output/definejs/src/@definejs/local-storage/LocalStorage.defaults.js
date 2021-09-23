@@ -1,6 +1,6 @@
 /**
 * src: @definejs/local-storage/modules/LocalStorage.defaults.js
-* pkg: @definejs/local-storage@1.0.0
+* pkg: @definejs/local-storage@1.0.2
 */
 define('LocalStorage.defaults', function (require, module, exports) { 
     

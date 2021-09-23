@@ -1,6 +1,6 @@
 /**
 * src: @definejs/session-storage/modules/SessionStorage.defaults.js
-* pkg: @definejs/session-storage@1.0.0
+* pkg: @definejs/session-storage@1.0.2
 */
 define('SessionStorage.defaults', function (require, module, exports) { 
     

@@ -1,6 +1,6 @@
 /**
 * src: @definejs/package/modules/Package.defaults.js
-* pkg: @definejs/package@1.0.0
+* pkg: @definejs/package@1.0.1
 */
 define('Package.defaults', function (require, module, exports) { 
     module.exports = {

@@ -1,6 +1,6 @@
 /**
 * src: @definejs/script/modules/Script.js
-* pkg: @definejs/script@1.0.0
+* pkg: @definejs/script@1.0.2
 */
 define('Script', function (require, module, exports) { 
     

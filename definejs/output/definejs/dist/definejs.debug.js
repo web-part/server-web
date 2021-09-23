@@ -1,12 +1,12 @@
 
 /**
 * definejs library
-* build time: 2021-08-09 14:36:59
+* build time: 2021-09-23 14:49:50
 * build tool: @definejs/packer
-* source packages (39):
+* source packages (38):
 * {
 *     "@definejs/alert@1.0.2": "Alert",
-*     "@definejs/api@1.0.1": "API",
+*     "@definejs/api@2.0.1": "API",
 *     "@definejs/app-module@1.0.0": "AppModule",
 *     "@definejs/app@1.0.1": "App",
 *     "@definejs/array@1.1.0": "Array",
@@ -14,7 +14,7 @@
 *     "@definejs/date@1.0.0": "Date",
 *     "@definejs/defaults@1.0.0": "Defaults",
 *     "@definejs/dialog@1.0.4": "Dialog",
-*     "@definejs/emitter@1.0.5": "Emitter",
+*     "@definejs/emitter@1.1.0": "Emitter",
 *     "@definejs/escape@1.0.0": "Escape",
 *     "@definejs/fn@1.0.0": "Fn",
 *     "@definejs/hash@1.0.0": "Hash",
@@ -22,21 +22,20 @@
 *     "@definejs/id-maker@1.0.1": "IDMaker",
 *     "@definejs/json@1.0.0": "JSON",
 *     "@definejs/loading@1.0.2": "Loading",
-*     "@definejs/local-storage@1.0.0": "LocalStorage",
+*     "@definejs/local-storage@1.0.2": "LocalStorage",
 *     "@definejs/masker@1.0.1": "Masker",
 *     "@definejs/math@1.0.0": "Math",
 *     "@definejs/module-manager@1.0.2": "ModuleManager",
 *     "@definejs/navigator@1.0.0": "Navigator",
 *     "@definejs/object@1.1.0": "Object",
-*     "@definejs/package@1.0.0": "Package",
+*     "@definejs/package@1.0.1": "Package",
 *     "@definejs/panel@1.0.1": "Panel",
-*     "@definejs/proxy@1.0.0": "Proxy",
 *     "@definejs/query@1.0.0": "Query",
-*     "@definejs/script@1.0.0": "Script",
-*     "@definejs/session-storage@1.0.0": "SessionStorage",
+*     "@definejs/script@1.0.2": "Script",
+*     "@definejs/session-storage@1.0.2": "SessionStorage",
 *     "@definejs/string@1.0.0": "String",
 *     "@definejs/style@1.0.0": "Style",
-*     "@definejs/tabs@1.0.2": "Tabs",
+*     "@definejs/tabs@1.0.3": "Tabs",
 *     "@definejs/tasker@1.0.2": "Tasker",
 *     "@definejs/template@1.0.0": "Template",
 *     "@definejs/timer@1.0.1": "Timer",
@@ -707,142 +706,1392 @@ $define('ModuleManager', function (require, module, exports) {
 });
 
 /**
-* src: @definejs/defaults/modules/Defaults.js
-* pkg: @definejs/defaults@1.0.0
+* src: @definejs/alert/modules/Alert/Dialog/Height.js
+* pkg: @definejs/alert@1.0.2
 */
-define('Defaults', function (require, module, exports) { 
-    //注意，此模块仅供自动化打包工具 `@definejs/packer` 使用的。
-    //不能单独使用，因为它依赖 `@definejs/packer` 中一个变量 `InnerMM`。
-    //由打包工具把其它模块和本模块打包成一个独立的库时，需要用到本模块。  
-    //本模块用于充当`@definejs/` 内部模块使用的默认配置管理器。   
+define('Alert/Dialog/Height', function (require, module, exports) { 
+    const $String = require('String');
     
-    //const InnerMM; //内部模块管理器。
+    //根据文本来计算高度，大概值，并不要求很准确。
+    function getHeightByLength(text) {
+        text = String(text);
     
-    const $Object = require('Object');
-    const id$defaults = {}; //记录模块 id 对应的默认配置。
-    const id$obj = {};
-    const hookKey = '__hooked_for_defaults__';
-    const suffix = '.defaults';
+        let len = $String.getByteLength(text);
+        let h = Math.max(len, 125);
+        let max = document.documentElement.clientHeight;
+    
+        if (h >= max * 0.8) {
+            h = '80%';
+        }
+    
+    
+        return h;
+    }
+    
+    //根据文本来计算高度，大概值，并不要求很准确。
+    function getHeightByLines(text) {
+        text = String(text);
+    
+        let lines = text.split('\n');
+        let h = lines.length * 25 + 60;
+        let max = document.documentElement.clientHeight;
+    
+        if (h >= max * 0.8) {
+            h = '80%';
+        }
+    
+    
+        return h;
+    }
+    
+    
+    module.exports = {
+        /**
+        * 根据文本获取对话框的高度。
+        */
+        get(text) {
+            let h0 = getHeightByLength(text);
+            let h1 = getHeightByLines(text);
+    
+            let h = Math.max(h0, h1);
+    
+    
+            //保证取偶数。
+            //因为奇数的高度，如 `height: 125px;`，
+            //会导致 footer 的 `border-top` 变粗，暂未找到原因。
+            if (typeof h == 'number') {
+                h = h % 2 == 1 ? h + 1 : h;
+            }
+    
+            return h;
+    
+        },
+    };
+});
+/**
+* src: @definejs/alert/modules/Alert/Dialog.js
+* pkg: @definejs/alert@1.0.2
+*/
+define('Alert/Dialog', function (require, module, exports) { 
+    const Height = module.require('Height');
+    
+    let dialog = null;
+    let visible = false;
+    let list = [];
+    let activeElement = null;   //上次获得焦点的元素。
+    let showFrom = 13;          //记录一下是否由于按下回车键导致的显示。
+    let defaults = null;        //使用的是父模拟的配置，由父模块传进来。
+    
+    //创建对话框。
+    function create() {
+        let config = Object.assign({}, defaults);
+        let Dialog = config.Dialog;
+    
+        let dialog = new Dialog({
+            'cssClass': 'definejs-Alert',
+            'volatile': config.volatile,
+            'mask': config.mask,
+            'autoClose': config.autoClose,
+            'width': config.width,
+            'z-index': config['z-index'],
+            'buttons': config.buttons,
+        });
+    
+    
+    
+        dialog.on('button', {
+            ok() {
+                let fn = dialog.data('fn');
+    
+                fn && fn();
+            },
+        });
+    
+    
+        dialog.on({
+            show() {
+                visible = true;
+    
+                showFrom = showFrom == 13 ? 'enter' : '';
+                activeElement = document.activeElement;
+                activeElement.blur();
+            },
+    
+            hide() {
+                visible = false;
+    
+                let item = list.shift();
+    
+                if (item) {
+                    render(item.text, item.fn);
+                }
+    
+                activeElement = null;
+                showFrom = '';
+            },
+        });
+    
+        //响应回车键。
+    
+        document.addEventListener('keydown', (event) => { 
+            showFrom = event.keyCode;
+        });
+    
+        document.addEventListener('keyup', (event) => { 
+            let invalid =
+                event.keyCode != 13 ||  //不是回车键。
+                !visible ||             //已是隐藏，避免再次触发。
+                showFrom == 'enter';    //由于之前按下回车键导致的显示。
+    
+            if (invalid) {
+                return;
+            }
+    
+            dialog.hide();
+    
+            let fn = dialog.data('fn');
+            fn && fn();
+        });
+    
+        return dialog;
+    }
+    
+    
+    function render(text, fn) {
+        let height = Height.get(text);
+    
+        dialog = dialog || create();
+    
+        dialog.data('fn', fn);
+    
+        dialog.set({
+            'content': text,
+            'height': height,
+        });
+    
+        dialog.show();
+    
+    }
+    
+    
+    module.exports = {
+        /**
+        * 由父模块把默认配置传进来以供本模块使用。
+        * @param {Object} defaultsData 父模块的默认配置。
+        */
+        init(defaultsData) {
+            defaults = defaultsData;
+        },
+    
+        /**
+        * 把要显示的文本和要执行的回调函数加到队列里，并在特定时机显示出来。
+        */
+        add(text, fn) {
+            //首次显示，或之前显示的已经给隐藏了，立即显示出来。
+            if (!visible) {
+                render(text, fn);
+                return;
+            }
+    
+            //已经是显示的，加到队列里进行排队。
+            list.push({ text, fn, });
+        },
+    };
+});
+/**
+* src: @definejs/alert/modules/Alert/Sample.js
+* pkg: @definejs/alert@1.0.2
+*/
+define('Alert/Sample', function (require, module, exports) { 
+    //这里不要在 <pre> 中换行，它是一个保持原格式的标签。
+    module.exports = `<pre class="JSON">{text}</pre>`;
+});
+/**
+* src: @definejs/alert/modules/Alert.defaults.js
+* pkg: @definejs/alert@1.0.2
+*/
+define('Alert.defaults', function (require, module, exports) { 
+    
+    const Dialog = require('Dialog');
+    
+    
+    /**
+    * Alert 模块的默认配置
+    * @name Alert.defaults
+    */
+    module.exports = {
+        Dialog, //这里提供一个默认的，移动端的会传入一个移动版的 Dialog。
+    
+        volatile: false,
+        mask: true,
+        autoClose: true,
+        width: 450,
+    
+        'z-index': 99999,
+    
+        buttons: [
+            { text: '确定', cmd: 'ok', cssClass: 'OK', },
+        ],
+    };
+});
+/**
+* src: @definejs/alert/modules/Alert.js
+* pkg: @definejs/alert@1.0.2
+*/
+define('Alert', function (require, module, exports) { 
+    /**
+    * alert 对话框。
+    */
+    const $String = require('String');
+    const Dialog = module.require('Dialog');
+    const Sample = module.require('Sample');
     
     
     module.exports = exports = {
         /**
-        * 设置内部模块的默认配置。
-        * 会跟原有的配置作深度合并。
-        * 已重载 set(id, data); //设置单个模块的配置。
-        * 已重载 set(id$data);  //设置多个模块的配置，每个模块有自己的配置。
-        * 已重载 set(ids, data);  //设置多个模块的配置，它们共用同一个配置。
-        * @param {string} id 要设置的模块 id。
-        * @param {Object} data 默认配置。
+        * 默认配置。
         */
-        set(id, data) {
-            //重载 set(ids, data); 批量设置，多个模块共用一个配置数据。
-            if (Array.isArray(id)) {
-                let ids = id;
-                ids.forEach(function (id) {
-                    exports.set(id, data);
+        defaults: require('Alert.defaults'),
+        
+        /**
+        * 显示一个 alert 对话框。 
+        * 支持多次调用，会将多次调用加进队列，在显示完上一次后进行下一次的显示。
+        */
+        show(text, text1, textN, fn) {
+            //重载 show(obj); 
+            //以方便程序员调试查看 json 对象。
+            if (typeof text == 'object') {
+                text = JSON.stringify(text, null, 4);
+                text = $String.format(Sample, { 'text': text, });
+            }
+    
+            let args = [...arguments];
+    
+            //在参数列表中找到的第一个函数当作是回调函数，并忽略后面的参数。
+            let index = args.findIndex(function (item, index) {
+                return typeof item == 'function';
+            });
+    
+            if (index > 0) { //找到回调函数
+                fn = args[index];
+                args = args.slice(0, index); //回调函数前面的都当作是要显示的文本
+            }
+            else {
+                fn = null;
+            }
+    
+            text = $String.format(...args);
+            
+            Dialog.init(exports.defaults);
+            Dialog.add(text, fn);
+        },
+    };
+    
+    
+});
+/**
+* src: @definejs/dialog/modules/Dialog/Template/Sample.js
+* pkg: @definejs/dialog@1.0.4
+*/
+define('Dialog/Template/Sample', function (require, module, exports) { 
+    
+    module.exports = `
+    <div id="{id}" class="definejs-Dialog {cssClass}" style="{style} display: none;">
+        <template name="header" placeholder="header">
+            <header id="{headerId}">
+                {title}
+            </header>
+        </template>
+    
+        <template name="content" placeholder="content">
+            <article id="{articleId}" class="{noHeader} {noFooter}">
+                <div id="{contentId}">{content}</div>
+            </article>
+        </template>
+    
+        <template name="footer" placeholder="footer">
+            <footer id="{footerId}" class="Buttons-{count}">
+                <template name="button" placeholder="buttons">
+                    <button data-index="{index}" class="{cssClass}" style="{style}">{text}</button>
+                </template>
+            </footer>
+        </template>
+    </div>
+    `;
+    
+});
+/**
+* src: @definejs/dialog/modules/Dialog/Events.js
+* pkg: @definejs/dialog@1.0.4
+*/
+define('Dialog/Events', function (require, module, exports) { 
+    const $ = require('jquery');
+    
+    
+    module.exports = {
+    
+        bind(meta) {
+            //监控 masker 层的隐藏。
+            if (meta.masker && meta.volatile) {
+                meta.masker.on({
+                    'show'() {
+    
+                    },
+                    'hide'() {
+                        meta.this.hide();
+                    },
                 });
-                return;
             }
     
-            //重载 set(id$data); 批量设置，每个模块有自己的配置。
-            if ($Object.isPlain(id)) {
-                let id$data = id;
-                $Object.each(id$data, function (id, data) {
-                    exports.set(id, data);
+    
+            //底部按钮。
+            (function () {
+                if (!meta.buttons.length) {
+                    return;
+                }
+    
+                let $footer = meta.$footer;
+                let eventName = meta.eventName;
+                let selector = 'button[data-index]';
+                let pressed = meta.pressedClass;
+    
+                //移动端。
+                if (eventName == 'touch') {
+                    $footer.touch(selector, handler, pressed);
+                    return;
+                }
+    
+                //PC 端。
+                $footer.on(eventName, selector, handler); //如 on('click', selector);
+    
+                $footer.on('mousedown', selector, function (event) {
+                    $(this).addClass(pressed);
                 });
-                return;
-            }
     
-            //重载 set(id, data); 单个设置。
+                $footer.on('mouseup mouseout', selector, function (event) {
+                    $(this).removeClass(pressed);
+                });
     
-            //1，已加载过了，直接合并。
-            let defaults = id$defaults[id];
-            if (defaults) {
-                $Object.deepAssign(defaults, data);
-                return;
-            }
     
-            //2，尚未加载过，先缓存起来。
+                //内部共用的处理器。
+                function handler(event) {
+                    let button = this;
+                    let index = +button.getAttribute('data-index');
+                    let item = meta.buttons[index];
+                    let cmd = item.cmd || String(index);
+                    let fn = item.fn;
     
-            //2.1，之前已设置过一次，则与之前的合并，缓存起来。
-            let obj = id$obj[id];
-            if (obj) {
-                $Object.deepAssign(obj, data);
-                return;
-            }
+                    fn && fn(item, index);
     
-            //2.2，首次设置。
+                    meta.emitter.fire('button', cmd, [item, index]);
+                    meta.emitter.fire('button', [item, index]);
     
-            //先缓存起来。
-            id$obj[id] = $Object.deepAssign({}, data);
     
-            let mm = InnerMM.create();
+                    // item.autoClose 优先级高于 meta.autoClose。
+                    let autoClose = item.autoClose;
     
-            if (!mm.require[hookKey]) {
-                let mm_require = mm.require.bind(mm);
-    
-                //使用钩子函数进行重写，以便对 mm.require() 进行拦载，执行附加的逻辑。
-                mm.require = function ($id) {
-                    let $exports = mm_require($id);
-    
-                    //如果是 `*.defaults` 的格式，则注入附加的逻辑。
-                    if ($id.endsWith(suffix)) {
-                        let id = $id.slice(0, -suffix.length); //去掉 `.defaults` 后缀，如 `API.defaults` 变为 `API`。
-                        let obj = id$obj[id];
-                        let defaults = $exports;
-    
-                        id$defaults[id] = $Object.deepAssign(defaults, obj);
+                    if (autoClose === undefined) {
+                        autoClose = meta.autoClose;
                     }
-                    
-                    //这个必须无条件返回出去，是原有的 require() 函数要求的。
-                    return $exports;
-                };
     
-                mm.require[hookKey] = true;
-            }
+                    if (autoClose) {
+                        meta.this.hide();
+                    }
+                }
+    
+            })();
     
     
-            // //绑定加载事件，在被加载时，再进行合并。
-            // mm.on('require', `${id}.defaults`, function ($module, $exports) {
-            //     let defaults = $exports;
-            //     let obj = id$obj[id];
-            //     id$defaults[id] = $Object.deepAssign(defaults, obj);
-            // });
+    
         },
+    };
+});
+/**
+* src: @definejs/dialog/modules/Dialog/Masker.js
+* pkg: @definejs/dialog@1.0.4
+*/
+define('Dialog/Masker', function (require, module, exports) { 
     
-        /**
-        * 获取指定模块的默认配置。
-        * @param {string} id 要获取默认配置的模块 id。
-        */
-        get(id) {
-            let defaults = id$defaults[id];
     
-            if (!defaults) {
-                defaults = id$defaults[id] = require(`${id}.defaults`);
+    
+    module.exports = {
+    
+        create(config) {
+            let Masker = config.Masker;
+    
+            let defaults = {
+                'container': config.container,
+            };
+    
+            let options = Masker.normalize(defaults, config.mask); //返回一个 {} 或 null。
+    
+            if (!options) {
+                return null;
             }
     
-            return defaults;
+    
+            Object.assign(options, {
+                'volatile': config.volatile,
+                'z-index': config['z-index'] - 1,
+            });
+    
+    
+            let masker = new Masker(options);
+    
+            return masker;
+    
         },
+    };
+});
+/**
+* src: @definejs/dialog/modules/Dialog/Meta.js
+* pkg: @definejs/dialog@1.0.4
+*/
+define('Dialog/Meta', function (require, module, exports) { 
     
+    const IDMaker = require('IDMaker');
+    
+    
+    
+    module.exports = {
+        create(config, others) {
+            let maker = new IDMaker(config.idPrefix);
+            let buttons = config.buttons || [];
+    
+    
+            buttons = buttons.map(function (item) {
+                return item == 'string' ? { 'text': item, } : item;
+            });
+    
+    
+            let meta = {
+                'id': maker.next(),
+                'headerId': maker.next('header'),
+                'articleId': maker.next('article'),
+                'contentId': maker.next('content'),
+                'footerId': maker.next('footer'),
+    
+                'Masker': config.Masker,            //遮罩层的构造函数。 由外面按需要传入，从而避免内部关联加载。 针对移动端，如果传入了则使用。
+                'Scroller': config.Scroller,        //滚动器的构造函数，由外面按需要传入，从而避免内部关联加载。 针对移动端，如果传入了则使用。
+                'scrollable': config.scrollable,    //是否需要滚动内容，如果指定为 true，则必须传入 Scroller 构造器。
+                'scrollerConfig': config.scroller,
+                'eventName': config.eventName,
+                'title': config.title,
+                'content': config.content,
+                'buttons': buttons,
+                'z-index': config['z-index'],       //生成透明层时要用到。
+                'width': config.width,              //宽度。
+                'height': config.height,            //高度。
+                'autoClose': config.autoClose,      //点击任何一个按钮后是否自动关闭组件
+                'volatile': config.volatile,        //是否易消失。 即点击对话框外的 masker 时自动关闭对话框。
+                'cssClass': config.cssClass || '',  //
+                'container': config.container,      //
+    
+                'pressedClass': 'Pressed',  //底部按钮按下去时的样式类名。
+                'visible': false,           //记录当前组件是否已显示
+                'style': {},                //样式对象。
+                'data': {},                 //供 this.data() 方法使用
+    
+                'scroller': null,           //针对移动端的滚动器。
+                'masker': null,             //Masker 的实例，重复使用。
+                'emitter': null,            //事件驱动器。
+                'this': null,               //当前实例，方便内部使用。
+                '$': null,                  //组件最外层的 DOM 节点的 jQuery 实例。
+                '$header': null,            //$(headerId)。
+                '$content': null,           //$(contentId)。
+                '$footer': null,            //$(footerId)。
+            };
+    
+    
+    
+            Object.assign(meta, others);
+    
+    
+            return meta;
+    
+    
+        },
+    };
+});
+/**
+* src: @definejs/dialog/modules/Dialog/Style.js
+* pkg: @definejs/dialog@1.0.4
+*/
+define('Dialog/Style', function (require, module, exports) { 
+    const $Object = require('Object');
+    const Style = require('Style');
+    
+    module.exports = {
         /**
-        * 获取或设置 definejs 内部模块的默认配置。
-        * 已重载 config(id); //获取指定 id 的模块的默认配置。
-        * 已重载 config(id, data); //单个设置指定 id 的模块的默认配置。
-        * 已重载 config(id$data); //批量设置模块的默认配置。
+        *
         */
-        config(...args) {
-            //get(id)
-            if (args.length == 1 && typeof args[0] == 'string') {
-                return exports.get(...args);
-            }
+        get(config) {
+            let obj = $Object.filter(config, ['height', 'width', 'z-index']);
+            let style = Style.objectify(config.style);
     
-            //set()
-            exports.set(...args);
+            style = Style.merge(style, obj);
+            style = Style.pixelize(style, ['height', 'width',]);
+    
+            return style;
+    
         },
     
     
     };
+    
+    
+});
+/**
+* src: @definejs/dialog/modules/Dialog/Template.js
+* pkg: @definejs/dialog@1.0.4
+*/
+define('Dialog/Template', function (require, module, exports) { 
+    const Template = require('Template');
+    const Style = require('Style');
+    
+    const Sample = module.require('Sample');
+    
+    const tpl = Template.create(Sample);
+    
+    
+    
+    tpl.process({
+        '': function (data) {
+            let header = this.fill('header', data);
+            let content = this.fill('content', data);
+            let footer = this.fill('footer', data);
+    
+            let style = Style.stringify(data.style);
+    
+            return {
+                'id': data.id,
+                'cssClass': data.cssClass || '',
+                'style': style,
+                'header': header,
+                'content': content,
+                'footer': footer,
+            };
+        },
+    
+        'header': function (data) {
+            let title = data.title;
+    
+            if (!title) {
+                return '';
+            }
+    
+    
+            return {
+                'headerId': data.headerId,
+                'title': title,
+            };
+        },
+    
+        'content': function (data) {
+    
+            return {
+                'articleId': data.articleId,
+                'contentId': data.contentId,
+                'content': data.content,
+                'noHeader': data.title ? '' : 'NoHeader',              //针对无标题时。
+                'noFooter': data.buttons.length > 0 ? '' : 'NoFooter', //针对无按钮时。
+            };
+        },
+    
+        'footer': {
+            '': function (data) {
+                let buttons = data.buttons;
+                let count = buttons.length;
+    
+                if (!count) {
+                    return '';
+                }
+    
+                buttons = this.fill('button', buttons);
+    
+                return {
+                    'footerId': data.footerId,
+                    'count': count,
+                    'buttons': buttons,
+                };
+    
+            },
+    
+            'button': function (item, index) {
+                let style = Style.stringify(item.style);
+    
+                return {
+                    'index': index,
+                    'text': item.text,
+                    'cssClass': item.cssClass || '',
+                    'style': style,
+    
+                };
+            },
+        },
+    
+    });
+    
+    
+    module.exports = tpl;
+    
+});
+/**
+* src: @definejs/dialog/modules/Dialog.defaults.js
+* pkg: @definejs/dialog@1.0.4
+*/
+define('Dialog.defaults', function (require, module, exports) { 
+    const Masker = require('Masker');
+    
+    /**
+    * Dialog 模块的默认配置
+    * @name Dialog.defaults
+    */
+    module.exports = {
+        /**
+        * 生成组件时的 id 前缀。
+        * 建议保留现状。
+        */
+        idPrefix: 'definejs-Dialog',
+        /**
+        * 遮罩层的构造函数。
+        * 移动端需要在外部加载 Masker 模块后传入。
+        */
+        Masker, //这里提供一个默认的，以用于 PC 端。 至于移动端的，则需要提供 `@definejs/masker-mobile` 的。
+        /**
+        * 滚动器的构造函数。
+        * 移动端需要在外部加载 Scroller 模块后传入。
+        */
+        Scroller: null, //这里由移动端提供。
+        /**
+        * 组件添加到的容器。
+        * 默认为 document.body。
+        */
+        container: 'body',
+        /**
+        * 是否启用 mask 层。
+        */
+        mask: true,
+        /**
+        * 点击按钮后是否自动关闭组件。
+        * 可取值为: true|false，默认为 true，即自动关闭。
+        */
+        autoClose: true,
+        /**
+        * 指定是否易消失，即点击 mask 层就是否隐藏/移除。
+        * 可取值为: true|false，默认为不易消失。
+        */
+        volatile: false,
+        /**
+        * 组件的标题文本。
+        */
+        title: '',
+        /**
+        * 组件的内容文本。
+        */
+        content: '',
+        /**
+        * 点击按钮时需要用到的事件名。
+        */
+        eventName: 'click',
+        /**
+        * 组件用到的 css 类名。
+        */
+        cssClass: '',
+        /**
+        * 组件的 css 样式 z-index 值。
+        */
+        'z-index': 1024,
+        /**
+        * 
+        */
+        width: 600,
+        /**
+        * 组件高度。
+        * 可以指定为百分比的字符串，或指定具体的数值（单位为像素），
+        */
+        height: '50%',
+        /**
+        * 样式集合。
+        * 外层里面的同名字段优先级高于里面的。
+        */
+        style: {},
+        /**
+        * 按钮数组。
+        */
+        buttons: [],
+        /**
+        * 内容区是否可滚动。
+        * PC 端用不可滚动。
+        */
+        scrollable: false,
+        /**
+        * 针对滚动器 Scroller 的配置。
+        */
+        scroller: null,
+    };
+});
+/**
+* src: @definejs/dialog/modules/Dialog.js
+* pkg: @definejs/dialog@1.0.4
+*/
+define('Dialog', function (require, module, exports) { 
+    const $ = require('jquery');
+    const $Object = require('Object');
+    const Emitter = require('Emitter');
+    const Style = module.require('Style');
+    const Meta = module.require('Meta');
+    const Masker = module.require('Masker');
+    const Events = module.require('Events');
+    const Template = module.require('Template');
+    
+    const mapper = new Map();
+    
+    
+    class Dialog {
+    
+        /**
+        * 构造器。
+        */
+        constructor(config) {
+            config = $Object.deepAssign({}, exports.defaults, config);
+    
+            let emitter = new Emitter(this);        //事件驱动器。
+            let style = Style.get(config);          //
+            let masker = Masker.create(config);     //
+    
+            let meta = Meta.create(config, {
+                'style': style,         //从配置中过滤出样式成员，并进行规范化处理，style 是一个 {}。
+                'emitter': emitter,     //事件驱动器。
+                'masker': masker,       //遮罩层实例。
+                'this': this,           //当前实例，方便内部使用。
+            });
+    
+    
+            mapper.set(this, meta);
+    
+            //对外暴露的属性。
+            Object.assign(this, {
+                'id': meta.id,
+                '$': null,
+            });
+    
+        }
+    
+        // /**
+        // * 当前实例的 id。
+        // * 也是最外层的 DOM 节点的 id。
+        // */
+        // id = '';
+    
+        // /**
+        // * 当前组件最外层的 DOM 节点对应的 jQuery 实例。
+        // * 必须在 render 之后才存在。
+        // */
+        // $ = null;
+    
+    
+        /**
+        * 渲染本组件，生成 html 到容器 DOM 节点中。
+        * 该方法只需要调用一次。
+        * 触发事件: `render`。
+        */
+        render() {
+            let meta = mapper.get(this);
+    
+            //已经渲染过了。
+            if (meta.$) {
+                return;
+            }
+    
+    
+            let html = Template.fill(meta);
+    
+            $(meta.container).append(html);
+    
+            meta.$ = this.$ = $(`#${meta.id}`);
+            meta.$header = $(`#${meta.headerId}`);
+            meta.$article = $(`#${meta.articleId}`);
+            meta.$content = $(`#${meta.contentId}`);
+            meta.$footer = $(`#${meta.footerId}`);
+    
+           
+            //指定了可滚动
+            if (meta.scrollable) {
+                let Scroller = meta.Scroller;
+                if (!Scroller) {
+                    throw new Error('你已指定了内容区域可滚动，请传入滚动器模块对应的构造函数 Scroller。');
+                }
+                meta.scroller = new Scroller(meta.$article, meta.scrollerConfig);
+                meta.scroller.render();
+            }
+           
+            Events.bind(meta);
+    
+            meta.emitter.fire('render');
+    
+        }
+    
+        /**
+        * 显示本组件。
+        */
+        show() {
+            let meta = mapper.get(this);
+    
+            //已是显示状态。
+            if (meta.visible) {
+                meta.scroller && meta.scroller.refresh(200);
+                return;
+            }
+    
+            if (!meta.$) {
+                this.render();
+            }
+    
+    
+            meta.$.show();
+            meta.visible = true;
+            meta.masker && meta.masker.show();
+            meta.scroller && meta.scroller.refresh(200);
+            meta.emitter.fire('show');
+        }
+    
+        /**
+        * 隐藏本组件。
+        */
+        hide() {
+            let meta = mapper.get(this);
+    
+            //未渲染或已隐藏。
+            if (!meta.$ || !meta.visible) {
+                return;
+            }
+    
+            meta.$.hide();
+            meta.visible = false;
+            meta.masker && meta.masker.hide();
+            meta.emitter.fire('hide');
+    
+        }
+    
+        /**
+        * 移除本组件对应的 DOM 节点。
+        */
+        remove() {
+            let meta = mapper.get(this);
+    
+            if (!meta.$) {
+                return;
+            }
+    
+    
+            meta.masker && meta.masker.remove();
+            meta.layer && meta.layer.remove();
+    
+            //reset
+            let div = meta.$.get(0);
+            div.parentNode.removeChild(div);
+    
+            meta.$.off();
+            meta.visible = false;
+            meta.masker = null;
+            meta.layer = null;
+            meta.$ = null;
+            meta.$header = null;
+            meta.$content = null;
+            meta.$footer = null;
+    
+            meta.emitter.fire('remove');
+    
+        }
+    
+        /**
+        * 绑定事件。
+        */
+        on(...args) {
+            let meta = mapper.get(this);
+            meta.emitter.on(...args);
+        }
+    
+        /**
+        * 销毁本组件。
+        */
+        destroy() {
+            let meta = mapper.get(this);
+            if (!meta) {
+                throw new Error('该实例已给销毁，无法再次调用 destroy 方法。');
+            }
+    
+    
+            this.remove();
+    
+            meta.emitter.destroy();
+            meta.scroller && meta.scroller.destroy(); //在 PC 端为 null
+    
+            mapper.delete(this);
+        }
+    
+        /**
+        * 设置指定的属性。
+        * 已重载 set({}); //批量设置多个字段。
+        * 已重载 set(key, value); //设置单个指定的字段。
+        * @param {string} key 要设置的属性的名称。 
+        *  目前支持的字段有：'title', 'content', 'height', 'width。
+        * @param value 要设置的属性的值，可以是任何类型。
+        */
+        set(key, value) {
+            this.render();
+    
+    
+            let meta = mapper.get(this);
+            let scroller = meta.scroller;
+            let obj = typeof key == 'object' ? key : { [key]: value, };
+    
+            $Object.each(obj, function (key, value) {
+                switch (key) {
+                    case 'title':
+                        meta.$header.html(value);
+                        break;
+    
+                    case 'content':
+                        meta.$content.html(value);
+                        scroller && scroller.refresh(200);
+                        break;
+    
+                    case 'height':
+                    case 'width':
+                        let obj = {};
+    
+                        obj[key] = meta[key] = value;
+                        obj = Style.get(obj);
+    
+                        Object.assign(meta.style, obj); //回写
+                        meta.$.css(obj);
+                        scroller && scroller.refresh(300);
+                        break;
+    
+                    default:
+                        throw new Error(`${module.id} 目前不支持设置属性: ${key}`);
+                }
+    
+            });
+    
+        }
+    
+        /**
+        * 获取或设置自定义数据。 
+        * 在跨函数中传递数据时会比较方便。
+        * 已重载 data();           //获取全部自定义数据。
+        * 已重载 data(key);        //获取指定键的自定义数据。
+        * 已重载 data(obj);        //批量设置多个字段的自定义数据。
+        * 已重载 data(key, value); //单个设置指定字段的自定义数据。
+        * @param {string|Object} key 要获取或设置的数据的名称(键)。
+            当指定为一个纯对象 {} 时，则表示批量设置。
+            当指定为字符串或可以转为字符串的类型时，则表示获取指定名称的数据。
+        * @param value 要设置的数据的值。 只有显式提供该参数，才表示设置。
+        * @return 返回获取到的或设置进来的值。
+        */
+        data(key, value) {
+            let meta = mapper.get(this);
+            let data = meta.data;
+    
+            let len = arguments.length;
+            if (len == 0) { //获取全部
+                return data;
+            }
+    
+            //重载 data(obj); 批量设置
+            if ($Object.isPlain(key)) {
+                Object.assign(data, key);
+                return key;
+            }
+    
+            //get(key)
+            if (len == 1) {
+                return data[key];
+            }
+    
+            //set(key, value)
+            data[key] = value;
+    
+            return value;
+    
+        }
+    }
+    
+    Dialog.defaults = require('Dialog.defaults');
+    module.exports = exports = Dialog;
+});
+/**
+* src: @definejs/emitter/modules/Emitter.defaults.js
+* pkg: @definejs/emitter@1.1.0
+*/
+define('Emitter.defaults', function (require, module, exports) { 
+    /**
+    * Emitter 模块的默认配置
+    */
+    module.exports = {
+        /**
+        * 停止值。 
+        * 在事件回调函数中如果要中途停止继续执行后面的回调函数时的返回值。
+        * 即如果外部代码想要中途停止继续执行后面的回调函数，只需要返回一个指定的停止值即可。
+        * 停止值不能为 undefined，如果指定为 undefined，则不会停止继续执行后面的回调函数。
+        */
+        stopValue: undefined,
+    };
+});
+/**
+* src: @definejs/emitter/modules/Emitter.js
+* pkg: @definejs/emitter@1.1.0
+*/
+define('Emitter', function (require, module, exports) { 
+    
+    const $Object = require('Object');
+    const Tree = require('Tree');
+    
+    const mapper = new Map();
+    let idCounter = 0;
+    
+    class Emitter {
+        /**
+        * 构造器。
+        * @param {Object} [context=null] 事件处理函数中的 this 上下文对象。
+        *   如果不指定，则默认为 null。
+        * @param {Object} [config] 配置选项对象。
+        *   config = {
+        *       stopValue: undefined,
+        *   };
+        */
+        constructor(context, config) {
+            context = context || null;
+            config = Object.assign({}, exports.defaults, config);
+    
+            let id = `definejs-Emitter-${idCounter++}`;
+            let tree = new Tree();
+    
+            let meta = {
+                'id': id,
+                'context': context,
+                'tree': tree,
+                'stopValue': config.stopValue,
+            };
+    
+            mapper.set(this, meta);
+    
+            Object.assign(this, {
+                'id': meta.id,
+            });
+        }
+    
+        // /**
+        // * 当前实例的 id。
+        // */
+        // id = ''
+    
+        /**
+        * 绑定指定名称的事件处理函数。
+        * 已重载 on({...});
+        * 已重载 on(name0, name1, ..., nameN, {...});
+        * 已重载 on(name0, name1, ..., nameN, fn);
+        * 已重载 on(args); 主要是为了方便调用方快速重绑定自己的 on() 方法。
+        * 已重载 on(names, fn); 把多个事件名称绑定到同一个回调函数。
+        * @param {string} name 要绑定的事件名称。
+        * @param {function} fn 事件处理函数。 
+            在处理函数内部， this 指向构造器参数 context 对象。
+        * @example
+            let emitter = new Emitter();
+            emitter.on('click', function () {});
+        */
+        on(name, fn) {
+            //重载 on([])。
+            if (Array.isArray(name)) {
+                if (fn) { //重载 on(names, fn); 把多个事件名称绑定到同一个回调函数。
+                    name.map(function (name) {
+                        this.on(name, fn);
+                    }, this);
+                }
+                else {  //重载 on(args); 主要是为了方便调用方快速重绑定自己的 on() 方法。
+                    this.on(...name);
+                }
+    
+                return;
+            }
+    
+    
+            let meta = mapper.get(this);
+            let tree = meta.tree;
+            let args = Array.from(arguments);
+    
+            //重载 on(name0, name1, ..., nameN, {...}) 的情况。
+            //先尝试找到 {} 所在的位置。
+            let index = args.findIndex(function (item, index) {
+                return typeof item == 'object';
+            });
+    
+            if (index >= 0) {
+                let obj = args[index];
+                let names = args.slice(0, index);   //前缀部分 [name0, name1, ..., nameN]。
+                let list = $Object.flat(obj);       //{} 部分扁平化。
+    
+                list.forEach(function (item, index) {
+                    let keys = names.concat(item.keys);
+    
+                    //过滤掉空串，这个很重要，在模板填充里用到。
+                    keys = keys.filter(function (key) {
+                        return !!key;
+                    });
+    
+                    let node = tree.get(keys) || {
+                        'list': [],         //本节点的回调列表。
+                        'count': 0,         //本节点触发的次数计数。
+                    };
+    
+                    node.list.push(item.value);
+                    tree.set(keys, node);
+                });
+    
+                return;
+            }
+    
+    
+            //重载 on(name0, name1, ..., nameN, fn) 的情况。
+            //尝试找到回调函数 fn 所在的位置。
+            index = args.findIndex(function (item, index) {
+                return typeof item == 'function';
+            });
+    
+            if (index < 0) {
+                throw new Error('参数中必须指定一个回调函数');
+            }
+    
+            fn = args[index]; //回调函数
+    
+            let names = args.slice(0, index); //前面的都当作是名称。
+    
+            //过滤掉空串，这个很重要，在模板填充里用到。
+            names = names.filter(function (key) {
+                return !!key;
+            });
+    
+            let node = tree.get(names) || {
+                'list': [],         //本节点的回调列表。
+                'count': 0,         //本节点触发的次数计数。
+                'enabled': true,    //当为 false 时，表示本节点的回调被禁用。
+                'spreaded': true,   //当为 false 时，表示子节点的回调被禁用。
+            };
+    
+            node.list.push(fn);
+            tree.set(names, node);
+        }
+    
+        /**
+        * 解除绑定指定名称的事件处理函数。
+        * 已重载 off() 的情况。
+        * 已重载 off(name0, name1, ..., nameN, {...}) 的情况。
+        * 已重载 off(name0, name1, ..., nameN, fn) 的情况。
+        * 已重载 off(name0, name1, ..., nameN) 的情况。
+        * @param {string} [name] 要解除绑定的事件名称。
+            如果不指定该参数，则移除所有的事件。
+            如果指定了该参数，其类型必须为 string，否则会抛出异常。
+        * @param {function} [fn] 要解除绑定事件处理函数。
+            如果不指定，则移除 name 所关联的所有事件。
+        */
+        off(name, fn) {
+            let meta = mapper.get(this);
+            let tree = meta.tree;
+            let args = Array.from(arguments);
+    
+            //未指定事件名，则移除所有的事件。
+            if (args.length == 0) {
+                tree.clear();
+                return;
+            }
+    
+            //多名称情况: off(name0, name1, ..., nameN, {});
+            //先尝试找到 {} 所在的位置。
+            let index = args.findIndex(function (item, index) {
+                return typeof item == 'object';
+            });
+    
+            if (index >= 0) {
+                let obj = args[index];              //{} 对象。
+                let names = args.slice(0, index);   //前缀部分 [name0, name1, ..., nameN]。
+                let list = $Object.flat(obj);       //{} 对象部分扁平化。
+    
+                list.forEach(function (item, index) {
+                    let keys = names.concat(item.keys); //完整路径。
+    
+                    //过滤掉空串，这个很重要，在模板填充里用到。
+                    keys = keys.filter(function (key) {
+                        return !!key;
+                    });
+                    
+                    let node = tree.get(keys);          //该路径对应的节点。
+    
+                    //不存在该路径对应的节点。
+                    if (!node) {
+                        return;
+                    }
+    
+                    //存在该路径对应的节点，但事件列表为空。
+                    let list = node.list;
+                    if (!list || !list.length) {
+                        return;
+                    }
+    
+                    let fn = item.value;
+                    node.list = list.filter(function (item) {
+                        return item !== fn;
+                    });
+                });
+                return;
+            }
+    
+    
+            //重载 off(name0, name1, ..., nameN, fn) 的情况。
+            //先尝试找到回调函数所在的位置。
+            index = args.findIndex(function (item, index) {
+                return typeof item == 'function';
+            });
+    
+            //未指定处理函数，则假定在边界之外。
+            if (index < 0) {
+                index = args.length;
+            }
+    
+            fn = args[index]; //回调函数。
+    
+            let names = args.slice(0, index); //前面的都当作是名称。
+    
+            //过滤掉空串，这个很重要，在模板填充里用到。
+            names = names.filter(function (key) {
+                return !!key;
+            });
+    
+            let node = tree.get(names);
+    
+            //不存在该路径对应的节点。
+            if (!node) {
+                return;
+            }
+    
+            //存在该路径对应的节点，但事件列表为空。
+            let list = node.list;
+            if (!list || !list.length) {
+                return;
+            }
+    
+            if (fn) {
+                node.list = list.filter(function (item, index) {
+                    return item !== fn;
+                });
+            }
+            else { //未指定处理函数，则清空列表
+                list.length = 0;
+            }
+    
+        }
+    
+        /**
+        * 已重载。
+        * 触发指定名称的事件，并可向事件处理函数传递一些参数。
+        * @return {Array} 返回所有事件处理函数的返回值所组成的一个数组。
+        * @example
+            let emitter = new Emitter();
+            emitter.on('click', 'name', function (a, b) {
+                console.log(a, b);
+            });
+            emitter.fire('click', 'name', [100, 200]);
+        */
+        fire(name, params) {
+            let meta = mapper.get(this);
+            let { context, stopValue, } = meta;
+    
+            let args = [...arguments];
+    
+            let index = args.findIndex(function (item, index) {
+                return Array.isArray(item);
+            });
+    
+            if (index < 0) {
+                index = args.length;
+            }
+    
+            let names = args.slice(0, index);
+            let node = meta.tree.get(names);
+            let returns = [];
+    
+            if (!node) { //不存在该事件名对应的节点。
+                return returns;
+            }
+    
+            params = args[index] || [];
+            node.count++;
+    
+            node.list.some(function (fn, index) {
+                //让 fn 内的 this 指向 context，并收集返回值。
+                let value = fn.apply(context, params);
+    
+                returns.push(value);
+    
+                //返回值为指定的停止值，则不再执行后续回调函数。
+                //换言之，如果外部代码想要中途停止继续执行后面的回调函数，只需要返回一个指定的停止值即可。
+                //停止值不能为 undefined。
+                if (value !== undefined && value === stopValue) {
+                    return true;
+                }
+              
+            });
+    
+            return returns;
+    
+        }
+    
+        /**
+        * 判断是否已绑定了指定名称的事件。
+        */
+        has(...names) {
+            let meta = mapper.get(this);
+            let node = meta.tree.get([...names]);
+    
+            return node && node.list && node.list.length > 0;
+        }
+    
+        /**
+        * 设置指定的属性为指定的值。
+        * 如可以在触发事件前动态改变 context 值。
+        */
+        set(key, value) {
+            let meta = mapper.get(this);
+    
+            switch (key) {
+                case 'context':
+                    meta[key] = value;
+                    break;
+    
+                default:
+                    throw new Error('不支持设置属性: ' + key);
+            }
+    
+        }
+    
+        /**
+        * 销毁本实例对象。
+        */
+        destroy() {
+            let meta = mapper.get(this);
+            meta.tree.destroy();
+            mapper.delete(this);
+        }
+    }
+    
+    /**
+    * 
+    */
+    Emitter.defaults = require('Emitter.defaults');
+    module.exports = exports = Emitter;
+    
+    
 });
 /**
 * src: @definejs/object/modules/Object.js
@@ -1302,501 +2551,6 @@ define('Object', function (require, module, exports) {
     };
 });
 /**
-* src: @definejs/app-module/modules/AppModule.defaults.js
-* pkg: @definejs/app-module@1.0.0
-*/
-define('AppModule.defaults', function (require, module, exports) { 
-    
-    const Emitter = require('Emitter');
-    
-    
-    module.exports = {
-        Emitter,   //事件驱动器。
-    
-        seperator: '/',     //私有模块的分隔符。
-        repeated: false,    //不允许重复定义同名的模块。
-        cross: false,       //不允许跨级加载模块。
-    };
-});
-/**
-* src: @definejs/app-module/modules/AppModule.js
-* pkg: @definejs/app-module@1.0.0
-*/
-define('AppModule', function (require, module, exports) { 
-    const ModuleManager = require('ModuleManager');
-    const $Object = require('Object');
-    const $String = require('String');
-    
-    let id$factory = {};//针对模板模块。
-    let $mm = null;
-    
-    function mm() { 
-        if (!$mm) {
-            $mm = new ModuleManager(exports.defaults);
-        }
-    
-        return $mm;
-    }
-    
-    
-    module.exports = exports = {
-        /**
-        * 默认配置。
-        */
-        defaults: require('AppModule.defaults'),
-    
-        /**
-        * 使用的模块管理器(函数)。
-        * 暴露出去，可以方便外界对 mm 进行各种扩展，如重写 require 方法等。
-        */
-        mm,
-        /**
-        * 定义一个指定名称的静态模块。
-        * 或者定义一个动态模块，模块的 id 是一个模板字符串。
-        * 该方法对外给业务层使用的。
-        * @function
-        * @param {string} id 模块的名称。 可以是一个模板。
-        * @param {Object|function} factory 模块的导出函数或对象。
-        */
-        define(id, factory) {
-            // id 为一个模板字符串，如 `{prefix}/Address`。
-            let isTPL = id.includes('{') && id.includes('}');
-    
-            if (isTPL) {
-                id$factory[id] = factory;   //定义一个模板模块，则先缓存起来。
-            }
-            else {
-                mm().define(id, factory);
-            }
-        },
-    
-        /**
-        * 加载指定的模块。
-        * （在 App 模块中用到，用于启动程序）。
-        *   
-        * @function
-        * @param {string} id 模块的名称。
-        * @return 返回指定的模块。 
-        */
-        require(...args) { 
-            return mm().require(...args);
-        },
-    
-        /**
-        * 绑定事件。
-        */
-        on(...args) { 
-            return mm().on(...args);
-        },
-    
-        /**
-        * 判断指定的模块是否已定义。
-        */
-        has(...args) {
-            return mm().has(...args);
-        },
-    
-        /**
-        * 设置业务层的指定模块的自定义数据。
-        * 已重载 data(id, data); //设置单个模块的自定义数据。
-        * 已重载 data(id$data);  //设置多个模块，每个模块有自己的自定义数据。
-        * 已重载 data(id$data);  //设置多个模块，它们共用同一个自定义数据。
-        */
-        data(id, data) { 
-            //重载 data(ids, data);
-            //多个模块共用一个自定义数据。
-            if (Array.isArray(id)) {
-                let ids = id;
-                ids.forEach((id) => {
-                    mm().data(id, data);
-                });
-                return data;
-            }
-    
-            //重载 data(id$data);   
-            //每个模块有自己的自定义数据。
-            if ($Object.isPlain(id)) {
-                let id$data = id;
-                $Object.each(id$data, function (id, data) { 
-                    mm().data(id, data);
-                });
-                return id$data;
-            }
-    
-            //重载 data(id, data);
-            //设置单个模块的自定义数据。
-            return mm().data(id, data);
-        },
-    
-        /**
-        * 使用模板模块动态定义一个模块。
-        * 即填充一个模板模块，以生成（定义）一个真正的模块。
-        *   sid: '',    //模板模块的 id，如 `{prefix}/Address`
-        *   data: {},   //要填充的数据，如 { prefix: 'Demo/User', }
-        */
-        fill(sid, data) {
-            //需要扫描所有模板，同时填充它的子模块。
-            $Object.each(id$factory, function (id, factory) {
-    
-                //所有以 sid 为开头的模板模块都要填充，
-                //如 sid 为 `{prefix}/Address`，id 为 `{prefix}/Address/API`
-                if (!id.startsWith(sid)) {
-                    return;
-                }
-    
-                //填充成完整的模块 id。
-                id = $String.format(id, data);
-    
-                console.log(`动态定义模块: ${id}`);
-    
-                mm().define(id, factory);
-    
-            });
-    
-        },
-    };
-    
-    //增加一个快捷方法，以便可以判断某个模块是否已定义。
-    exports.define.has = exports.has;
-});
-/**
-* src: @definejs/emitter/modules/Emitter.js
-* pkg: @definejs/emitter@1.0.5
-*/
-define('Emitter', function (require, module, exports) { 
-    
-    const $Object = require('Object');
-    const Tree = require('Tree');
-    
-    const mapper = new Map();
-    let idCounter = 0;
-    
-    class Emitter {
-        /**
-        * 构造器。
-        * @param {Object} [context=null] 事件处理函数中的 this 上下文对象。
-        *   如果不指定，则默认为 null。
-        */
-        constructor(context) {
-    
-            let id = `definejs-Emitter-${idCounter++}`;
-    
-            let meta = {
-                'id': id,
-                'context': context,
-                'tree': new Tree(),
-            };
-    
-            mapper.set(this, meta);
-    
-            Object.assign(this, {
-                'id': meta.id,
-            });
-        }
-    
-        // /**
-        // * 当前实例的 id。
-        // */
-        // id = ''
-    
-        /**
-        * 绑定指定名称的事件处理函数。
-        * 已重载 on({...});
-        * 已重载 on(name0, name1, ..., nameN, {...});
-        * 已重载 on(name0, name1, ..., nameN, fn);
-        * 已重载 on(args); 主要是为了方便调用方快速重绑定自己的 on() 方法。
-        * 已重载 on(names, fn); 把多个事件名称绑定到同一个回调函数。
-        * @param {string} name 要绑定的事件名称。
-        * @param {function} fn 事件处理函数。 
-            在处理函数内部， this 指向构造器参数 context 对象。
-        * @example
-            let emitter = new Emitter();
-            emitter.on('click', function () {});
-        */
-        on(name, fn) {
-            //重载 on([])。
-            if (Array.isArray(name)) {
-                if (fn) { //重载 on(names, fn); 把多个事件名称绑定到同一个回调函数。
-                    name.map(function (name) {
-                        this.on(name, fn);
-                    }, this);
-                }
-                else {  //重载 on(args); 主要是为了方便调用方快速重绑定自己的 on() 方法。
-                    this.on(...name);
-                }
-    
-                return;
-            }
-    
-    
-            let meta = mapper.get(this);
-            let tree = meta.tree;
-            let args = Array.from(arguments);
-    
-            //重载 on(name0, name1, ..., nameN, {...}) 的情况。
-            //先尝试找到 {} 所在的位置。
-            let index = args.findIndex(function (item, index) {
-                return typeof item == 'object';
-            });
-    
-            if (index >= 0) {
-                let obj = args[index];
-                let names = args.slice(0, index);   //前缀部分 [name0, name1, ..., nameN]。
-                let list = $Object.flat(obj);       //{} 部分扁平化。
-    
-                list.forEach(function (item, index) {
-                    let keys = names.concat(item.keys);
-    
-                    //过滤掉空串，这个很重要，在模板填充里用到。
-                    keys = keys.filter(function (key) {
-                        return !!key;
-                    });
-    
-                    let node = tree.get(keys) || {
-                        'list': [],         //本节点的回调列表。
-                        'count': 0,         //本节点触发的次数计数。
-                    };
-    
-                    node.list.push(item.value);
-                    tree.set(keys, node);
-                });
-    
-                return;
-            }
-    
-    
-            //重载 on(name0, name1, ..., nameN, fn) 的情况。
-            //尝试找到回调函数 fn 所在的位置。
-            index = args.findIndex(function (item, index) {
-                return typeof item == 'function';
-            });
-    
-            if (index < 0) {
-                throw new Error('参数中必须指定一个回调函数');
-            }
-    
-            fn = args[index]; //回调函数
-    
-            let names = args.slice(0, index); //前面的都当作是名称。
-    
-            //过滤掉空串，这个很重要，在模板填充里用到。
-            names = names.filter(function (key) {
-                return !!key;
-            });
-    
-            let node = tree.get(names) || {
-                'list': [],         //本节点的回调列表。
-                'count': 0,         //本节点触发的次数计数。
-                'enabled': true,    //当为 false 时，表示本节点的回调被禁用。
-                'spreaded': true,   //当为 false 时，表示子节点的回调被禁用。
-            };
-    
-            node.list.push(fn);
-            tree.set(names, node);
-        }
-    
-        /**
-        * 解除绑定指定名称的事件处理函数。
-        * 已重载 off() 的情况。
-        * 已重载 off(name0, name1, ..., nameN, {...}) 的情况。
-        * 已重载 off(name0, name1, ..., nameN, fn) 的情况。
-        * 已重载 off(name0, name1, ..., nameN) 的情况。
-        * @param {string} [name] 要解除绑定的事件名称。
-            如果不指定该参数，则移除所有的事件。
-            如果指定了该参数，其类型必须为 string，否则会抛出异常。
-        * @param {function} [fn] 要解除绑定事件处理函数。
-            如果不指定，则移除 name 所关联的所有事件。
-        */
-        off(name, fn) {
-            let meta = mapper.get(this);
-            let tree = meta.tree;
-            let args = Array.from(arguments);
-    
-            //未指定事件名，则移除所有的事件。
-            if (args.length == 0) {
-                tree.clear();
-                return;
-            }
-    
-            //多名称情况: off(name0, name1, ..., nameN, {});
-            //先尝试找到 {} 所在的位置。
-            let index = args.findIndex(function (item, index) {
-                return typeof item == 'object';
-            });
-    
-            if (index >= 0) {
-                let obj = args[index];              //{} 对象。
-                let names = args.slice(0, index);   //前缀部分 [name0, name1, ..., nameN]。
-                let list = $Object.flat(obj);       //{} 对象部分扁平化。
-    
-                list.forEach(function (item, index) {
-                    let keys = names.concat(item.keys); //完整路径。
-    
-                    //过滤掉空串，这个很重要，在模板填充里用到。
-                    keys = keys.filter(function (key) {
-                        return !!key;
-                    });
-                    
-                    let node = tree.get(keys);          //该路径对应的节点。
-    
-                    //不存在该路径对应的节点。
-                    if (!node) {
-                        return;
-                    }
-    
-                    //存在该路径对应的节点，但事件列表为空。
-                    let list = node.list;
-                    if (!list || !list.length) {
-                        return;
-                    }
-    
-                    let fn = item.value;
-                    node.list = list.filter(function (item) {
-                        return item !== fn;
-                    });
-                });
-                return;
-            }
-    
-    
-            //重载 off(name0, name1, ..., nameN, fn) 的情况。
-            //先尝试找到回调函数所在的位置。
-            index = args.findIndex(function (item, index) {
-                return typeof item == 'function';
-            });
-    
-            //未指定处理函数，则假定在边界之外。
-            if (index < 0) {
-                index = args.length;
-            }
-    
-            fn = args[index]; //回调函数。
-    
-            let names = args.slice(0, index); //前面的都当作是名称。
-    
-            //过滤掉空串，这个很重要，在模板填充里用到。
-            names = names.filter(function (key) {
-                return !!key;
-            });
-    
-            let node = tree.get(names);
-    
-            //不存在该路径对应的节点。
-            if (!node) {
-                return;
-            }
-    
-            //存在该路径对应的节点，但事件列表为空。
-            let list = node.list;
-            if (!list || !list.length) {
-                return;
-            }
-    
-            if (fn) {
-                node.list = list.filter(function (item, index) {
-                    return item !== fn;
-                });
-            }
-            else { //未指定处理函数，则清空列表
-                list.length = 0;
-            }
-    
-        }
-    
-        /**
-        * 已重载。
-        * 触发指定名称的事件，并可向事件处理函数传递一些参数。
-        * @return {Array} 返回所有事件处理函数的返回值所组成的一个数组。
-        * @example
-            let emitter = new Emitter();
-            emitter.on('click', 'name', function (a, b) {
-                console.log(a, b);
-            });
-            emitter.fire('click', 'name', [100, 200]);
-        */
-        fire(name, params) {
-            let meta = mapper.get(this);
-            if (!meta) {
-                console.log(arguments, this.id);
-            }
-    
-            let context = meta.context;
-            let args = [...arguments];
-    
-            let index = args.findIndex(function (item, index) {
-                return Array.isArray(item);
-            });
-    
-            if (index < 0) {
-                index = args.length;
-            }
-    
-            let names = args.slice(0, index);
-            let node = meta.tree.get(names);
-            let returns = [];
-    
-            if (!node) { //不存在该事件名对应的节点。
-                return returns;
-            }
-    
-            params = args[index] || [];
-            node.count++;
-    
-            node.list.forEach(function (fn, index) {
-                //让 fn 内的 this 指向 context，并收集返回值。
-                let value = fn.apply(context, params);
-                returns.push(value);
-            });
-    
-            return returns;
-    
-        }
-    
-        /**
-        * 判断是否已绑定了指定名称的事件。
-        */
-        has(...names) {
-            let meta = mapper.get(this);
-            let node = meta.tree.get([...names]);
-    
-            return node && node.list && node.list.length > 0;
-        }
-    
-        /**
-        * 设置指定的属性为指定的值。
-        * 如可以在触发事件前动态改变 context 值。
-        */
-        set(key, value) {
-            let meta = mapper.get(this);
-    
-            switch (key) {
-                case 'context':
-                    meta[key] = value;
-                    break;
-    
-                default:
-                    throw new Error('不支持设置属性: ' + key);
-            }
-    
-        }
-    
-        /**
-        * 销毁本实例对象。
-        */
-        destroy() {
-            let meta = mapper.get(this);
-            meta.tree.destroy();
-            mapper.delete(this);
-        }
-    }
-    
-    /**
-    * 
-    */
-    
-    module.exports = Emitter;
-});
-/**
 * src: @definejs/tree/modules/Tree/Node.js
 * pkg: @definejs/tree@1.0.5
 */
@@ -2129,6 +2883,131 @@ define('Tree', function (require, module, exports) {
     }
     
     module.exports = Tree;
+});
+/**
+* src: @definejs/id-maker/modules/IDMaker.defaults.js
+* pkg: @definejs/id-maker@1.0.1
+*/
+define('IDMaker.defaults', function (require, module, exports) { 
+    
+    
+    /**
+    * IDMaker 模块的默认配置
+    * @name IDMaker.defaults
+    */
+    module.exports = {
+        /**
+        * 生成随机串部分的长度。
+        */
+        random: 4,
+    
+        /**
+        * 生成 id 的模板。
+        */
+        sample: {
+            /**
+            * 没有指定分组时的生成 id 的模板。
+            */
+            '': '{name}-{index}-{random}',
+    
+            /**
+            * 有指定分组时的生成 id 的模板。
+            */
+            'group': '{name}-{group}-{index}-{random}'
+        },
+    };
+});
+/**
+* src: @definejs/id-maker/modules/IDMaker.js
+* pkg: @definejs/id-maker@1.0.1
+*/
+define('IDMaker', function (require, module, exports) { 
+    
+    const $Object = require('Object');
+    const $String = require('String');
+    
+    const mapper = new Map();
+    const name$maker = {};
+    
+    
+    
+    class IDMaker {
+        
+        /**
+        * id 生成器的构造器。
+        * @param {string} name 命名空间的名称，用于跟其它实例区分。 同一个名称共用同一个实例。
+        * @returns {IDMaker} 返回指定命名空间的实例。
+        */
+        constructor(name, config) {
+            if (!name) {
+                throw new Error(`必须指定参数 name 为一个非空字符串。`);
+            }
+    
+            let maker = name$maker[name];
+    
+            if (maker) {
+                return maker;
+            }
+    
+            config = $Object.deepAssign({}, exports.defaults, config);
+    
+            let meta = {
+                'name': name,
+                'random': config.random,
+                'sample': config.sample,
+                'group$ids': {},
+            };
+    
+            mapper.set(this, meta);
+    
+            maker = name$maker[name] = this;
+            
+        }
+    
+        /**
+        * 获取（生成）指定分组的下一个递增 id。
+        * @param {string} [group] 可选，分组名称。 默认为空串。 
+        * @returns {string} 指定分组的 id。
+        */
+        next(group = '') {
+            let meta = mapper.get(this);
+            let { name, group$ids, random, sample, } = meta;
+            let ids = group$ids[group] = group$ids[group] || [];
+    
+            random = $String.random(random);
+            sample = sample[group ? 'group' : ''];
+    
+            let id = $String.format(sample, {
+                'name': name,
+                'group': group,
+                'index': ids.length, //会自动递增。 从 0 开始。
+                'random': random,
+            });
+    
+            ids.push(id);
+    
+            return id;
+    
+        }
+    
+        /**
+        * 获取指定分组的 id 的计数。
+        * @param {string} [group] 可选，分组名称。 默认为空串。
+        * @returns {number} 指定分组的 id 的计数。
+        */
+        list(group = '') {
+            let meta = mapper.get(this);
+            let ids = meta.group$ids[group];
+    
+            //如果有，则复制一份。
+            return ids ? ids.slice(0) : null;
+        }
+    }
+    
+    
+    
+    IDMaker.defaults = require('IDMaker.defaults');
+    module.exports = exports = IDMaker;
 });
 /**
 * src: @definejs/string/modules/String.js
@@ -2559,772 +3438,2839 @@ define('String', function (require, module, exports) {
     };
 });
 /**
-* src: @definejs/array/modules/Array.js
-* pkg: @definejs/array@1.1.0
+* src: @definejs/masker/modules/Masker/Meta.js
+* pkg: @definejs/masker@1.0.1
 */
-define('Array', function (require, module, exports) { 
+define('Masker/Meta', function (require, module, exports) { 
+    const IDMaker = require('IDMaker');
+    
+    
+    
+    module.exports = {
+    
+        create(config, others) {
+            let maker = new IDMaker(config.idPrefix);
+            let eventName = config.eventName;
+            let volatile = config.volatile;
+    
+            let meta = {
+                'id': maker.next(),
+                'sample': '',
+                'eventName': eventName,         //兼容 PC 端和移动端。 PC 端的为 `click`，移动端的为 `touch`。
+                'volatile': volatile,           //是否易消失的。 即点击后自动隐藏。
+                'container': config.container,  //组件要装入的容器 DOM 节点。
+                'duration': config.duration,    //要持续显示的时间，单位是毫秒。
+                'fadeIn': config.fadeIn,        //显示时要使用淡入动画的时间。 如果不指定或指定为 0，则禁用淡入动画。
+                'fadeOut': config.fadeOut,      //隐藏时要使用淡出动画的时间。 如果不指定或指定为 0，则禁用淡出动画。
+                'opacity': config.opacity,      //不透明度。 在淡入淡出时要到进行计算。
+    
+                'emitter': null,    //事件驱动器。
+                'style': null,      //样式对象。
+                'this': null,       //当前实例，方便内部使用。
+                '$': null,          //组件最外层的 DOM 节点的 jQuery 实例。
+    
+                bindVolatile(fn) {
+                    if (!volatile) {
+                        return;
+                    }
+    
+                    if (eventName == 'touch') {
+                        meta.$.touch(fn);
+                    }
+                    else {
+                        meta.$.on(eventName, fn);
+                    }
+                },
+            };
+    
+    
+    
+            Object.assign(meta, others);
+    
+            return meta;
+    
+    
+        },
+    };
+});
+/**
+* src: @definejs/masker/modules/Masker/Sample.js
+* pkg: @definejs/masker@1.0.1
+*/
+define('Masker/Sample', function (require, module, exports) { 
+    
+    module.exports = `<div id="{id}" class="definejs-Masker" style="{style} display: none;"></div>`;
+});
+/**
+* src: @definejs/masker/modules/Masker/Style.js
+* pkg: @definejs/masker@1.0.1
+*/
+define('Masker/Style', function (require, module, exports) { 
+    const $Object = require('Object');
+    const Style = require('Style');
     
     /**
-    * 数组工具。
+    *
+    */
+    module.exports = {
+        /**
+        * 从配置对象中过滤出样式成员，并进行规范化处理。
+        * 返回一个样式对象 {}。
+        */
+        get(config) {
+            let obj = $Object.filter(config, ['opacity', 'z-index']);
+            let style = Style.objectify(config.style);
+    
+            style = Style.merge(style, obj);
+    
+            return style;
+    
+        },
+    };
+});
+/**
+* src: @definejs/masker/modules/Masker.defaults.js
+* pkg: @definejs/masker@1.0.1
+*/
+define('Masker.defaults', function (require, module, exports) { 
+    
+    /**
+    * Masker 模块的默认配置
+    * @name Masker.defaults
+    */
+    module.exports = {
+        /**
+        * 生成组件时的 id 前缀。
+        * 建议保留现状。
+        */
+        idPrefix: 'definejs-Masker',
+        /**
+        * 指定是否易消失，即点击 mask 层就是否隐藏/移除。
+        * 可取值为: true|false|"hide"|"remove"，默认为 false，即不易消失。
+        */
+        volatile: false,
+        /**
+        * 组件添加到的容器。
+        */
+        container: 'body',
+        /**
+        * 点击时需要用到的事件名。
+        */
+        eventName: 'click',
+        /**
+        * 需要持续显示的毫秒数。
+        * 指定为 0 或不指定则表示一直显示。
+        */
+        duration: 0,
+        /**
+        * 显示时要使用淡入动画的时间。 
+        * 如果不指定或指定为 0，则禁用淡入动画。
+        */
+        fadeIn: 0,
+        /**
+        * 隐藏时要使用淡出动画的时间。 
+        * 如果不指定或指定为 0，则禁用淡出动画。
+        */
+        fadeOut: 0,
+        /**
+        * 组件用到的 css 类名。
+        */
+        cssClass: '',
+        /**
+        * 不透明度。
+        */
+        opacity: 0.5,
+        /**
+        * 组件的 css 样式 z-index 值。
+        */
+        'z-index': 1024,
+        /**
+        * 样式集合。
+        * 外层的同名字段优先级高于里面的。
+        */
+        style: {},
+    };
+});
+/**
+* src: @definejs/masker/modules/Masker.js
+* pkg: @definejs/masker@1.0.1
+*/
+define('Masker', function (require, module, exports) { 
+    
+    const $ = require('jquery');
+    const Emitter = require('Emitter');
+    const $Object = require('Object');
+    const $String = require('String');
+    const $Style = require('Style');
+    
+    const Sample = module.require('Sample');
+    const Style = module.require('Style');
+    const Meta = module.require('Meta');
+    
+    
+    const mapper = new Map();
+    
+    
+    class Masker {
+        /**
+        * 构造器。
+        */
+        constructor(config) {
+            config = $Object.deepAssign({}, exports.defaults, config);
+    
+            let emitter = new Emitter(this);
+            let style = Style.get(config);
+    
+            let meta = Meta.create(config, {
+                'sample': Sample,       //相应的 html 模板。
+                'style': style,         //从配置中过滤出样式成员，并进行规范化处理，style 是一个 {}。
+                'emitter': emitter,     //事件驱动器。
+                'this': this,           //当前实例，方便内部使用。
+            });
+    
+    
+            mapper.set(this, meta);
+    
+            //对外暴露的属性。
+            Object.assign(this, {
+                'id': meta.id,
+                '$': null,
+            });
+    
+        }
+    
+    
+        // /**
+        // * 当前实例的 id。
+        // * 也是最外层的 DOM 节点的 id。
+        // */
+        // id = '';
+    
+        // /**
+        // * 当前组件最外层的 DOM 节点对应的 jQuery 实例。
+        // * 必须在 render 之后才存在。
+        // */
+        // $ = null;
+    
+        /**
+        * 渲染本组件。
+        * 该方法会创建 DOM 节点，并且绑定事件，但没有调用 show()。
+        * 该方法只需要调用一次。
+        * 触发事件: `render`。
+        */
+        render() {
+            let meta = mapper.get(this);
+    
+            //已经渲染过了。
+            if (meta.$) {
+                return;
+            }
+    
+    
+            //首次渲染
+    
+            let style = $Style.stringify(meta.style);
+    
+            let html = $String.format(meta.sample, {
+                'id': meta.id,
+                'style': style,
+            });
+    
+    
+            $(meta.container).append(html);
+    
+            this.$ = meta.$ = $(`#${meta.id}`);
+    
+    
+            //根据是否指定了易消失来绑定事件，即点击 mask 层就隐藏。
+            meta.bindVolatile(function () {
+                let ok = meta.this.hide();
+    
+                //在 hide() 中明确返回 false 的，则取消关闭。
+                if (ok === false) {
+                    return;
+                }
+    
+                //先备份原来的 opacity
+                let opacity = meta.$.css('opacity');
+    
+                //显示一个完全透明的层 200ms，防止点透。
+                //并且禁用事件，避免触发 show 事件。
+                meta.$.css('opacity', 0);
+                meta.this.show({ quiet: true, });
+    
+                setTimeout(function () {
+                    meta.$.css('opacity', opacity);
+                    meta.$.hide();
+                }, 200);
+            });
+    
+            meta.emitter.fire('render');
+        }
+    
+        /**
+        * 显示遮罩层。
+        * 触发事件: `show`。
+        *   config = {
+        *       quiet: false,   //是否触发 `show` 事件。 该选项仅开放给组件内部使用。
+        *       duration: 0,    //要持续显示的时间，单位是毫秒。 如果不指定，则使用创建实例时的配置。
+        *       fadeIn: 200,    //可选。 需要淡入的动画时间，如果不指定或为指定为 0，则禁用淡入动画。
+        *   };
+        */
+        show(config = {}) {
+            let meta = mapper.get(this);
+            let duration = 'duration' in config ? config.duration : meta.duration;
+            let fadeIn = 'fadeIn' in config ? config.fadeIn : meta.fadeIn;
+    
+    
+            //尚未渲染。
+            //首次渲染。
+            if (!meta.$) {
+                this.render();
+            }
+    
+    
+            if (duration) {
+                setTimeout(function () {
+                    meta.this.hide();
+                }, duration);
+            }
+    
+    
+            if (fadeIn) {
+                meta.$.css('opacity', 0);
+            }
+    
+            meta.$.show();
+    
+            if (fadeIn) {
+                meta.$.animate({
+                    'opacity': meta.opacity,
+                }, fadeIn);
+            }
+    
+            //没有明确指定要使用安静模式，则触发事件。
+            if (!config.quiet) {
+                meta.emitter.fire('show');
+            }
+    
+        }
+    
+        /**
+        * 隐藏遮罩层。
+        * 触发事件: `hide`。
+        * 如果在 hide 事件中明确返回 false，则取消隐藏。
+        *   config = {
+        *       fadeOut: 200,    //可选。 需要淡出的动画时间，如果不指定或为指定为 0，则禁用淡出动画。
+        *   };
+        */
+        hide(config = {}) {
+            let meta = mapper.get(this);
+            let fadeOut = 'fadeOut' in config ? config.fadeOut : meta.fadeOut;
+    
+            //尚未渲染。
+            if (!meta.$) {
+                return;
+            }
+    
+            let values = meta.emitter.fire('hide');
+    
+            //明确返回 false 的，则取消关闭。
+            if (values.includes(false)) {
+                return false;
+            }
+    
+            if (fadeOut) {
+                meta.$.animate({
+                    'opacity': 0,
+                }, fadeOut, function () {
+                    meta.$.css('opacity', meta.opacity);
+                    meta.$.hide();
+                });
+            }
+            else {
+                meta.$.hide();
+            }
+        }
+    
+        /**
+        * 移除本组件已生成的 DOM 节点。
+        * 触发事件: `remove`。
+        */
+        remove() {
+            let meta = mapper.get(this);
+    
+            //尚未渲染。
+            if (!meta.$) {
+                return;
+            }
+    
+            let div = meta.$.get(0);
+            div.parentNode.removeChild(div);
+    
+            meta.$.off();
+    
+            this.$ = meta.$ = null;
+            meta.emitter.fire('remove');
+        }
+    
+        /**
+        * 绑定事件。
+        */
+        on(...args) {
+            let meta = mapper.get(this);
+            meta.emitter.on(...args);
+        }
+    
+        /**
+        * 销毁本组件
+        */
+        destroy() {
+            let meta = mapper.get(this);
+    
+            this.remove();
+            meta.emitter.destroy();
+    
+            mapper.delete(this);
+        }
+    
+    
+        /**
+        * 把配置参数规格化。
+        * 已重载 normalize(0, 0);              //任意一个为数字，则当成透明度。 如果都为数字，则使用后者的。   
+        * 已重载 normalize(defaults, false);   //第二个参数显式指定了要禁用 mask，返回 null。
+        * 已重载 normalize({}, {});
+        */
+        static normalize(defaults, config) {
+    
+            //第二个参数显式指定了要禁用 mask。
+            if (config === false) {
+                return null;
+            }
+    
+    
+            //输入的是数字，则当成是透明度。
+            if (typeof defaults == 'number') { //透明度
+                defaults = { 'opacity': defaults };
+            }
+    
+            if (typeof config == 'number') { //透明度
+                config = { 'opacity': config };
+            }
+    
+    
+            let type0 = typeof defaults;
+            let type1 = typeof config;
+    
+            if (type0 == 'object' && type1 == 'object') {
+                return Object.assign({}, defaults, config);
+            }
+    
+    
+            //显式指定使用 mask。
+            //如果 defaults 没有，则显式分配一个。
+            if (config === true) {
+                return !defaults || type0 != 'object' ? {} : defaults;
+            }
+    
+    
+            //未指定，则使用默认配置指定的，有或没有
+            if (config === undefined) {
+                return type0 == 'object' ? defaults :
+                    defaults ? {} : null;
+            }
+    
+            return type1 == 'object' ? config :
+                config ? {} : null;
+        }
+    }
+    
+    Masker.defaults = require('Masker.defaults');
+    module.exports = exports = Masker;
+});
+/**
+* src: @definejs/style/modules/Style.js
+* pkg: @definejs/style@1.0.0
+*/
+define('Style', function (require, module, exports) { 
+    
+    
+    const $Object = require('Object');
+    
+    //像素化。
+    function pixelize(value) {
+        if (typeof value == 'number') {
+            return value + 'px';
+        }
+    
+        if (typeof value == 'string') {
+            let isPixel = (/^\d+px$/g).test(value);
+            let isEm = (/^\d+em$/g).test(value);
+            let isRem = (/^\d+rem$/g).test(value);
+            let isPercent = (/^\d+%$/g).test(value);
+    
+            if (isPixel || isEm || isRem || isPercent) {
+                return value;
+            }
+    
+            //尝试提取和转换数字部分。
+            let v = parseInt(value);
+    
+            if (isNaN(v)) {
+                return value;
+            }
+    
+            return v + 'px';
+        }
+    
+        //其它情况。
+        return value;
+    }
+    
+    
+    /**
+    * 样式工具。
+    * @name Style
     */
     module.exports = exports = {
         /**
-        * 把一个数组中的元素转换到另一个数组中，返回一个新的数组。
-        * 已重载 map(array, fn);
-        * 已重载 map(deep, array, fn);
-        * @param {boolean} [deep=false] 指定是否进行深层次迭代。
-        *   如果要进行深层次迭代，即对数组元素为数组继续迭代的，请指定 true；否则为浅迭代。
-        * @param {Array} array 要进行转换的数组。
-        * @param {function} fn 转换函数。
-        *   该转换函数会为每个数组元素调用，它会接收到两个参数：当前迭代的数组元素和该元素的索引。
-        *   转换函数可以返回转换后的值，有两个特殊值影响到迭代行为：
-        *   null：忽略当前数组元素，即该元素在新的数组中不存在对应的项（相当于 continue）；
-        *   undefined：忽略当前数组元素到最后一个元素（相当于break）；
-        * @return {Array} 返回一个转换后的新数组。
+        * 把一个样式字符串对象化。
         */
-        map(deep, array, fn) {
-            //重载 map(array, fn); 此时 deep 为 false。
-            if (typeof deep != 'boolean') {
-                fn = array;
-                array = deep;
-                deep = false;
+        objectify(style) {
+            if (!style) {
+                return {};
             }
     
-            let map = exports.map; //引用自身，用于递归
-            let list = [];
+            if (typeof style == 'object') {
+                return style;
+            }
     
-            for (let i = 0, len = array.length; i < len; i++) {
-                let item = array[i];
-                let value;
+            if (typeof style != 'string') {
+                return {};
+            }
     
-                if (deep === true && Array.isArray(item)) {
-                    value = map(true, item, fn); // 此时的 value 是一个 []。
-                }
-                else {
-                    value = fn(item, i);
+            let obj = {};
+            let list = style.split(';');
     
-                    //忽略掉 null 值的项。
-                    if (value === null) {
-                        continue;
-                    }
+            list.forEach(function (item) {
+                item = item.trim();
+                item = item.replace(/\n/g, '');
     
-                    //注意，当回调函数 fn 不返回值时，迭代会给停止掉。
-                    if (value === undefined) { 
-                        break;
-                    }
+                if (!item) {
+                    return;
                 }
     
-                list.push(value);
-            }
+                let a = item.split(':');
+                let key = a[0].trim();
+                let value = a[1].trim();
     
-            return list;
-        },
+                obj[key] = value;
     
-        /**
-        * 用滑动窗口的方式创建分组，即转成二维数组。
-        * @param {Array} array 要进行切割的原数组。
-        * @param {Number} windowSize 窗口大小。
-        * @param {Number} [stepSize=1] 步长。 默认为 1。
-        * @returns {Array} 返回一个二维数组。
-        * @example
-        *   $Array.slide(['a', 'b', 'c', 'd', 'e'], 3, 1); 
-        *   返回结果（窗口大小为 3，移动步长为 1）：
-        *   [
-        *       ['a', 'b', 'c'],
-        *       ['b', 'c', 'd'],
-        *       ['c', 'd', 'e'],
-        *   ]
-        */
-        slide(array, windowSize, stepSize = 1) {
-            let len = array.length;
-    
-            //只够创建一组
-            if (len <= windowSize) {
-                return [array];
-            }
-    
-    
-            let groups = [];
-    
-            for (let i = 0; i < len; i = i + stepSize) {
-                let end = i + windowSize;
-                let a = array.slice(i, end);
-    
-                groups.push(a);
-    
-                if (end >= len) {
-                    break; //已达到最后一组
-                }
-            }
-    
-            return groups;
-        },
-    
-        /**
-        * 创建分组，即转成二维数组。
-        * @param {Array} array 要进行切割的原数组。
-        * @param {Number} size 分组大小。
-        * @param {boolean} isPadRight 是否向右对齐数据。
-        * @returns {Array} 返回一个二维数组。
-        * @example
-        *   $Array.group(['a', 'b', 'c', 'd', 'e'], 3);
-        *   返回结果（窗口大小为 3，移动步长为 3）：
-        *   [
-        *       ['a', 'b', 'c'],
-        *       ['d', 'e'],
-        *   ]
-        * 
-        *   $Array.group(['a', 'b', 'c', 'd', 'e'], 3, true); 
-        *   则返回：
-        *   [
-        *       ['a', 'b'],
-        *       ['c', 'd', 'e']
-        *   ]
-        *   
-        */
-        group(array, size, isPadRight) {
-            let groups = exports.slide(array, size, size);
-    
-            if (isPadRight === true) {
-                groups[groups.length - 1] = array.slice(-size); //右对齐最后一组
-            }
-    
-            return groups;
-        },
-    
-        /**
-        * 产生一个区间为 [start, end) 的半开区间的数组。
-        * 已重载 pad(start, end, step, fn);
-        * 已重载 pad(start, end, fn);
-        * 已重载 pad(start, end);
-        * @param {number} start 半开区间的开始值。
-        * @param {number} end 半开区间的结束值。
-        * @param {number} [step=1] 填充的步长，默认值为 1。可以指定为负数。
-        * @param {function} [fn] 转换函数。 会收到当前项和索引值作为参数。
-        * @return {Array} 返回一个递增（减）的数组。
-        *   当 start 与 end 相等时，返回一个空数组。
-        * @example
-            $Array.pad(2, 5); //产生一个从 2 到 5 的数组，步长为1，结果为[2, 3, 4]
-            $Array.pad(1, 9, 2); //产生一个从1到9的数组，步长为2，结果为[1, 3, 5, 7]
-            $Array.pad(5, 2, -1); //产生一个从5到2的数组，步长为-1，结果为[5, 4, 3]
-            //下面的例子得到 [10, 20]
-            $Array.pad(1, 3, function (item, index) {
-                return item * 10;
             });
+    
+            return obj;
+    
+        },
+    
+        /**
+        * 把一个样式对象字符串化。
+        * 以用于 DOM 节点的 style 属性中或 style 标签中。
+        * 已重载 stringify(style, spaces);             //
+        * 已重载 stringify(style, replacer, spaces);   //style 为一个对象或字符串，replacer 为一个函数，spaces 为一个数值;  
+        * 参数：
+        *   style: '',      //样式对象或字符串。
+        *   replace: fn,    //处理器函数，即替换函数。 如果指定，则针对每一项调用它以获得返回值。 如果不返回任何值，则扔掉该项。
+        *   spaces: 4,      //要生成的前导空格数。 如果指定非 0 值，则生成多行的形式；否则生成行内形式。
         */
-        pad(start, end, step, fn) {
-            if (start == end) {
-                return [];
+        stringify(style, replacer, spaces) {
+            if (!style) {
+                return '';
             }
     
-            // 重载 pad(start, end, fn)
-            if (typeof step == 'function') {
-                fn = step;
-                step = 1;
+            if (typeof style == 'string') {
+                style = exports.objectify(style);
             }
-            else {
-                step = Math.abs(step || 1);
+    
+    
+            //重载 stringify(style, spaces);
+            if (typeof replacer == 'number') {
+                spaces = replacer;
+                replacer = null;
             }
     
     
             let a = [];
-            let index = 0;
     
-            if (start < end) { //升序
-                for (let i = start; i < end; i += step) {
-                    let item = fn ? fn(i, index) : i;
-                    a.push(item);
-                    index++;
+            $Object.each(style, function (key, value) {
+    
+                //如果指定了处理器函数函数，则调用它以获得返回值。
+                value = replacer ? replacer(key, value) : value;
+    
+                //扔掉空值: null、undefined、''。
+                if (value == null || value === '') {
+                    return; // continue;
                 }
-            }
-            else { //降序
-                for (let i = start; i > end; i -= step) {
-                    let item = fn ? fn(i, index) : i;
-                    a.push(item);
-                    index++;
+    
+                let s = key + ': ' + value; //如 `width: 100px`
+    
+                if (spaces) {
+                    s = new Array(spaces + 1).join(' ') + s; //产生前导空格，如 `    width: 100px`
                 }
+    
+                a.push(s);
+    
+            });
+    
+            if (a.length == 0) {
+                return '';
             }
     
-            return a;
+            style = spaces ?
+                a.join('; \n') + '; \n' :   //如果指定了前导空格，则生成多行形式的。
+                a.join('; ') + '; ';        //否则生成行内形式的。
     
+            return style;
         },
     
         /**
-        * 添加元素到多级分组列表中。
-        * 已重载 add(key$list, keys, item);
-        * 已重载 add(key$list, key0, key1, ..., keyN, item);
-        * @param {Object}} key$list 多级结构的容器普通对象。
-        * @param {Array} keys 节点对应的键数组。
-        * @param {*} item 要添加的元素。
-        * @example
-        *   let city$area$town = {};
-        *   add(city$area$town, '深圳市', '宝安区', '沙井', 100);
-        *   add(city$area$town, '深圳市', '宝安区', '沙井', 200);
-        *   add(city$area$town, '深圳市', '宝安区', '西乡', 300);
-        *   add(city$area$town, '深圳市', '宝安区', '西乡', 400);
-        *   add(city$area$town, '深圳市', '南山区', '后海', 500);
-        *   add(city$area$town, '深圳市', '南山区', '后海', 600);
-        *   add(city$area$town, '深圳市', '南山区', '前海', 700);
-        * 则 
-        *   city$area$town = {
-        *       '深圳市': {
-        *           '宝安区': {
-        *               '沙井': [100, 200],
-        *               '西乡': [300, 400],
-        *           },
-        *           '南山区': {
-        *               '后海': [500, 600],
-        *               '前海': [700],
-        *           },
-        *       },
-        *   };
+        * 把一个样式对象像素化。
         */
-        add(key$list, keys, item) {
-            //重载 add(key$list, key0, key1, ..., keyN, item); 的形式。
-            if (!Array.isArray(keys)) {
-                let args = [...arguments];
-                keys = args.slice(1, -1);
-                item = args.slice(-1)[0]; //最后一项。
+        pixelize(style, keys) {
+            //重载 pixelize(value);
+            //直接传一个值进来，根据情况转换成带像素单位的形式。
+            //如 pixelize(100); 得到 `100px`。
+            if (typeof style != 'object' && !keys) {
+                return pixelize(style);
             }
     
+            keys = keys || [];
+            style = exports.objectify(style);
     
-            let maxIndex = keys.length - 1; //判断是否为最后一个。
-            let obj = key$list;
+            style = $Object.map(style, function (key, value) {
+                //该项并非要处理的项。
+                if (!keys.includes(key)) {
+                    return value;
+                }
     
-            keys.forEach((key, index) => {
-                let list = obj[key];
+                return pixelize(value);
+            });
     
-                if (index < maxIndex) {
-                    if (!list) {
-                        obj[key] = {};
-                    }
+            return style;
+        },
     
-                    obj = obj[key];
+        /**
+        * 去掉空值。
+        * 即去掉值为 null、undefined、'' 的项。
+        */
+        trim(style) {
+            let obj = {};
+    
+            //过滤掉空值。
+            $Object.each(style, function (key, value) {
+                if (value == null || value === '') {
                     return;
                 }
     
-    
-                //最后一项。
-                if (!list) {
-                    list = obj[key] = [];
-                }
-                else if (!Array.isArray(list)) {
-                    //防止添加到中间节点上。
-                    throw new Error(`Can not add the item to a Non-Array node.`);
-                }
-    
-                list.push(item);
+                obj[key] = value;
             });
     
+            return obj;
         },
+    
+        /**
+        * 对每一项进行空值过滤，再进行合并得到一个样式对象。
+        */
+        merge(...items) {
+    
+            //对一个 item 进行处理
+            items = items.map(function (item) {
+                if (!item) {
+                    return {};
+                }
+    
+                item = exports.trim(item);
+                return item;
+    
+            });
+    
+    
+            let obj = Object.assign(...items);
+    
+            return obj;
+    
+        },
+    
+    
+    
     };
+    
+    
 });
 /**
-* src: @definejs/date/modules/Date.js
-* pkg: @definejs/date@1.0.0
+* src: @definejs/template/modules/Template/Parser/Templates.js
+* pkg: @definejs/template@1.0.0
 */
-define('Date', function (require, module, exports) { 
-    const $String = require('String');
-    
-    let DELTA = 0; //用于存放参考时间(如服务器时间)和本地时间的差值。
-    
-    
-    function getDateItem(s) {
-        let separator =
-            s.indexOf('.') > 0 ? '.' :
-            s.indexOf('-') > 0 ? '-' :
-            s.indexOf('/') > 0 ? '/' :
-            s.indexOf('_') > 0 ? '_' : null;
-    
-        if (!separator) {
-            return null;
-        }
-    
-        let ps = s.split(separator);
-    
-        return {
-            'yyyy': ps[0],
-            'MM': ps[1] || 0,
-            'dd': ps[2] || 1,
-        };
-    }
-    
-    function getTimeItem(s) {
-        let separator = s.indexOf(':') > 0 ? ':' : null;
-        
-        if (!separator) {
-            return null;
-        }
-    
-        let ps = s.split(separator);
-    
-        return {
-            'HH': ps[0] || 0,
-            'mm': ps[1] || 0,
-            'ss': ps[2] || 0,
-        };
-    }
-    
+define('Template/Parser/Templates', function (require, module, exports) { 
     /**
-    * 日期时间工具。
+    * 获取指定 template 节点的父亲 template 节点(。
     */
-    module.exports = exports = {
+    function getParent(tpl) {
+        tpl = tpl.parentNode;
+    
+        while (tpl) {
+            if (tpl.nodeName == 'template') {
+                return tpl;
+            }
+    
+            tpl = tpl.parentNode;
+        }
+    
+        return null;
+    }
+    
+    
+    module.exports = {
         /**
-        * 把参数 value 解析成等价的日期时间实例。
-        * @param {Date|String} value 要进行解析的参数，可接受的类型为：
-        *   1.Date 实例
-        *   2.String 字符串，包括调用 Date 实例的 toString 方法得到的字符串；也包括以下格式: 
-        *       yyyy-MM-dd
-        *       yyyy.MM.dd
-        *       yyyy/MM/dd
-        *       yyyy_MM_dd
-        *       HH:mm:ss
-        *       yyyy-MM-dd HH:mm:ss
-        *       yyyy.MM.dd HH:mm:ss
-        *       yyyy/MM/dd HH:mm:ss
-        *       yyyy_MM_dd HH:mm:ss
-        * @return 返回一个日期时间的实例。
-        *   如果解析失败，则返回 null。
-        * @example
-        *   $Date.parse('2013-04-29 09:31:20');
+        * 把所有的 template 节点信息提取出来。
+        * 返回一个由顶层 template 节点对应的描述信息对象组成的数组。
         */
-        parse(value) {
-            //已经是一个 Date 实例，则判断它是否有值。
-            if (value instanceof Date) {
-                let tv = value.getTime();
-                return isNaN(tv) ? null : value;
+        get(dom) {
+            let tpls = dom.getElementsByTagName('template');
+            let tpl$item = new Map();
+    
+            let list = tpls.map(function (tpl) {
+                let attributes = tpl.attributes;
+                let innerHTML = tpl.innerHTML;
+    
+                let item = {
+                    'id': tpl.id || '',
+                    'name': tpl.name || '',
+                    'placeholder': attributes.placeholder || '',
+                    'innerHTML': innerHTML,
+                    'outerHTML': tpl.outerHTML,
+                    'node': tpl,
+                    'sample': innerHTML,
+                    'parent': null,
+                    'attributes': attributes,
+                    'items': [],    //直接下级列表。
+                };
+    
+                tpl$item.set(tpl, item);
+    
+                return item;
+            });
+    
+    
+            let roots = list.filter(function (item) {
+                let tpl = getParent(item.node);
+                let parent = tpl$item.get(tpl);
+    
+                //收集根节点。
+                if (!parent) {
+                    return true;
+                }
+    
+                //顺便处理一下其它。
+                item.parent = parent;
+                parent.items.push(item);
+    
+                //替换掉子模板在父模板中的内容。
+                let sample = parent.sample;
+                let outerHTML = item.outerHTML;
+                let placeholder = item.placeholder;
+    
+                if (placeholder) {
+                    placeholder = '{' + placeholder + '}';
+                }
+    
+                parent.sample = sample.replace(outerHTML, placeholder);
+    
+            });
+    
+            return roots;
+        },
+    };
+    
+    
+    
+});
+/**
+* src: @definejs/template/modules/Template/Child.js
+* pkg: @definejs/template@1.0.0
+*/
+define('Template/Child', function (require, module, exports) { 
+    /**
+    * 
+    */
+    module.exports = {
+        /**
+        * 根据已解析到的数据节点创建一个子级实例，并设置父子关系等。
+        */
+        create(Template, meta, item) {
+            let name = item.name;
+            let sibling = meta.name$tpl[name]; //兄弟节点。
+    
+            //检测同一级下是否已存在同名的模板。
+            if (sibling) {
+                throw new Error('同一级下已存在名为 `' + name + '` 的模板。');
             }
     
-            let isString = false;
+            let tpl = new Template(item);
     
-            switch (typeof value) {
-                case 'number':
-                    let dt = new Date(value);
-                    let tv = dt.getTime();
-                    return isNaN(tv) ? null : dt;
+            meta.name$tpl[name] = tpl;
+            meta.parent = meta.this;    //设置父实例，内部使用的。
+            tpl.parent = meta.this;     //设置父实例，外部使用的。
     
-                case 'string':
-                    isString = true;
-                    break;
+            tpl.on('process', function (...args) {
+                meta.emitter.fire('process', args);
+            });
     
-            }
-    
-            if (!isString) {
-                return null;
-            }
-    
-    
-            //标准方式
-            let date = new Date(value);
-            if (!isNaN(date.getTime())) {
-                return date;
-            }
-    
-            /*
-             自定义方式：
-                yyyy-MM-dd
-                yyyy.MM.dd
-                yyyy/MM/dd
-                yyyy_MM_dd
-                HH:mm:ss
-                yyyy-MM-dd HH:mm:ss
-                yyyy.MM.dd HH:mm:ss
-                yyyy/MM/dd HH:mm:ss
-                yyyy_MM_dd HH:mm:ss
-                    
-            */
-    
-            let parts = value.split(' ');
-            let left = parts[0];
-    
-            if (!left) {
-                return null;
-            }
-    
-            //冒号只能用在时间的部分，而不能用在日期部分
-            date = left.indexOf(':') > 0 ? null : left;
-            let time = date ? (parts[1] || null) : date;
-    
-            //既没指定日期部分，也没指定时间部分
-            if (!date && !time) {
-                return null;
-            }
-    
-    
-            if (date && time) {
-                let d = getDateItem(date);
-                let t = getTimeItem(time);
-                return new Date(d.yyyy, d.MM - 1, d.dd, t.HH, t.mm, t.ss);
-            }
-    
-            if (date) {
-                let d = getDateItem(date);
-                return new Date(d.yyyy, d.MM - 1, d.dd);
-            }
-    
-            if (time) {
-                let now = new Date();
-                let t = getTimeItem(time);
-                return new Date(now.getFullYear(), now.getMonth(), now.getDate(), t.HH, t.mm, t.ss);
-            }
+            return tpl;
     
         },
     
+    
+    
+    
+    };
+    
+    
+    
+    
+});
+/**
+* src: @definejs/template/modules/Template/Meta.js
+* pkg: @definejs/template@1.0.0
+*/
+define('Template/Meta', function (require, module, exports) { 
+    
+    const $String = require('String');
+    
+    const prefix = 'definejs-template-';    //用于生成组件 id 的前缀部分。
+    const suffix = 4;                       //用于生成组件 id 的随机部分的长度。
+    
+    
+    //默认的处理函数。
+    function process(data) {
+        return data;
+    }
+    
+    
+    module.exports = {
         /**
-        * 把日期时间格式化指定格式的字符串。
-        * 已重载 format(formatter)。
-        * @param {Date} datetime 要进行格式化的日期时间。
-        *   如果不指定，则默认为当前时间，即 new Date()。
-        * @param {string} formater 格式化的字符串。 其中保留的占位符有：
-            'yyyy': 4位数年份
-            'yy': 2位数年份
-            'MM': 2位数的月份(01-12)
-            'M': 1位数的月份(1-12)
-            'dddd': '星期日|一|二|三|四|五|六'
-            'dd': 2位数的日份(01-31)
-            'd': 1位数的日份(1-31)
-            'HH': 24小时制的2位数小时数(00-23)
-            'H': 24小时制的1位数小时数(0-23)
-            'hh': 12小时制的2位数小时数(00-12)
-            'h': 12小时制的1位数小时数(0-12)
-            'mm': 2位数的分钟数(00-59)
-            'm': 1位数的分钟数(0-59)
-            'ss': 2位数的秒钟数(00-59)
-            's': 1位数的秒数(0-59)
-            'tt': 上午：'AM'；下午: 'PM'
-            't': 上午：'A'；下午: 'P'
-            'TT': 上午： '上午'； 下午: '下午'
-            'T': 上午： '上'； 下午: '下'
-        * @return {string} 返回一个格式化的字符串。
-        * @example
-            //返回当前时间的格式字符串，类似 '2013年4月29日 9:21:59 星期一'
-            $Date.format(new Date(), 'yyyy年M月d日 h:m:s dddd');
-            $Date.format('yyyy年M月d日 h:m:s dddd');
+        *
         */
-        format(datetime, formater) {
-            //重载 format(formater);
-            if (arguments.length == 1) {
-                formater = datetime;
-                datetime = new Date();
-            }
-            else {
-                datetime = exports.parse(datetime);
-            }
+        create(others) {
+            let id = $String.randomId(prefix, suffix);
     
-            let year = datetime.getFullYear();
-            let month = datetime.getMonth() + 1;
-            let date = datetime.getDate();
-            let hour = datetime.getHours();
-            let minute = datetime.getMinutes();
-            let second = datetime.getSeconds();
+            let meta = {
+                'id': id,               //
+                'sample': '',           //
+                'name': '',             //
+                'placeholder': '',      //
+                'innerHTML': '',        //
+                'outerHTML': '',        //
     
-            let padLeft = function (value, length) {
-                return $String.padLeft(value, length, '0');
+                'tpls': [],             //下级实例列表。
+                'name$tpl': {},         //命名的下级实例映射，方便按名称读取。
+    
+                'node': null,           //DOM 节点。
+                'parent': null,         //父实例。
+                'emitter': null,        //
+                'this': null,           //
+    
+                'process': process,     //默认的处理函数。
             };
     
     
-            let isAM = hour <= 12;
+            Object.assign(meta, others);
     
-            //这里不要用 {} 来映射，因为 for in 的顺序不确定
-            let maps = [
-                ['yyyy', padLeft(year, 4)],
-                ['yy', String(year).slice(2)],
-                ['MM', padLeft(month, 2)],
-                ['M', month],
-                ['dddd', '星期' + ('日一二三四五六'.charAt(datetime.getDay()))],
-                ['dd', padLeft(date, 2)],
-                ['d', date],
-                ['HH', padLeft(hour, 2)],
-                ['H', hour],
-                ['hh', padLeft(isAM ? hour : hour - 12, 2)],
-                ['h', isAM ? hour : hour - 12],
-                ['mm', padLeft(minute, 2)],
-                ['m', minute],
-                ['ss', padLeft(second, 2)],
-                ['s', second],
-                ['tt', isAM ? 'AM' : 'PM'],
-                ['t', isAM ? 'A' : 'P'],
-                ['TT', isAM ? '上午' : '下午'],
-                ['T', isAM ? '上' : '下']
-            ];
+            return meta;
+    
+        },
+    
+        /**
+        *
+        */
+        assign(meta, item) {
+            Object.assign(meta, {
+                'sample': item.sample,
+                'name': item.name,
+                'placeholder': item.placeholder,
+                'innerHTML': item.innerHTML,
+                'outerHTML': item.outerHTML,
+                'node': item.node,
+            });
+        },
+    
+    };
     
     
-            let s = formater;
     
-            maps.forEach(function (item, index) {
-                s = $String.replaceAll(s, item[0], item[1]);
+});
+/**
+* src: @definejs/template/modules/Template/Parser.js
+* pkg: @definejs/template@1.0.0
+*/
+define('Template/Parser', function (require, module, exports) { 
+    const HTMLParser = require('HTMLParser');
+    const Templates = module.require('Templates');
+    
+    module.exports = {
+        /**
+        *
+        */
+        parse(html) {
+            let dom = HTMLParser.parse(html);
+            let tpls = Templates.get(dom);
+    
+            return { dom, tpls, };
+        },
+    };
+    
+    
+    
+});
+/**
+* src: @definejs/template/modules/Template/Sample.js
+* pkg: @definejs/template@1.0.0
+*/
+define('Template/Sample', function (require, module, exports) { 
+    
+    
+    const $String = require('String');
+    
+    const script = {
+        begin: '<script type="text/template">',
+        end: '</script>',
+    };
+    
+    const comment = {
+        begin: '<!--',
+        end: '-->',
+    };
+    
+    
+    
+    module.exports = exports = {
+        /**
+        * 替换掉子模板在父模板中的内容。
+        *   sample: 父模板的内容。
+        *   item: 解析到的模板数据结构。
+        */
+        replace(sample, item) {
+            let { outerHTML, placeholder, } = item;
+    
+            if (placeholder) {
+                placeholder = '{' + placeholder + '}';
+            }
+    
+            sample = exports.removeScript(sample);
+            sample = sample.replace(outerHTML, placeholder); //这里不要用全部替换，否则可能会误及后面的。
+    
+            return sample;
+        },
+    
+        /**
+        * 提取 `<!--` 和 `-->` 之间的内容作为 sample。
+        */
+        betweenComment(sample) {
+            let { begin, end, } = comment;
+    
+            if (sample.includes(begin) &&
+                sample.includes(end)) {
+    
+                sample = $String.between(sample, begin, end);   //这里用提取。
+            }
+    
+            return sample;
+        },
+    
+        /** 
+        * 移除 html 中的 `<script type="text/template">` 和 `</script>` 标签。
+        * 如果不存在 script 包裹标签，则原样返回。
+        */
+        removeScript(html) {
+            let { begin, end, } = script;
+    
+            if (html.includes(begin) &&
+                html.includes(end)) {
+    
+                html = html.split(begin).join('');   //这里用删除。
+                html = html.split(end).join('');
+            }
+    
+            return html;
+        },
+    
+    };
+    
+    
+});
+/**
+* src: @definejs/template/modules/Template.js
+* pkg: @definejs/template@1.0.0
+*/
+define('Template', function (require, module, exports) { 
+    
+    const $ = require('jquery');
+    const $String = require('String');
+    const $Object = require('Object');
+    const Emitter = require('Emitter');
+    const HTMLParser = require('HTMLParser');
+    
+    const Meta = module.require('Meta');
+    const Parser = module.require('Parser');
+    const Sample = module.require('Sample');
+    const Child = module.require('Child');
+    
+    const mapper = new Map();
+    
+    
+    class Template {
+        /**
+        * 构造器。
+        * 参数：
+        *   selector: '' | DOM | jQuery | {}, //DOM 节点或选择器。 也可以是一个分析到的数据结构对象。
+        */
+        constructor(selector) {
+            //如果传入的是一个纯对象，则认为是内部解析到的数据结构。
+            //即要从一个已解析到的数据对象中创建实例。
+            let isParsedData = $Object.isPlain(selector);
+    
+            let meta = Meta.create({
+                'emitter': new Emitter(this),
+                'this': this,
             });
     
-            return s;
-        },
+            mapper.set(this, meta);
     
     
-        /**
-        * 将指定的毫秒数加到指定的 Date 上。
-        * 此方法不更改参数 datetime 的值，而是返回一个新的 Date，其值是此运算的结果。
-        * @param {Date} datetime 要进行操作的日期时间。
-        * @param {Number} value 要增加/减少的毫秒数。 
-            可以为正数，也可以为负数。
-        * @param {string} [formater] 可选的，对结果进行格式化的字符串。 
-        * @return {Date|string} 返回一个新的日期实例或字符串值。
-            如果指定了参数 formater，则进行格式化，返回格式化后的字符串值；
-            否则返回 Date 的实例对象。
-        * @example
-            $Date.addMilliseconds(new Date(), 2000); //给当前时间加上2000毫秒
-        */
-        add(datetime, value, formater) {
-            datetime = exports.parse(datetime);
+            //传入的是一个普通的 DOM 节点或其选择器。
+            if (!isParsedData) {
+                let node = $(selector).get(0); //包装、拆装，可以让入参多样化。
     
-            let ms = datetime.getMilliseconds();
-            let dt = new Date(datetime);//新建一个副本，避免修改参数
+                if (!node) {
+                    selector = (selector instanceof $) ? selector.selector : selector;
+                    throw new Error('不存在模板节点: ' + selector);
+                }
     
-            dt.setMilliseconds(ms + value);
+                let isTPL = node.nodeName.toLowerCase() == 'template'; //判断是否为 <template> 模板节点。
+                let html = Sample.removeScript(node.innerHTML);         //要先移除可能给 `script` 标签包含的内容
+                let info = Parser.parse(html);
     
-            if (formater) {
-                dt = exports.format(dt, formater);
+                meta.sample = Sample.betweenComment(html);
+                meta.name = isTPL ? node.getAttribute('name') : '';
+                meta.placeholder = isTPL ? node.getAttribute('placeholder') : '';
+                meta.innerHTML = html;
+                meta.outerHTML = node.outerHTML;
+                meta.node = node;
+    
+                meta.tpls = info.tpls.map(function (item) {
+                    let tpl = Child.create(Template, meta, item);
+                    let sample = meta.sample;
+    
+                    meta.sample = Sample.replace(sample, item); //替换掉当前模板在父模板中的内容。
+    
+                    return tpl;
+                });
+            }
+            else {//传入的是一个已解析到的数据对象。
+                let item = selector;
+    
+                Meta.assign(meta, item);
+    
+                meta.tpls = item.items.map(function (item) {
+                    let tpl = Child.create(Template, meta, item);
+    
+                    return tpl;
+                });
             }
     
-            return dt;
-        },
+    
+            /**
+            * 这里增加个限制：
+            * 某一层里只允许出现一个纯 `<template>` 标签，且不允许再嵌套子级 `<template>` 标签。
+            * 纯 `<template>` 标签是指无 `name` 和 `placeholder` 属性的 `<template>` 标签。
+            * 这段逻辑会把该 template 实例中的 sample 上升为父级实例的 sample 值。
+            * 这样可以方便把一级模板用一对 `<template></template>` 标签括起来，等价于直接注释掉当模板的方式，
+            * 但比后者多了个语法高亮的优点。 例如：
+            *   <ul>
+            *       <template>
+            *           <li></li>
+            *       </temlate>
+            *   </ul>
+            * 与传统的用注释方式是等价的：
+            *   <ul>
+            *       <!--
+            *       <li></li>
+            *       -->
+            *   </ul>
+            */
+            (function () {
+                //获取空白名称的直接子级 tpl。
+                let tpl = meta.name$tpl[''];
+    
+                if (!tpl) {
+                    return;
+                }
+    
+                //空白名称的直接子级 tpl 对应 meta。
+                let tplMeta = mapper.get(tpl);
+                let keys = Object.keys(tplMeta.name$tpl);
+    
+                if (keys.length > 0) {
+                    throw new Error('无名称的 template 标签下不能再嵌套子级 template。');
+                }
+    
+                if (tplMeta.placeholder) {
+                    throw new Error('无名称的 template 标签不能设置 placeholder 属性。');
+                }
+    
+                //把空白名称的直接子级 tpl 的 sample 当成本级的 sample。
+                meta.sample = tplMeta.sample;
+    
+            })();
+    
+    
+            //对外暴露的属性。
+            Object.assign(this, {
+                'id': meta.id,
+                '_meta': meta, //用于测试。
+            });
+    
+        }
+    
+        // /**
+        // * 当前实例的 id。
+        // */
+        // id = '';
+    
+        // /**
+        // * 父实例。
+        // */
+        // parent = null;
+    
     
         /**
-        * 将指定的秒数加到指定的 Date 实例上。
-        * @param {Date} datetime 要进行操作的日期时间实例。
-        * @param {Number} value 要增加/减少的秒数。可以为正数，也可以为负数。
-        * @param {string} [formater] 可选的，对结果进行格式化的字符串。 
-        * @return {Date} 返回一个新的日期实例。
-            此方法不更改参数 datetime 的值。而是返回一个新的 Date，其值是此运算的结果。
-        * @example
-            $Date.addSeconds(new Date(), 90); //给当前时间加上90秒
+        * 获取指定名称(或由多个名称组成的路径)节点所对应的下级 Template 实例。
+        * 已重载 template(names);                      //传入子模板的名称列表。
+        * 已重载 template(name0, name1, ..., nameN);   //依次传入多个子模板的名称。
         */
-        addSeconds(datetime, value, formater) {
-            return exports.add(datetime, value * 1000, formater);
-        },
+        template(names) {
+            //重载 template(name0, name1, ..., nameN); 
+            if (!Array.isArray(names)) {
+                names = [...arguments];
+            }
+    
+            //从当前实例开始。
+            let tpl = this;
+            let meta = mapper.get(tpl);
+    
+            names.map(function (name) {
+                tpl = meta.name$tpl[name];  //取子级的实例。
+                meta = mapper.get(tpl);     //子级实例对应的元数据。
+            });
+    
+            return tpl;
+        }
     
         /**
-         * 将指定的分钟数加到指定的 Date 实例上。
-         * @param {Date} datetime 要进行操作的日期时间实例。
-         * @param {Number} value 要增加/减少的分钟数。可以为正数，也可以为负数。
-         * @param {string} [formater] 可选的，对结果进行格式化的字符串。 
-         * @return {Date} 返回一个新的日期实例。
-            此方法不更改参数 datetime 的值。而是返回一个新的 Date，其值是此运算的结果。
-         * @example
-            $Date.addMinutes(new Date(), 90); //给当前时间加上90分钟
+        * 获取指定名称(或由多个名称组成的路径)节点所对应的下级 sample 模板。
+        */
+        sample(...names) {
+            let tpl = this.template(...names);
+            let meta = mapper.get(tpl);
+    
+            if (!meta) {
+                throw new Error(`当前实例下不存在名称路径为 ${names.join(' ')} 的 Template 子实例。`);
+            }
+    
+            return meta.sample;
+        }
+    
+    
+        /**
+        * 对当前模板进行填充，并用填充后的 html 字符串渲染容器节点。
+        * @param {Object|Array} data 要填充的数据，可以是一个对象或数组。
+        * @param {function} process 填充规则的处理器，即处理函数。
+        * @return 填充后的 html 内容。
+        */
+        render(data, process) {
+            if (process) {
+                this.process(process);
+            }
+    
+            let meta = mapper.get(this);
+            let node = meta.node;
+            let html = this.fill(data);
+    
+            if (node) {
+                node.innerHTML = html;
+            }
+    
+            return html;
+        }
+    
+        /**
+        * 对当前模板及子模板(如果有)进行填充。
+        * 已重载 fill(data);
+        * 已重载 fill(data, param0, ..., paramN);
+        * 已重载 fill(name0, name1, ..., nameN, data);
+        * 已重载 fill(name0, name1, ..., nameN, data, param0, ..., paramN);
+        * @return {string} 返回填充后的 html 字符串。
+        */
+        fill(data, ...params) {
+            //重载 fill(name0, name1, ..., nameN, data, param0, ..., paramN);
+            //即一步到位填充指定路径的子模板。
+    
+            //全部参数列表。
+            let args = [...arguments];
+    
+    
+            //找出 data 在参数列表中所在的位置。
+            let index = args.findIndex(function (item) {
+                return Array.isArray(item) || $Object.isPlain(item);
+            });
+    
+            //参数列表中没找到任何可用于填充的数据。
+            if (index < 0) {
+                throw new Error('填充模板时必须指定数据为一个数组或纯对象。');
+            }
+    
+            //找到该数据，但它前面有子模板的名称。
+            //使用子模板进行填充。
+            if (index > 0) {
+                let names = args.slice(0, index);   //子模板名称列表，[name0, name1, ..., nameN];
+                let tpl = this.template(...names);
+    
+                if (!tpl) {
+                    throw new Error(`不存在路径为 ${names.join('.')} 的模板节点，请检查 html 模板树。`);
+                }
+    
+                let rest = args.slice(index);   //[data, param0, ..., paramN];
+                let html = tpl.fill(...rest);
+                return html;
+            }
+    
+    
+            //以下情况是直接传入数据进行填充的，不存在传入子模板的情况。
+    
+            let meta = mapper.get(this);
+    
+    
+            //这里不要缓存 sample，应该实时去获取 meta.sample，
+            //因为它可能在 process 函数中给使用者调用了 this.fix() 更改了。
+            //var sample = meta.sample; !!!
+    
+            //单个纯对象形式。
+            if (!Array.isArray(data)) {
+                meta.emitter.fire('process', args);
+    
+                //调用处理器获得填充数据。
+                //此处特意让处理器函数获得 `this` 执行环境。
+                data = meta.process.apply(meta.this, args);
+    
+                //处理器已直接返回 html 内容，则不需要用模板去填充。
+                if (typeof data == 'string') {
+                    return data;
+                }
+    
+                let html = $String.format(meta.sample, data);
+                return html;
+            }
+    
+            //传进来的是一个数组，则迭代每一项去填充。
+            //每一项都会调用处理器函数，并传递一些参数。
+            let htmls = data.map(function (item, index) {
+                //传给处理器的参数列表。
+                //除了传当前迭代的 item 和 index 外，还把 params 也一同传过去。
+                //params 就是用户在 fill(data, ...params) 传进来的、data 后面的其它参数。
+                //params 用于透传给处理器函数。
+                let args = [item, index, ...params];
+    
+                meta.emitter.fire('process', args);
+    
+                //调用处理器获得填充数据。
+                //此处特意让处理器函数获得 `this` 执行环境。
+                let data = meta.process.apply(meta.this, args);
+    
+                //处理器已直接返回 html 内容，则不需要用模板去填充。
+                if (typeof data == 'string') {
+                    return data;
+                }
+    
+                if (!data) {
+                    return ''; //这里要返回空串。
+                }
+    
+                let html = $String.format(meta.sample, data);
+                return html;
+            });
+    
+            return htmls.join('');
+        }
+    
+        /**
+        * 设置模板填充的处理规则。
+        * 已重载 process(fn);      //设置当前实例的处理器。
+        * 已重载 process({...});   //批量设置当前实例以及子实例的处理器。                 
+        * 已重载 process(name0, ..., nameN, fn);       //设置路径为 `name0->name1->...->nameN` 的子实例的处理器。
+        * 已重载 process(name0, ..., nameN, {...});    //批量设置前缀路径为`name0->name1->...->nameN` 的子实例的处理器。
+        */
+        process(process) {
+            let meta = mapper.get(this);
+    
+            //重载 process(fn); 
+            //设置当前实例的 process 处理函数。
+            if (typeof process == 'function') {
+                meta.process = process;
+                return;
+            }
+    
+    
+            let args = [...arguments];
+    
+            //查找处理器所在的位置。
+            let index = args.findIndex(function (item) {
+                return typeof item == 'function' || $Object.isPlain(item);
+            });
+    
+            if (index < 0) {
+                throw new Error(`模板节点 ${meta.name} 缺少处理器。`);
+            }
+    
+    
+            //前面存在前缀名称，则跟后面的处理器合并为一个完整对象，方便后续统一处理。
+            //如 process('A', 'B', 'C', process); 则合并为 { A: { B: { C: process } } };
+            if (index > 0) {
+                let keys = args.slice(0, index);    //如 ['A', 'B', ]
+                let item = args[index];             //
+    
+                process = $Object.make({}, keys, item); //此时 process 是一个 {...}。
+            }
+    
+    
+            //展开成扁平结构。
+            //如：list = [ { keys: ['A', 'B', 'C'], value: fn, } ];
+            let list = $Object.flat(process);
+    
+            list.forEach(function (item) {
+                //去掉空字符串。 因为空串是代表自身。
+                let keys = item.keys.filter(function (key) {
+                    return !!key;
+                });
+    
+                let value = item.value;
+    
+                if (typeof value != 'function') {
+                    throw new Error(`模板节点 ${keys.join('.')} 的处理器必须为一个函数。`);
+                }
+    
+    
+                let tpl = meta.this.template(keys);
+    
+                if (!tpl) {
+                    console.warn(`不存在模板节点: ${keys.join('.')}`);
+                    return;
+                }
+    
+                //此时 value 为一个函数。
+                tpl.process(value);
+    
+            });
+    
+        }
+    
+        /**
+        * 修正模板中指定的占位符。
+        * 因为模板中的 html 给 DOM 解析和处理后，没有等号的占位符属性会给替换成有空值的属性值。
+        * 如 `<img {test} />` 经过 DOM 解析后会变成 `<img {test}="" />`，这并不是我们想要的结果。
+        * 因此我们需要手动修正以替换回我们写模板时的结果。
+        */
+        fix(keys) {
+            let meta = mapper.get(this);
+            let sample = meta.sample;
+    
+            keys = Array.isArray(keys) ? keys : [keys];
+    
+            keys.map(function (key) {
+                let target = '{' + key + '}';
+                let old = target + '=""';
+    
+                sample = sample.split(old).join(target); //replaceAll
+            });
+    
+            meta.sample = sample;
+        }
+    
+        /**
+        * 绑定事件。
+        */
+        on(...args) {
+            let meta = mapper.get(this);
+            meta.emitter.on(...args);
+        }
+    
+        /**
+        * 销毁本组件。
+        */
+        destroy() {
+            let meta = mapper.get(this);
+            if (!meta) {
+                return;
+            }
+    
+            meta.tpls.map(function (tpl) {
+                tpl.destroy();
+            });
+    
+            meta.emitter.destroy();
+            meta.node = null;
+            meta.parent = null;
+            meta.emitter = null;
+    
+            mapper.delete(this);
+    
+        }
+    
+        //静态成员。
+        /**
+        * 从一段 html 中解析出信息，并创建一个 Template 实例。
+        */
+        static create(html) {
+            html = `<template>${html}</template>`;
+    
+            let dom = HTMLParser.parse(html);
+    
+            //if (dom.childNodes.length != 1) {
+            //    throw new Error('要解析的 html 最外层只允许(必须)有一个节点。');
+            //}
+    
+            let tpl = new Template(dom.childNodes[0]);
+    
+            return tpl;
+        }
+    }
+    
+    module.exports = Template;
+});
+/**
+* src: @definejs/html-parser/modules/HTMLParser.js
+* pkg: @definejs/html-parser@1.0.0
+*/
+define('HTMLParser', function (require, module, exports) { 
+    
+    /**
+    * Parse a string of HTML into an HTML DOM.
+    *
+    * https://github.com/developit/htmlParser
+    */
+    module.exports = (function () { 
+    
+        var exports = {},
+            util = {},
+            splitAttrsTokenizer = /([a-z0-9_\:\-]*)\s*?=\s*?(['"]?)(.*?)\2\s+/gim,
+            domParserTokenizer = /(?:<(\/?)([a-zA-Z][a-zA-Z0-9\:]*)(?:\s([^>]*?))?((?:\s*\/)?)>|(<\!\-\-)([\s\S]*?)(\-\->)|(<\!\[CDATA\[)([\s\S]*?)(\]\]>))/gm;
+    
+        util.extend = function (a, b) {
+            for (var x in b) {
+                if (b.hasOwnProperty(x)) {
+                    a[x] = b[x];
+                }
+            }
+            return a;
+        };
+    
+        util.inherit = function (a, b) {
+            var p = a.prototype;
+            function F() {
+    
+            }
+    
+            F.prototype = b.prototype;
+            a.prototype = new F();
+    
+            util.extend(a.prototype, p);
+            a.prototype.constructor = a;
+        };
+    
+        //by micty。
+        //已添加了更多的。
+        util.selfClosingTags = ['area', 'base', 'br', 'col', 'embed', 'frame', 'hr', 'img', 'input', 'keygen', 'link', 'meta', 'object', 'param', 'source'];
+    
+        util.getElementsByTagName = function (el, tag) {
+            var els = [], c = 0, i, n;
+            if (!tag) {
+                tag = '*';
+            }
+            tag = tag.toLowerCase();
+    
+            if (el.childNodes) {
+                for (i = 0; i < el.childNodes.length; i++) {
+                    n = el.childNodes[i];
+                    if (n.nodeType === 1 && (tag === '*' || n.nodeName === tag)) {
+                        els[c++] = n;
+                    }
+    
+                    Array.prototype.splice.apply(els, [els.length, 0].concat(util.getElementsByTagName(n, tag)));
+                    c = els.length;
+                }
+            }
+    
+            return els;
+        };
+    
+        util.splitAttrs = function (str) {
+            var obj = {}, token;
+    
+            if (str) {
+                splitAttrsTokenizer.lastIndex = 0;
+                str = ' ' + (str || '') + ' ';
+    
+                while ((token = splitAttrsTokenizer.exec(str))) {
+                    obj[token[1]] = token[3];
+                }
+            }
+    
+            return obj;
+        };
+    
+        util.ta = document.createElement('textarea');
+    
+        util.encodeEntities = function (str) {
+            util.ta.value = str || '';
+            return util.ta.innerHTML;
+        };
+    
+        util.decodeEntities = function (str) {
+            util.ta.innerHTML = str || '';
+            return util.ta.value;
+        };
+    
+        util.htmlToText = function (html) {
+            html = html.replace(/<\/?[a-z].*?>/gim, '');
+            return util.decodeEntities(html);
+        };
+    
+        function HTMLElement() {
+            this.childNodes = [];
+        }
+    
+        util.extend(HTMLElement.prototype, {
+            nodeType: 1,
+            textContent: '',
+    
+            getElementsByTagName: function (tag) {
+                return util.getElementsByTagName(this, tag);
+            },
+    
+            getAttribute: function (a) {
+                if (this.attributes.hasOwnProperty(a)) {
+                    return this.attributes[a];
+                }
+            },
+    
+            setAttribute: function (name, value) {
+                var lcName = (name + '').toLowerCase();
+                this.attributes[name] = value + '';
+                if (lcName === 'id' || lcName === 'name') {
+                    this[lcName] = value;
+                }
+                if (lcName === 'class') {
+                    this.className = value;
+                }
+            },
+    
+            getElementById: function (id) {
+                var all = this.getElementsByTagName('*'),
+                    i;
+                for (i = all.length; i--;) {
+                    if (all[i].id === id) {
+                        return all[i];
+                    }
+                }
+            },
+    
+            appendChild: function (child) {
+                if (child.parentNode) {
+                    child.parentNode.removeChild(child);
+                }
+                this.childNodes.push(child);
+            },
+    
+            insertBefore: function (child, sibling) {
+                if (child.parentNode) {
+                    child.parentNode.removeChild(child);
+                }
+                for (var i = 0; i < this.childNodes.length; i++) {
+                    if (this.childNodes[i] === sibling) {
+                        break;
+                    }
+                }
+                this.childNodes.splice(i, 0, child);
+            },
+    
+            removeChild: function (child) {
+                for (var i = this.childNodes.length; i--;) {
+                    if (this.childNodes[i] === child) {
+                        this.childNodes.splice(i, 1);
+                        break;
+                    }
+                }
+            },
+        });
+    
+        exports.HTMLElement = HTMLElement;
+    
+    
+        function Node() {
+    
+        }
+    
+        util.extend(Node.prototype, {
+            toString: function () {
+                return this.textContent;
+            },
+        });
+    
+    
+        function Document() {
+            HTMLElement.call(this);
+        }
+    
+        util.inherit(Document, HTMLElement);
+    
+        util.extend(Document.prototype, {
+            nodeType: 9,
+            nodeName: '#document',
+        });
+    
+        exports.Document = Document;
+    
+        function TextNode() {
+    
+        }
+    
+        util.inherit(TextNode, Node);
+    
+        util.extend(TextNode.prototype, {
+            nodeType: 3,
+            nodeName: '#text'
+        });
+    
+    
+        exports.TextNode = TextNode;
+    
+        function CommentNode() {
+    
+        }
+    
+        util.inherit(CommentNode, Node);
+        util.extend(CommentNode.prototype, {
+            nodeType: 8,
+            nodeName: '#comment'
+        });
+    
+        exports.CommentNode = CommentNode;
+    
+    
+    
+        function CDATASectionNode() { }
+    
+        util.inherit(CDATASectionNode, Node);
+        util.extend(CDATASectionNode.prototype, {
+            nodeType: 4,
+            nodeName: '#cdata-section'
+        });
+        exports.CDATASectionNode = CDATASectionNode;
+    
+    
+        util.blockConstructors = {
+            '<!--': CommentNode,
+            '<![CDATA[': CDATASectionNode
+        };
+    
+    
+        /** Parse a string of HTML into an HTML DOM.
+         *  @param {String} str		A string containing HTML
+         *  @returns {Document}		A Node, the type corresponding to the type of the root HTML node.
          */
-        addMinutes(datetime, value, formater) {
-            return exports.addSeconds(datetime, value * 60, formater);
-        },
+        exports.parse = function (str) {
+            var tags, doc, parent, prev, token, text, i,
+                bStart, bText, bEnd, BlockConstructor, commitTextNode, tag;
+            tags = [];
+            domParserTokenizer.lastIndex = 0;
     
-        /**
-         * 将指定的小时数加到指定的 Date 实例上。
-         * @param {Date} datetime 要进行操作的日期时间实例。
-         * @param {Number} value 要增加/减少的小时数。可以为正数，也可以为负数。
-         * @return {Date} 返回一个新的日期实例。
-            此方法不更改参数 datetime 的值。而是返回一个新的 Date，其值是此运算的结果。
-         * @example
-            $Date.addHours(new Date(), 35); //给当前时间加上35小时
-         */
-        addHours(datetime, value, formater) {
-            return exports.addMinutes(datetime, value * 60, formater);
-        },
+            parent = doc = new Document();
     
+            commitTextNode = function () {
+                // note: this is moved out of the loop but still uses its scope!!
+                if (parent && tags.length > 0) {
+                    prev = tags[tags.length - 1];
+                    i = (prev.documentPosition.closeTag || prev.documentPosition.openTag).end;
+                    if (prev.parentNode === parent && i && i < tag.documentPosition.openTag.start) {
+                        text = str.substring(i, tag.documentPosition.openTag.start);
+                        if (text) {
+                            text = util.decodeEntities(text);
+                            parent.childNodes.push(util.extend(new TextNode(), {
+                                textContent: text,
+                                nodeValue: text,
+                                parentNode: parent
+                            }));
+                        }
+                    }
+                }
+            };
     
-        /**
-        * 将指定的天数加到指定的 Date 实例上。
-        * @param {Date} datetime 要进行操作的日期时间实例。
-        * @param {Number} value 要增加/减少的天数。可以为正数，也可以为负数。
-        * @return {Date} 返回一个新的日期实例。。
-            此方法不更改参数 datetime 的值。而是返回一个新的 Date，其值是此运算的结果。
-        * @example
-            $Date.addDays(new Date(), 35); //给当前时间加上35天
-        */
-        addDays(datetime, value, formater) {
-            return exports.addHours(datetime, value * 24, formater);
-        },
+            while ((token = domParserTokenizer.exec(str))) {
+                bStart = token[5] || token[8];
+                bText = token[6] || token[9];
+                bEnd = token[7] || token[10];
+                if (bStart === '<!--' || bStart === '<![CDATA[') {
+                    i = domParserTokenizer.lastIndex - token[0].length;
+                    BlockConstructor = util.blockConstructors[bStart];
+                    if (BlockConstructor) {
+                        tag = util.extend(new BlockConstructor(), {
+                            textContent: bText,
+                            nodeValue: bText,
+                            parentNode: parent,
+                            documentPosition: {
+                                openTag: {
+                                    start: i,
+                                    end: i + bStart.length
+                                },
+                                closeTag: {
+                                    start: domParserTokenizer.lastIndex - bEnd.length,
+                                    end: domParserTokenizer.lastIndex
+                                }
+                            }
+                        });
+                        commitTextNode();
+                        tags.push(tag);
+                        tag.parentNode.childNodes.push(tag);
+                    }
+                }
+                else if (token[1] !== '/') {
+                    tag = util.extend(new HTMLElement(), {
+                        nodeName: (token[2] + '').toLowerCase(),
+                        attributes: util.splitAttrs(token[3]),
+                        parentNode: parent,
+                        documentPosition: {
+                            openTag: {
+                                start: domParserTokenizer.lastIndex - token[0].length,
+                                end: domParserTokenizer.lastIndex
+                            }
+                        }
+                    });
+                    tag.className = tag.attributes['class'];
+                    tag.id = tag.attributes.id;
+                    tag.name = tag.attributes.name;
+                    commitTextNode();
+                    tags.push(tag);
+                    tag.parentNode.childNodes.push(tag);
     
-        /**
-        * 将指定的周数加到指定的 Date 实例上。
-        * @param {Date} datetime 要进行操作的日期时间实例。
-        * @param {Number} value 要增加/减少的周数。可以为正数，也可以为负数。
-        * @return {Date} 返回一个新的日期实例。
-            此方法不更改参数 datetime 的值。 而是返回一个新的 Date，其值是此运算的结果。
-        * @example
-            $Date.addWeeks(new Date(), 3); //给当前时间加上3周
-        */
-        addWeeks(datetime, value, formater) {
-            return exports.addDays(datetime, value * 7, formater);
-        },
-    
-        /**
-        * 将指定的月份数加到指定的 Date 实例上。
-        * @param {Date} datetime 要进行操作的日期时间实例。
-        * @param {Number} value 要增加/减少的月份数。可以为正数，也可以为负数。
-        * @return {Date} 返回一个新的日期实例。
-            此方法不更改参数 datetime 的值。而是返回一个新的 Date，其值是此运算的结果。
-        * @example
-            $Date.addMonths(new Date(), 15); //给当前时间加上15个月
-        */
-        addMonths(datetime, value, formater) {
-            datetime = exports.parse(datetime);
-    
-            let dt = new Date(datetime);//新建一个副本，避免修改参数
-            let old = datetime.getMonth();
-    
-            dt.setMonth(old + value);
-    
-            if (formater) {
-                dt = exports.format(dt, formater);
+                    //by micty。
+                    if ((token[4] && token[4].indexOf('/') > -1) || util.selfClosingTags.includes(tag.nodeName)) {
+                        tag.documentPosition.closeTag = tag.documentPosition.openTag;
+                        tag.isSelfClosingTag = true;
+                        tag.innerHTML = '';
+                        tag.outerHTML = str.substring(tag.documentPosition.openTag.start, tag.documentPosition.closeTag.end);
+                    }
+                    else {
+                        parent = tag;
+                    }
+                }
+                else {
+                    // Close parent node if end-tag matches
+                    if ((token[2] + '').toLowerCase() === parent.nodeName) {
+                        tag = parent;
+                        parent = tag.parentNode;
+                        delete tag.isSelfClosingTag;
+                        tag.documentPosition.closeTag = {
+                            start: domParserTokenizer.lastIndex - token[0].length,
+                            end: domParserTokenizer.lastIndex
+                        };
+                        tag.innerHTML = str.substring(tag.documentPosition.openTag.end, tag.documentPosition.closeTag.start);
+                        tag.outerHTML = str.substring(tag.documentPosition.openTag.start, tag.documentPosition.closeTag.end);
+                        tag.textContent = util.htmlToText(tag.innerHTML);
+                    }
+                    // account for abuse of self-closing tags when an end-tag is also provided:
+                    else if ((token[2] + '').toLowerCase() === tags[tags.length - 1].nodeName && tags[tags.length - 1].isSelfClosingTag === true) {
+                        tag = tags[tags.length - 1];
+                        console.warn('HTML Error: discarding dangling <\/' + token[2] + '> tag. Already closed via: ' + tag.outerHTML);
+                        delete tag.isSelfClosing;
+                        tag.documentPosition.closeTag = {
+                            start: domParserTokenizer.lastIndex - token[0].length,
+                            end: domParserTokenizer.lastIndex
+                        };
+                    }
+                    else {
+                        console.warn('tag mismatch: "' + token[2] + '" vs "' + tag.nodeName + '"', tag);
+                    }
+                }
             }
     
-            return dt;
-        },
+            doc.documentElement = doc.getElementsByTagName('html')[0];
+            doc.body = doc.getElementsByTagName('body')[0];
     
-        /**
-        * 将指定的年份数加到指定的 Date 实例上。
-        * @param {Date} datetime 要进行操作的日期时间实例。
-        * @param {Number} value 要增加/减少的年份数。可以为正数，也可以为负数。
-        * @return {Date} 返回一个新的日期实例。
-            此方法不更改参数 datetime 的值。 而是返回一个新的 Date，其值是此运算的结果。
-        * @example
-            $Date.addYear(new Date(), 5); //假如当前时间是2013年，则返回的日期实例的年份为2018
-        */
-        addYears(datetime, value, formater) {
-            return exports.addMonths(datetime, value * 12, formater);
-        },
+            return doc;
+        };
     
-        /**
-        * 设置一个参考时间在本地的初始值，随着时间的流逝，参考时间也会同步增长。
-        * 如用来设置服务器时间在本地的初始值。
-        * 
-        */
-        set(datetime) {
-            let dt = exports.parse(datetime);
+        return exports;
     
-            if (!dt) {
-                throw new Error('无法识别的日期时间格式: ' + datetime);
+    
+    })();
+});
+/**
+* src: @definejs/api/modules/API/Ajax/Data.js
+* pkg: @definejs/api@2.0.1
+*/
+define('API/Ajax/Data', function (require, module, exports) { 
+    
+    const Query = require('Query');
+    
+    
+    function stringify(data) {
+        let obj = {};
+    
+        Object.keys(data).forEach((key) => {
+            let value = data[key];
+    
+            if (typeof value == 'object') {
+                value = JSON.stringify(value);
             }
     
-            DELTA = dt - Date.now();
-        },
+            obj[key] = value;
+        });
     
-        /**
-        * 获取之前设置的参考时间。
-        */
-        get(formater) {
-            let dt = new Date();
+        //返回一个 object，
+        //函数外部会进一步调用 Query.stringify(obj);
+        return obj;
+    }
     
-            if (DELTA != 0) {
-                dt = exports.add(dt, DELTA);
+    
+    
+    
+    module.exports = {
+    
+        //针对请求方法为 `post` 时的表单数据。
+        //返回字符串或 null。
+        make(method, { data, fnStringify, }) {
+            if (method == 'get' || !data) {
+                return null;
             }
     
-            if (formater) {
-                dt = exports.format(dt, formater);
+            if (typeof data == 'string') {
+                return data;
             }
     
-            return dt;
+            fnStringify = fnStringify || stringify;
+            data = fnStringify(data);
+    
+            //依然不是字符串，则进一步调用默认的。
+            if (typeof data != 'string') {
+                data = Query.stringify(data);
+            }
+    
+            return data;
         },
     };
 });
 /**
-* src: @definejs/escape/modules/Escape.js
-* pkg: @definejs/escape@1.0.0
+* src: @definejs/api/modules/API/Ajax/Url.js
+* pkg: @definejs/api@2.0.1
 */
-define('Escape', function (require, module, exports) { 
+define('API/Ajax/Url', function (require, module, exports) { 
+    
+    const Query = require('Query');
+    
+    module.exports = {
+    
+        make(opt) {
+            let {
+                url = '',
+                prefix = '',
+                name = '',
+                ext = '',
+                query = null,
+                random = 0,
+            } = opt;
+    
+            //完整的 url
+            url = url + prefix + name + ext;
+    
+    
+            if (query) {
+                query = typeof query == 'string' ? Query.parse(query) : query;
+                url = Query.add(url, query);
+            }
+    
+            //增加一个随机字段，以使缓存失效。
+            if (random) {
+                random = typeof random == 'number' ? random : 4;
+                url = Query.random(url, random);
+            }
+    
+            return url;
+    
+        },
+    };
+});
+/**
+* src: @definejs/api/modules/API/Ajax/XHR.js
+* pkg: @definejs/api@2.0.1
+*/
+define('API/Ajax/XHR', function (require, module, exports) { 
+    
+    
+    let fn = function (...args) {
+        // console.log(...args);
+    };
+    
+    
+    module.exports = {
+    
+        make(opt) {
+            let {
+                method,
+                url,
+                headers = {},
+                timeout = 0,
+                fnDone = fn,
+            } = opt;
+    
+    
+    
+            let xhr = new XMLHttpRequest();
+            let isTimeout = false; //指示是否已超时
+            let tid = null;
+    
+            //同时启动超时器和发起请求，让它们去竞争。
+            if (timeout > 0) {
+                tid = setTimeout(function () {
+                    isTimeout = true;
+                    xhr.abort(); //取消当前响应，关闭连接并且结束任何未决的网络活动。
+                    fnDone({ xhr, isTimeout, });
+                }, timeout);
+            }
+    
+            xhr.open(method, url, true);
+    
+    
+            Object.keys(headers).forEach((key) => {
+                let value = headers[key];
+                xhr.setRequestHeader(key, value);
+            });
+    
+    
+            xhr.onreadystatechange = function () {
+                if (isTimeout || xhr.readyState != 4) {
+                    return;
+                }
+    
+                clearTimeout(tid);
+                fnDone({ xhr, });
+            };
+    
+            return xhr;
+    
+        },
+    };
+});
+/**
+* src: @definejs/api/modules/API/Proxy/File.js
+* pkg: @definejs/api@2.0.1
+*/
+define('API/Proxy/File', function (require, module, exports) { 
+    module.exports = {
+    
+        
+        get({ proxy, name, }) {
+    
+            //支持简写，代理的文件名跟 API 的名称一致。
+            if (proxy === true) {
+                proxy = '.js';
+            }
+            
+    
+    
+            //只提供后缀，需要补全。
+            if (proxy.startsWith('.')) {
+                proxy = name + proxy.toLowerCase();
+            }
+    
+            ext = proxy.split('.').slice(-1)[0];
+    
+            return {
+                'file': proxy,
+                'ext': `.${ext}`,
+            };
+    
+        },
+    };
+});
+/**
+* src: @definejs/api/modules/API/Proxy/Url.js
+* pkg: @definejs/api@2.0.1
+*/
+define('API/Proxy/Url', function (require, module, exports) { 
+    
+    const Url = require('Url');
+    const Query = require('Query');
+    
+    
+    function make(file, base) {
+        //file 是绝对地址
+        if (Url.isFull(file)) {
+            return file;
+        }
+    
+        //file 是相对地址
+    
+        //base 是绝对地址。
+        if (Url.isFull(base)) {
+            return base + file;
+        }
+    
+        //base 是相对地址。
+        
+        let root = Url.root();
+    
+        //如果 file 是以 `/` 开头，则表示它相对于网站的根目录。
+        //否则，就要加上 base。
+        //例如：
+        //  root = `http://localhost:3001/htdocs/`;
+        //  base = `api/`;
+        //  如果 file = `getUsers.js`，则返回 `http://localhost:3001/htdocs/api/getUsers.js`。
+        //  如果 file = `/getUsers.js`，则返回 `http://localhost:3001/htdocs/getUsers.js`。
+        if (!file.startsWith('/')) {
+            root = root + base;
+        }
+    
+        return root + file;
+    }
+    
+    
+    module.exports = {
+    
+        get(file, base) {
+            let url = make(file, base);
+            url = Query.random(url, 4); //增加随机查询字符串，确保拿到最新的
+    
+            return url;
+        },
+    
+        isExt(url, ext) {
+            return Url.isExt(url, ext);
+        },
+    };
+});
+/**
+* src: @definejs/api/modules/API/Proxy/XHR.js
+* pkg: @definejs/api@2.0.1
+*/
+define('API/Proxy/XHR', function (require, module, exports) { 
+    module.exports = {
+    
+        
+        load(url, done) {
+            let xhr = new XMLHttpRequest();
+    
+            xhr.open('get', url, true);
+    
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState != 4) {
+                    return;
+                }
+    
+                done(xhr);
+            };
+    
+            xhr.send(null);
+    
+        },
+    };
+});
+/**
+* src: @definejs/api/modules/API/Response/Events.js
+* pkg: @definejs/api@2.0.1
+*/
+define('API/Response/Events', function (require, module, exports) { 
+    
+    
+    module.exports = {
+        get({ res, isTimeout, successCode, }) {
+    
+            let list = [
+                { names: ['response'], },
+                { names: ['timeout'], condition: !!isTimeout, }, //这里要用 `!!` 进行转换，否则可能为 undefined。
+                { names: ['status', res.status], },
+                { names: ['status'], },
+    
+                //网络不通或服务器错误。
+                //或者指定了 field 但解析 json 错误。
+                { names: ['error'], condition: res.hasError, },
+            ];
+    
+            //两个条件必须组合才安全可靠。
+            if (!res.hasError && res.parsedJSON) {
+                let json = res.parsedJSON;
+                let { code, data, msg, } = json;
+    
+                list = [
+                    ...list,
+                    { names: ['code', code], },
+                    { names: ['code'], },
+                ];
+    
+                if (code == successCode) {
+                    list.push({ names: ['success'], args: [data, json, res], });
+                }
+                else {
+                    list.push({ names: ['fail'], args: [code, msg, json, res], });
+                }
+    
+            }
+    
+            //触发总事件。
+            list.push({ names: ['done'], });
+    
+            //归一化。
+            list.forEach((item) => {
+                item.args = item.args || [res]; //默认参数。
+    
+                if (item.condition === undefined) { //没指定，则要触发。
+                    item.condition = true;
+                }
+            });
+    
+            return list;
+        },
+    };
+});
+/**
+* src: @definejs/api/modules/API/Response/Parser.js
+* pkg: @definejs/api@2.0.1
+*/
+define('API/Response/Parser', function (require, module, exports) { 
+    const $JSON = require('JSON');
+    
+    function getHeaders(xhr) {
+        let headers = {};
+        let list = xhr.getAllResponseHeaders().split('\r\n');
+    
+        list.forEach((item) => {
+            let a = item.split(': ');
+            let key = a[0];
+            if (!key) {
+                return;
+            }
+    
+            let value = a[1];
+            headers[key] = value;
+        });
+    
+        return headers;
+    
+    }
+    
+    
+    module.exports = {
+        parse({ xhr, factory, field, context, }) {
+            let json = null;
+            let origin = '';
+            let status = '';
+            let url = '';
+            let headers = null;
+            let parsedJSON = null;
+    
+    
+            if (xhr) {
+                headers = getHeaders(xhr);
+    
+                let type = headers['content-type'];
+                let text = xhr.responseText;
+    
+                if (type.startsWith('application/json;')) {
+                    json = $JSON.parse(text);
+                }
+    
+                origin = text;
+                status = xhr.status;
+                url = xhr.responseURL;
+            }
+            else {
+                origin = factory;
+                status = 200;
+                headers = {};
+                url = context.url;
+    
+                if (typeof factory == 'object') {
+                    json = { ...factory, };
+    
+                    status = factory.status || 200;
+                    headers = factory.headers || {};
+    
+                    delete json.status;     //删除可能的存在的 `status` 字段。
+                    delete json.headers;
+                }
+            }
+    
+            if (json && field) {
+                parsedJSON = {
+                    'code': json[field.code],
+                    'msg': json[field.msg],
+                    'data': (field.data in json) ? json[field.data] : {},
+                };
+            }
+    
+    
+            return {
+                json,
+                status,
+                headers,
+                origin,
+                parsedJSON,
+                xhr,
+                url,
+                'hasError': status != 200 || field && !parsedJSON,
+                'isProxy': !!context, //是否为代理模式。
+            };
+    
+    
+        },
+    };
+});
+/**
+* src: @definejs/api/modules/API/Ajax.js
+* pkg: @definejs/api@2.0.1
+*/
+define('API/Ajax', function (require, module, exports) { 
+    
+    const Data = module.require('Data');
+    const Url = module.require('Url');
+    const XHR = module.require('XHR');
+    
+    
     
     /**
-    * HTML 转码工具。
+    * 发起 ajax 网络请求(核心方法)。
+    *   method: '',             //网络请求的方式，只能取值为：`get` 或 `post`。
+    *   opt = {
+    *       url: '',            //可选，请求的 url 地址。
+    *       prefix: '',         //可选，url 的前缀。
+    *       name: '',           //必选，后台接口的名称，会用在 url 中。
+    *       ext: '',            //可选，要用在 url 中的后缀。
+    *       random: 4,          //给 url 加上随机数的长度，以刷新缓存。 如果指定为 false 或 0，则禁用。
+    *       timeout: 0,         //超时时间。 如果指定为 0，则使用浏览器内置的超时管理，会调用 fnError 回调函数。
+    *       proxy: false,       //是否启用代理。 要启用，可以指定为 true，或一个具体的 json 或 js 文件名。
+    *
+    *       data: {},           //可选，post 要发送的数据。 如果不是字符串，则会调用 fnStringify 方法进行字符串化。
+    *       query: {},          //可选，要发送的查询字符串数据。 post 和 get 时都可用。
+    
+    *       headers: {},
+    *
+    *
+    *       fnStringify: fn,    //对 data 字段的进行字符串化的方法。
+    *       fnDone: fn,         //请求完成后的回调函数。
+    *   };
+    *
+    * 返回：
+    *   XMLHTTPRequest 实例对象 xhr。
+    *   如果使用的是代理，则返回 null。
     */
-    module.exports = exports = {
-        /**
-        * 把用户产生的内容做转换，以便可以安全地放在 html 里展示。
-        * @return {String}
-        */
-        html(string) {
-            var s = String(string);
-            var reg = /[&'"<>\/\\\-\x00-\x09\x0b-\x0c\x1f\x80-\xff]/g;
+    function request(method, opt) {
+        let url = Url.make(opt);                    // opt = { url, prefix, name, ext, query, random, };
+        let data = Data.make(method, opt);          // opt = { data, fnStringify, };
     
-            s = s.replace(reg, function (r) {
-                return "&#" + r.charCodeAt(0) + ";"
+        //同时启动超时器和发起请求，让它们去竞争。
+        let xhr = XHR.make({
+            'method': method,
+            'url': url,
+            'headers': opt.headers,
+            'timeout': opt.timeout,
+            'fnDone': opt.fnDone,
+        });
+    
+        xhr.send(data);
+    
+        return xhr;
+    }
+    
+    
+    module.exports = {
+    
+        make(name, config) {
+            //发起 ajax 请求所需要的配置对象。
+            let ajax = {
+                'name': name,
+                'url': config.url,
+                'prefix': config.prefix,
+                'ext': config.ext,
+                'random': config.random,
+                'field': config.field,
+                'timeout': config.timeout,
+                'fnStringify': config.stringify,
+            };
+    
+            return ajax;
+    
+        },
+    
+    
+        request(meta, { method, data, query, headers, }) {
+            request(method, {
+                ...meta.ajax,
+                data,
+                query,
+                headers,
+                'fnDone': meta.done,
+            });
+        }
+    
+    };
+});
+/**
+* src: @definejs/api/modules/API/Headers.js
+* pkg: @definejs/api@2.0.1
+*/
+define('API/Headers', function (require, module, exports) { 
+    
+    
+    
+    module.exports = {
+    
+        make(meta, method, more) {
+            let headers = meta.headers || {};
+            let defaults = headers[''] || {};       //针对全部的请求头。
+            let methods = headers[method] || {};    //针对特定类型的请求头，如 `get`、`post`。
+    
+            let all = Object.assign({}, defaults, methods, more);
+    
+            
+            return all;
+    
+        },
+    };
+});
+/**
+* src: @definejs/api/modules/API/Meta.js
+* pkg: @definejs/api@2.0.1
+*/
+define('API/Meta', function (require, module, exports) { 
+    const Emitter = require('Emitter');
+    
+    let idCounter = 0;
+    
+    module.exports = {
+    
+        get(config, more) {
+            let id = `definejs-API-${idCounter++}`;
+            let stopEvents = config.stopEvents || {};
+    
+            let emitter = new Emitter(more.this, {
+                'stopValue': stopEvents.same,
             });
     
-            s = s.replace(/ /g, "&nbsp;");
-            s = s.replace(/\r\n/g, "<br />");
-            s = s.replace(/\n/g, "<br />");
-            s = s.replace(/\r/g, "<br />");
+            let meta = {
+                'id': id,
+                'name': more.name,
+                'ajax': more.ajax,
+                'this': more.this,
+                'emitter': emitter,
+                'proxy': config.proxy,
+                'base': config.base,
+                'delay': config.delay,
+                'successCode': config.successCode,
+                'field': config.field,
+                'headers': config.headers,
+                'stopEvents': stopEvents,
+                'done': more.done,           //回调函数。
+                'values': [],   //缓存当次 emitter.fire() 的返回结果。
+            };
     
-            return s;
+    
+            meta.fire = function (...args) {
+                let stopValue = stopEvents.cross;
+                let needStop = stopValue !== undefined && meta.values.includes(stopValue);
+    
+                //先检查上次执行后的结果。
+                if (needStop) {
+                    return needStop;
+                }
+    
+                meta.values = emitter.fire(...args);
+            };
+    
+    
+    
+          
+    
+            return meta;
+    
         },
+    };
+});
+/**
+* src: @definejs/api/modules/API/Proxy.js
+* pkg: @definejs/api@2.0.1
+*/
+define('API/Proxy', function (require, module, exports) { 
+    const Script = require('Script');
+    const File = module.require('File');
+    const Url = module.require('Url');
+    const XHR = module.require('XHR');
+    
+    
+    
+    let current = null;
+    
+    
+    function request(opt) {
+    
+        let {
+            method,
+            name,
+            base,
+            proxy,
+            data,
+            query,
+            time,
+            headers,
+            fnDone,
+        } = opt;
+    
+       
+        let { file, ext, } = File.get({ proxy, name, });
+        let url = Url.get(file, base);
+        
+    
+        let context = {
+            method,
+            name,
+            base,
+            file,
+            ext,
+            url,
+            query,
+            data,
+            time,
+            headers,
+        };
     
         /**
-        * 把用户产生的内容做转换，以便可以安全地放在节点的属性里展示。
-        * @example 如 `<input value="XXX">`，`XXX` 就是要转换的部分。
-        * @return {String}
+        * 加载指定的 js 代理文件。
+        * 注意：加载完 js 代理文件后，会先执行 js 代理文件的逻辑，再触发 onload 事件。
+        * 经过试验发现，并发加载多个 js 文件，也会严格地按上述顺序对应的进行。
         */
-        attribute(string) {
-            var s = String(string);
-            var reg = /[&'"<>\/\\\-\x00-\x1f\x80-\xff]/g;
+        if (ext == '.js') {
+            //加载完后会去执行 response() 方法，此时 meta.factory 就有值。
+            Script.load(url, function () {
+                let factory = context.factory =current;
     
-            return s.replace(reg, function (r) {
-                return "&#" + r.charCodeAt(0) + ";"
+                current = null;
+    
+    
+                if (typeof factory == 'function') {
+                    factory = factory(context);
+                }
+    
+                fnDone({ factory, context, });
             });
-        },
+        }
+        else {
+            XHR.load(url, function (xhr) {
+                context.xhr = xhr;
+                fnDone({ xhr, context, });
+            });
+        }
+    }
     
-        /**
-        * 用做过滤直接放到 HTML 里 j s中的。
-        * @return {String}
-        */
-        script(string) {
-            var s = String(string);
-            var reg = /[\\"']/g;
     
-            s = s.replace(reg, function (r) {
-                return "\\" + r;
+    
+    module.exports = {
+    
+    
+        request(meta, req) {
+            // debugger
+            request({
+                ...req,
+                'name': meta.name,
+                'base': meta.base,
+                'proxy': meta.proxy,
+                'fnDone': meta.done,
             });
     
-            s = s.replace(/%/g, "\\x25");
-            s = s.replace(/\n/g, "\\n");
-            s = s.replace(/\r/g, "\\r");
-            s = s.replace(/\x01/g, "\\x01");
-    
-            return s;
         },
     
+       
+    
         /**
-        * 对查询字符串中的值部分进行转换。
-        * 如 `http://www.test.com/?a=XXX`，其中 `XXX` 就是要过滤的部分。
-        * @return {String}
+        * 响应代理请求。
+        * 可以生成很复杂的动态数据，并根据提交的参数进行处理，具有真正模拟后台逻辑的能力。
+        * 该方法仅用在代理响应的 js 文件中，且在调用之前必须先调用 request 方法。
+        * 已重载 response(json)的情况。
+        * @param {function|Object} factory 响应的处理函数或 json 对象。
+        *   当传进来的 factory 为处理函数时，该函数会接收到两个参数：factory(data, config)。 其中：
+        *   data 为发起 get 或 post 请求时最终的 data 字段；
+        *   config 为发起 get 或 post 请求时全部的配置字段。
         */
-        query(string) {
-            var s = String(string);
-            return escape(s).replace(/\+/g, "%2B");
+        response(factory) {
+            current = factory;
         },
+    };
+});
+/**
+* src: @definejs/api/modules/API/Response.js
+* pkg: @definejs/api@2.0.1
+*/
+define('API/Response', function (require, module, exports) { 
+    const Fn = require('Fn');
+    const Events = module.require('Events');
+    const Parser = module.require('Parser');
     
-        /**
-        * 用做过滤直接放到<a href="javascript:alert('XXX')">中的XXX
-        * @return {String}
-        */
-        hrefScript(string) {
-            var s = exports.escapeScript(string);
     
-            s = s.replace(/%/g, "%25"); //escMiniUrl
-            s = exports.escapeElementAttribute(s);
-            return s;
     
-        },
+    module.exports = {
     
-        /**
-        * 用做过滤直接放到正则表达式中的。
-        * @return {String}
-        */
-        regexp(string) {
-            var s = String(string);
-            var reg = /[\\\^\$\*\+\?\{\}\.\(\)\[\]]/g;
+        //opt 会包含下列三种情况的一种。
+        // { xhr, isTimeout, }      //服务器。   
+        // { xhr, context, }        //代理，请求的是 json 文件或其它。
+        // { factory, context, }    //代理，请求的是 js 文件。
+        process(meta, opt) {
+            let { field, successCode, stopEvents, } = meta;
+            let stopValue = stopEvents.cross;
+            
+            let {
+                xhr,        //服务器模式和非 js 文件的代理模式。
+                isTimeout,  //仅针对服务器模式，是否超时。 
+                factory,    //仅针对代理模式，请求 js 文件时的工厂函数的返回值。
+                context,    //仅针对代理模式，请求的上下文。
+            } = opt;
     
-            return s.replace(reg, function (a, b) {
-                return "\\" + a;
+    
+            let res = Parser.parse({ xhr, field, factory, context, });
+            let events = Events.get({ res, isTimeout, successCode, });
+            
+    
+            Fn.delay(meta.delay, function () {
+                
+                events.some((item) => {
+                    let { names, args, condition, } = item;
+                    if (!condition) {
+                        return;
+                    }
+    
+                    let needStop = meta.fire(...names, args);
+                    return needStop;
+                });
+                
             });
         },
     };
+});
+/**
+* src: @definejs/api/modules/API.defaults.js
+* pkg: @definejs/api@2.0.1
+*/
+define('API.defaults', function (require, module, exports) { 
+    /**
+    * API 模块的默认配置
+    */
+    module.exports = {
+        /**
+        * 成功的状态码。 
+        * 只有状态码为该值是才表示成功，其它的均表示失败。
+        */
+        successCode: 200,
+    
+        /**
+        * 字段映射。
+        * 如果指定为 null，则不对响应进行 json 解析。 
+        * 即只有指定具体的映射规则时，才把响应当成 json 进行解析。
+        */
+        field: {
+            /**
+            * 状态码。
+            */
+            code: 'code',
+            /**
+            * 消息。
+            */
+            msg: 'msg',
+            /**
+            * 主体数据。
+            */
+            data: 'data',
+        },
+    
+        /**
+        * 要发送的请求头。
+        */
+        headers: {
+            //针对全部 method 的请求头。
+            '': { },
+    
+            //针对 method=`get` 的请求头。
+            'get': { },
+    
+            //针对 method=`post` 的请求头。
+            'post': {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                // 'Content-Type': 'application/json;charset=UTF-8',
+            },
+        },
+    
+        /**
+        * 要停止继续触发事件的返回值。 
+        */
+        stopEvents: {
+            //针对同一个事件名的。
+            same: undefined,
+    
+            //针对跨事件名的。
+            cross: undefined,
+        },
+    
+    
+        /**
+        * 代理配置。
+        */
+        proxy: '',
+    
+        /**
+        * 加载代理响应文件的起始位置(或目录)。
+        */
+        base: '',
+    
+        /**
+        * 随机延迟时间，更真实模拟实际网络环境。
+        * 可指定为 false，或如 { min: 500, max: 2000 } 的格式。
+        */
+        delay: false,
+    
+        /**
+        * 在 url 中增加一个随机长度的 key，以解决缓存问题。
+        * 当指定为 false 或 0 时，则禁用。
+        */
+        random: 4,
+    
+        /**
+        * API 接口 Url 的主体部分。
+        */
+        url: '',
+    
+        /**
+        * API 接口 Url 的前缀部分。
+        */
+        prefix: '',
+    
+        /**
+        * API 接口 Url 的后缀部分。
+        * 针对那些如 '.do'、'.aspx' 等有后缀名的接口比较实用。
+        */
+        ext: '',
+       
+        /**
+        * 请求超时的最大值(毫秒)。
+        * 0 表示由浏览器控制，代码层面不控制。
+        */
+        timeout: 0,
+    
+        /**
+        * 把请求时的 data 中的第一级子对象进行序列化的方法。
+        * @param {string} key 要进行处理的子对象的键。
+        * @param {Object} value 要进行处理的子对象的值对象。
+        * @return {string} 返回该子对象序列化的字符串。
+        */
+        stringify: null,
+    };
+});
+/**
+* src: @definejs/api/modules/API.js
+* pkg: @definejs/api@2.0.1
+*/
+define('API', function (require, module, exports) { 
+    
+    
+    const Headers = module.require('Headers');
+    const Ajax = module.require('Ajax');
+    const Proxy = module.require('Proxy');
+    const Response = module.require('Response');
+    const Meta = module.require('Meta');
+    
+    const mapper = new Map();
+    
+    
+    
+    
+    class API {
+        /**
+        * API 构造器。
+        * 已重载 API(config);         此时 name 为空串。
+        * 已重载 API(name, config);     
+        * @param {string} name 后台接口的名称。 简短名称，且不包括后缀。
+        * @param {Object} [config] 配置对象。
+        *   config = {
+        *
+        *   };
+        */
+        constructor(name, config) {
+            //重载 API(config);
+            if (typeof name == 'object') {
+                config = name;
+                name = '';
+            }
+    
+            name = name || '';
+            config = Object.assign({}, exports.defaults, config);
+    
+            let ajax = Ajax.make(name, config);
+    
+            let meta = Meta.get(config, {
+                'name': name,
+                'ajax': ajax,
+                'this': this,
+                'done': function (opt) {
+                    Response.process(meta, opt);
+                },
+            });
+    
+           
+    
+            mapper.set(this, meta);
+    
+    
+            Object.assign(this, {
+                'id': meta.id,
+            });
+    
+    
+    
+        }
+    
+        // /**
+        // * 当前实例的 id。
+        // */
+        // id = '';
+    
+    
+        /**
+        * 发起 GET 网络请求。
+        * 请求完成后会最先触发相应的事件。
+        * @param {Object} [query] 可选，请求的数据对象。
+        *   该数据会给序列化成查询字符串以拼接到 url 中。
+        * @param {Object} [headers] 可选，自定义的请求头键值对对象。
+        * @example
+            var api = new API('test');
+            api.get({ name: 'micty' });
+        */
+        get(query, headers) {
+            //API 类给继承后，this 就是子类的实例。 
+            //比如 SSH 继承 API，则 this 为 SSH 的实例，不再是 API 的实例。
+            let meta = mapper.get(this);
+            let allHeaders = Headers.make(meta, 'get', headers);
+    
+            let req = {
+                time: Date.now(),
+                method: 'get',
+                headers: allHeaders,
+                query,
+            };
+    
+            meta.fire('request', [req]);
+    
+            if (meta.proxy) {
+                Proxy.request(meta, req);
+            }
+            else {
+                Ajax.request(meta, req);
+            }
+    
+        }
+    
+        /**
+        * 发起 POST 网络请求。
+        * 请求完成后会最先触发相应的事件。
+        * @param {Object} [data] 可选，post 请求的数据对象。
+        *   该数据会给序列化成字符串，并且通过 form-data 发送出去。
+        * @param {Object} [query] 可选，查询字符串的数据对象。
+        *   该数据会给序列化成查询字符串以拼接到 url 中。
+        * @param {Object} [headers] 可选，自定义的请求头键值对对象。
+        *   该数据会以键值对的方式添加到请求头中。
+        */
+        post(data, query, headers) {
+            let meta = mapper.get(this);
+            let allHeaders = Headers.make(meta, 'post', headers);
+    
+            let req = {
+                time: Date.now(),
+                method: 'post',
+                headers: allHeaders,
+                query,
+                data,
+            };
+    
+            meta.fire('request', [req]);
+    
+            if (meta.proxy) {
+                Proxy.request(meta, req);
+            }
+            else {
+                Ajax.request(meta, req);
+            }
+    
+        }
+    
+    
+        /**
+        * 绑定事件。
+        * 已重载 on({...}，因此支持批量绑定。
+        */
+        on(...args) {
+            let meta = mapper.get(this);
+            meta.emitter.on(...args);
+        }
+    
+        /**
+        * 销毁本实例对象。
+        */
+        destroy() {
+            let meta = mapper.get(this);
+            meta.emitter.destroy();
+            mapper.delete(this);
+        }
+    
+        /**
+        * 响应代理请求。
+        * 可以生成很复杂的动态数据，并根据提交的参数进行处理，具有真正模拟后台逻辑的能力。
+        * 已重载 response(fn)的情况。
+        * 已重载 response(json)的情况。
+        * @param {function|Object} factory 响应的处理函数或 json 对象。
+        *   当传进来的 factory 为处理函数时，该函数会接收到两个参数：factory(context)。 
+        * 其中： 
+        *   context = {
+        *       method: '',     //请求类型，值为 `get` 或 `post`。
+        *       name: '',       //请求的接口名称，如 `getUsers`。
+        *       base: '',       //代理响应的基础目录，如 `api/`。
+        *       file: '',       //请求代理的实际响应文件，如 `getUsers.js`。
+        *       ext: '',        //请求代理的实际响应文件的后缀名，如 `.js`。
+        *       url: '',        //请求代理的实际响应文件地址，如 `http://localhost:3001/htdocs/api/getUsers.js?E9E4`。
+        *       query: {},      //请求的 query 部分。
+        *       data: {},       //针对 post 请求时的表单数据。
+        *       time: 0,        //请求发起时的客户端时间戳，如 1631608915540。
+        *       headers: {},    //自定义的请求头。
+        *       factory: fn,    //针对代理响应为 js 文件时，此 js 文件里面对应的工厂函数。
+        *   }
+        */
+        static proxy(factory) {
+            Proxy.response(factory);
+        }
+    }
+    
+    API.defaults = require('API.defaults');
+    module.exports = exports = API;
 });
 /**
 * src: @definejs/fn/modules/Fn.js
@@ -3490,274 +6436,61 @@ define('Math', function (require, module, exports) {
     };
 });
 /**
-* src: @definejs/hash/modules/Hash.js
-* pkg: @definejs/hash@1.0.0
+* src: @definejs/json/modules/JSON.js
+* pkg: @definejs/json@1.0.0
 */
-define('Hash', function (require, module, exports) { 
-    const $Object = require('Object');
-    const Query = require('Query');
+define('JSON', function (require, module, exports) { 
     
-    /**
-    * Url 中的哈希工具。
-    */
-    module.exports = exports = {
+    module.exports = {
         /**
-        * 获取指定 url 的 hash 中指定的键所对应的值。
-        * @param {string} url 要进行获取的 url 字符串。
-        * @param {string} [key] 要检索的键。
-        * @param {boolean} [ignoreCase=false] 是否忽略参数 key 的大小写。 默认区分大小写。
-            如果要忽略 key 的大小写，请指定为 true；否则不指定或指定为 false。
-            当指定为 true 时，将优先检索完全匹配的键所对应的项；若没找到然后再忽略大小写去检索。
-        * @retun {string|Object|undefined} 返回一个查询字符串值。
-            当不指定参数 key 时，则获取全部 hash 值，对其进行 unescape 解码，
-            然后返回一个等价的 Object 对象。
-            当指定参数 key 为一个空字符串，则获取全部 hash (不解码)，返回一个 string 类型值。
-        * @example
-            Hash.get('http://test.com?query#a%3D1%26b%3D2', 'a');  //返回 '1'
-            Hash.get('http://test.com?query#a%3D1%26b%3D2', 'c');  //返回 undefined
-            Hash.get('http://test.com?query#a%3D1%26A%3D2', 'A');  //返回 2
-            Hash.get('http://test.com?query#a%3D1%26b%3D2', 'A', true);//返回 1
-            Hash.get('http://test.com?query#a%3D1%26b%3D2', '');   //返回 'a%3D1%26b%3D2'
-            Hash.get('http://test.com?query#a%3D1%26b%3D2');       //返回 {a: '1', b: '2'}
-            Hash.get('http://test.com?query#a%3D%26b%3D');         //返回 {a: '', b: ''}
-            Hash.get('http://test.com??query#a%26b');              //返回 {a: '', b: ''}
-            Hash.get('http://test.com?query#a', 'a');              //返回 ''
+        * 把一个 JSON 字符串数据解析成对象。
+        * @param {String} content 要解析的内容。
         */
-        get(url, key, ignoreCase) {
-            //重载 get(location, key, ignoreCase)
-            //重载 get(window, key, ignoreCase)
-            if (typeof url == 'object') {
-                let location = null;
-    
-                if ('href' in url) {            //url is `location`。
-                    location = url;
-                }
-                else if ('location' in url) {    //url is `window`。
-                    location = url.location;
-                }
-                else {
-                    throw new Error(`当参数 url 是一个 Object 类型时，只能是浏览器环境中的 location 或 window 对象。`);
-                }
-    
-                url = location.href;
-            }
-    
-            let beginIndex = url.indexOf('#');
-            if (beginIndex < 0) { //不存在查询字符串
-                return;
-            }
-    
-            let endIndex = url.length;
-            let hash = url.slice(beginIndex + 1, endIndex);
-            
-            hash = unescape(hash); //解码
-    
-            if (key === '') { //获取全部 hash 的 string 类型
-                return hash;
-            }
-    
-    
-            let obj = Query.parse(hash);
-    
-            if (key === undefined) { //未指定键，获取整个 Object 对象
+        parse(content) {
+            try {
+                let obj = JSON.parse(content);
                 return obj;
             }
-    
-            if (!ignoreCase || key in obj) { //区分大小写或有完全匹配的键
-                return obj[key];
+            catch (ex) {
+                // console.warn('使用原生的 JSON.parse() 方法无法解析:', content);
+                console.warn('使用原生的 JSON.parse() 方法无法解析。');
             }
     
     
-            //以下是不区分大小写
-            key = key.toString().toLowerCase();
+            try {
+                //这种方法是 jQuery 的实现，有问题。
+                //content = content.replace(/^(\r\n)+/g, ' ');
+                //return (new Function('return ' + content))();
     
-            for (let name in obj) {
-                if (name.toLowerCase() == key) {
-                    return obj[name];
-                }
+                //下面这方法安全、可靠些。
+                //包装多一层匿名立即执行函数。
+                let js = [
+                    'return (function () { ',
+                    '   var obj = ' + content + ';', //因为 return 的换行问题，这里用一个 obj 变量再返回 obj 会安全很多。
+                    '   return obj;',
+                    '})();',
+    
+                ].join('\r\n');
+    
+                let fn = new Function(js);
+                let obj = fn();
+    
+                return obj;
             }
-        },
-    
-        /**
-        * 把指定的 hash 设置到指定的 url 上。
-        * 该方法会对 hash 进行 escape 编码，再设置到 url 上，以避免 hash 破坏原有的 url。
-        * 同时原有的 hash 会移除掉而替换成新的。
-        * @param {string} url 要设置的 url 字符串。
-        * @param {string|number|boolean|Object} key 要设置的 hash 的键。
-            当传入一个 Object 对象时，会对键值对进行递归编码成查询字符串， 然后用 escape 编码来设置 hash 。
-            当传入的是一个 string|number|boolean 类型，并且不传入第三个参数， 则直接用 escape 编码来设置 hash 。
-        * @param {string} [value] 要添加的 hash 的值。
-        * @retun {string} 返回组装后的新的 url 字符串。
-        * @example
-            //返回 'http://test.com?#a%3D1'
-            Hash.set('http://test.com', 'a', 1);  
-            
-            //返回 'http://test.com?query#a%3D3%26d%3D4'
-            Hash.set('http://test.com?query#a%3D1%26b%3D2', {a: 3, d: 4});  
-     
-            //返回 'http://test.com?query#a%3D3%26d%3D4'
-            Hash.set('http://test.com?query#a%3D1%26b%3D2', 'a=3&b=4'); 
-            
-        */
-        set(url, key, value) {
-            let location = null;
-    
-            if (typeof url == 'object') {
-                if ('href' in url) {            //url is `location`。
-                    location = url;         
-                }
-                else if ('location' in url) {    //url is `window`。
-                    location = url.location; 
-                }
-                else {
-                    throw new Error(`当参数 url 是一个 Object 类型时，只能是浏览器环境中的 location 或 window 对象。`);
-                }
-    
-                url = location.href;
+            catch (ex) {
+                console.warn('使用 new Function() 方法无法解析。');
             }
     
-            let type = typeof key;
-            let isValueType = (/^(string|number|boolean)$/).test(type);
-            let hash = '';
-    
-            if (arguments.length == 2 && isValueType) {
-                hash = String(key);
-            }
-            else {
-                let obj = type == 'object' ? key : $Object.make(key, value);
-                hash = Query.stringify(obj);
-            }
-    
-    
-            hash = escape(hash); //要进行编码，避免破坏原有的 url
-    
-            let index = url.lastIndexOf('#');
-            if (index > -1) {
-                url = url.slice(0, index);
-            }
-    
-            url = url + '#' + hash;
-    
-            //在浏览器环境，立即应用。
-            if (location) {
-                location.hash = hash; //不要设置整个 location.href，否则会刷新
-            }
-    
-    
-            return url;
+            return null;
     
         },
     
         /**
-        * 判断指定的 url 是否包含特定名称的 hash。
-        * @param {string} url 要检查的 url。
-        * @param {string} [key] 要提取的查询字符串的键。
-        * @param {boolean} [ignoreCase=false] 是否忽略参数 key 的大小写，默认区分大小写。
-            如果要忽略 key 的大小写，请指定为 true；否则不指定或指定为 false。
-            当指定为 true 时，将优先检索完全匹配的键所对应的项；若没找到然后再忽略大小写去检索。
-        * @retun {boolean} 如果 url 中包含该名称的查询字符串，则返回 true；否则返回 false。
-        * @example
-            Hash.has('http://test.com?a=1&b=2#hash', 'a');  //返回 true
-            Hash.has('http://test.com?a=1&b=2#hash', 'b');  //返回 true
-            Hash.has('http://test.com?a=1&b=2#hash', 'c');  //返回 false
-            Hash.has('http://test.com?a=1&b=2#hash', 'A', true); //返回 true
-            Hash.has('http://test.com?a=1&b=2#hash');       //返回 true
+        * 把一个对象解析成 JSON 字符串。
         */
-        has(url, key, ignoreCase) {
-            //重载 has(location, key, ignoreCase)
-            //重载 has(window, key, ignoreCase)
-            if (typeof url == 'object') {
-                let location = null;
-    
-                if ('href' in url) {            //url is `location`。
-                    location = url;
-                }
-                else if ('location' in url) {    //url is `window`。
-                    location = url.location;
-                }
-                else {
-                    throw new Error(`当参数 url 是一个 Object 类型时，只能是浏览器环境中的 location 或 window 对象。`);
-                }
-    
-                url = location.href;
-            }
-    
-            let obj = exports.get(url); //获取全部 hash 字符串的 Object 形式。
-    
-            if (!obj) {
-                return false;
-            }
-    
-    
-            if (!key) { //不指定名称，
-                return !$Object.isEmpty(obj); //只要有数据，就为 true
-            }
-    
-            if (key in obj) { //找到完全匹配的
-                return true;
-            }
-    
-    
-            if (ignoreCase) { //明确指定了忽略大小写
-                key = key.toString().toLowerCase();
-    
-                for (let name in obj) {
-                    if (name.toLowerCase() == key) {
-                        return true;
-                    }
-                }
-            }
-    
-            //区分大小写，但没找到。
-            return false;
-    
+        stringify(...args) {
+            return JSON.stringify(...args);
         },
-    
-        /**
-        * 监听指定窗口 url 的 hash 变化，并触发一个回调函数。
-        * 已重载　onchange(window, fn);
-        * 已重载　onchange(window, immediate, fn);
-        * @param {Window} window 要监听的 window 窗口。
-        * @param {boolean} [immediate=false] 指示初始时是否要立即执行回调函数。
-            初始时如果要立即执行回调函数，请指定该参数为 true；
-            否则不指定或指定为 false。
-        * @param {function} fn 当监听窗口的 hash 发生变化时，要触发的回调函数。
-        *   该回调函数会接收到两个参数：hash 和 old，当前的 hash 值和旧的 hash 值。
-        *   注意，hash 和 old 都去掉了 '#' 号而直接保留 hash 值。
-        *   如果 old 不存在，则为 null。
-        *   该回调函数内部的 this 指向监听的窗口。
-        * @example
-            Hash.onchange(top, function (hash, old) {
-                console.log('new hash: ' + hash);
-                console.log('old hash: ' + old);
-                console.log(this === top); //true
-            });
-        */
-        onchange(window, immediate, fn) {
-            //重载 onchange(window, fn);
-            if (typeof immediate == 'function') {
-                fn = immediate;
-                immediate = false;
-            }
-    
-    
-            let hash = exports.get(window, '');
-    
-            //指定了要立即触发，则立即触发。
-            if (immediate) {
-                fn.call(window, hash, null, immediate);
-            }
-    
-    
-            window.addEventListener('hashchange', function () {
-                let old = hash;
-    
-                hash = exports.get(window, '');
-                fn && fn(hash, old, false);
-            });
-    
-        },
-    
     };
 });
 /**
@@ -4242,1432 +6975,8 @@ define('Query', function (require, module, exports) {
     };
 });
 /**
-* src: @definejs/json/modules/JSON.js
-* pkg: @definejs/json@1.0.0
-*/
-define('JSON', function (require, module, exports) { 
-    
-    module.exports = {
-        /**
-        * 把一个 JSON 字符串数据解析成对象。
-        * @param {String} content 要解析的内容。
-        */
-        parse(content) {
-            try {
-                let obj = JSON.parse(content);
-                return obj;
-            }
-            catch (ex) {
-                // console.warn('使用原生的 JSON.parse() 方法无法解析:', content);
-                console.warn('使用原生的 JSON.parse() 方法无法解析。');
-            }
-    
-    
-            try {
-                //这种方法是 jQuery 的实现，有问题。
-                //content = content.replace(/^(\r\n)+/g, ' ');
-                //return (new Function('return ' + content))();
-    
-                //下面这方法安全、可靠些。
-                //包装多一层匿名立即执行函数。
-                let js = [
-                    'return (function () { ',
-                    '   var obj = ' + content + ';', //因为 return 的换行问题，这里用一个 obj 变量再返回 obj 会安全很多。
-                    '   return obj;',
-                    '})();',
-    
-                ].join('\r\n');
-    
-                let fn = new Function(js);
-                let obj = fn();
-    
-                return obj;
-            }
-            catch (ex) {
-                console.warn('使用 new Function() 方法无法解析。');
-            }
-    
-            return null;
-    
-        },
-    
-        /**
-        * 把一个对象解析成 JSON 字符串。
-        */
-        stringify(...args) {
-            return JSON.stringify(...args);
-        },
-    };
-});
-/**
-* src: @definejs/style/modules/Style.js
-* pkg: @definejs/style@1.0.0
-*/
-define('Style', function (require, module, exports) { 
-    
-    
-    const $Object = require('Object');
-    
-    //像素化。
-    function pixelize(value) {
-        if (typeof value == 'number') {
-            return value + 'px';
-        }
-    
-        if (typeof value == 'string') {
-            let isPixel = (/^\d+px$/g).test(value);
-            let isEm = (/^\d+em$/g).test(value);
-            let isRem = (/^\d+rem$/g).test(value);
-            let isPercent = (/^\d+%$/g).test(value);
-    
-            if (isPixel || isEm || isRem || isPercent) {
-                return value;
-            }
-    
-            //尝试提取和转换数字部分。
-            let v = parseInt(value);
-    
-            if (isNaN(v)) {
-                return value;
-            }
-    
-            return v + 'px';
-        }
-    
-        //其它情况。
-        return value;
-    }
-    
-    
-    /**
-    * 样式工具。
-    * @name Style
-    */
-    module.exports = exports = {
-        /**
-        * 把一个样式字符串对象化。
-        */
-        objectify(style) {
-            if (!style) {
-                return {};
-            }
-    
-            if (typeof style == 'object') {
-                return style;
-            }
-    
-            if (typeof style != 'string') {
-                return {};
-            }
-    
-            let obj = {};
-            let list = style.split(';');
-    
-            list.forEach(function (item) {
-                item = item.trim();
-                item = item.replace(/\n/g, '');
-    
-                if (!item) {
-                    return;
-                }
-    
-                let a = item.split(':');
-                let key = a[0].trim();
-                let value = a[1].trim();
-    
-                obj[key] = value;
-    
-            });
-    
-            return obj;
-    
-        },
-    
-        /**
-        * 把一个样式对象字符串化。
-        * 以用于 DOM 节点的 style 属性中或 style 标签中。
-        * 已重载 stringify(style, spaces);             //
-        * 已重载 stringify(style, replacer, spaces);   //style 为一个对象或字符串，replacer 为一个函数，spaces 为一个数值;  
-        * 参数：
-        *   style: '',      //样式对象或字符串。
-        *   replace: fn,    //处理器函数，即替换函数。 如果指定，则针对每一项调用它以获得返回值。 如果不返回任何值，则扔掉该项。
-        *   spaces: 4,      //要生成的前导空格数。 如果指定非 0 值，则生成多行的形式；否则生成行内形式。
-        */
-        stringify(style, replacer, spaces) {
-            if (!style) {
-                return '';
-            }
-    
-            if (typeof style == 'string') {
-                style = exports.objectify(style);
-            }
-    
-    
-            //重载 stringify(style, spaces);
-            if (typeof replacer == 'number') {
-                spaces = replacer;
-                replacer = null;
-            }
-    
-    
-            let a = [];
-    
-            $Object.each(style, function (key, value) {
-    
-                //如果指定了处理器函数函数，则调用它以获得返回值。
-                value = replacer ? replacer(key, value) : value;
-    
-                //扔掉空值: null、undefined、''。
-                if (value == null || value === '') {
-                    return; // continue;
-                }
-    
-                let s = key + ': ' + value; //如 `width: 100px`
-    
-                if (spaces) {
-                    s = new Array(spaces + 1).join(' ') + s; //产生前导空格，如 `    width: 100px`
-                }
-    
-                a.push(s);
-    
-            });
-    
-            if (a.length == 0) {
-                return '';
-            }
-    
-            style = spaces ?
-                a.join('; \n') + '; \n' :   //如果指定了前导空格，则生成多行形式的。
-                a.join('; ') + '; ';        //否则生成行内形式的。
-    
-            return style;
-        },
-    
-        /**
-        * 把一个样式对象像素化。
-        */
-        pixelize(style, keys) {
-            //重载 pixelize(value);
-            //直接传一个值进来，根据情况转换成带像素单位的形式。
-            //如 pixelize(100); 得到 `100px`。
-            if (typeof style != 'object' && !keys) {
-                return pixelize(style);
-            }
-    
-            keys = keys || [];
-            style = exports.objectify(style);
-    
-            style = $Object.map(style, function (key, value) {
-                //该项并非要处理的项。
-                if (!keys.includes(key)) {
-                    return value;
-                }
-    
-                return pixelize(value);
-            });
-    
-            return style;
-        },
-    
-        /**
-        * 去掉空值。
-        * 即去掉值为 null、undefined、'' 的项。
-        */
-        trim(style) {
-            let obj = {};
-    
-            //过滤掉空值。
-            $Object.each(style, function (key, value) {
-                if (value == null || value === '') {
-                    return;
-                }
-    
-                obj[key] = value;
-            });
-    
-            return obj;
-        },
-    
-        /**
-        * 对每一项进行空值过滤，再进行合并得到一个样式对象。
-        */
-        merge(...items) {
-    
-            //对一个 item 进行处理
-            items = items.map(function (item) {
-                if (!item) {
-                    return {};
-                }
-    
-                item = exports.trim(item);
-                return item;
-    
-            });
-    
-    
-            let obj = Object.assign(...items);
-    
-            return obj;
-    
-        },
-    
-    
-    
-    };
-    
-    
-});
-/**
-* src: @definejs/tasker/modules/Tasker.js
-* pkg: @definejs/tasker@1.0.2
-*/
-define('Tasker', function (require, module, exports) { 
-    const Emitter = require('Emitter');
-    
-    const mapper = new Map();
-    const sid$todos = {};
-    let idCounter = 0;
-    
-    class Tasker {
-        /**
-        * 构造器。
-        * @param {Array} [list] 任务列表。
-        */
-        constructor(list) {
-            let id = `definejs-Tasker-${idCounter++}`;
-    
-            let meta = {
-                'id': id,
-                'emitter': new Emitter(this),
-                'list': list || [],
-            };
-    
-            mapper.set(this, meta);
-    
-            Object.assign(this, {
-                'id': meta.id,
-            });
-        }
-    
-        // /**
-        // * 当前实例的 id。
-        // */
-        // id = ''
-    
-        /**
-        * 并行处理。
-        * @param {Array} [list] 要处理的任务列表。 
-        *   如果不指定，则使用构造器中的。
-        */
-        parallel(list) {
-            let meta = mapper.get(this);
-            list = list || meta.list;
-    
-            //空的任务列表。
-            if (!list.length) {
-                meta.emitter.fire('all', [[]]); //里面要套个空数组。
-                return;
-            }
-    
-            //非空的任务列表。
-            let total = list.length;        //总项数。
-            let count = total;              //待处理的项数。
-            let values = new Array(total);  //收集每项异步操作的返回值。
-            let dones = new Array(total);   //[true, undefined, true, ..., ] 记录对应的项是否已完成。
-    
-            list.forEach(function (item, index) {
-                //done(index) 是异步调用，要多一层闭包。
-                (function (index) {
-                    //第三个参数是一个回调函数，即 done(value); 
-                    //由业务层调用，以通知异步操作完成。
-                    //done(value); 接受一个参数作为此项异步操作的返回值进行收集，
-                    //最后会在全部完成后一起传过去给业务层。
-                    meta.emitter.fire('each', [item, index, function (value) {
-                        values[index] = value; //需要收集的值，由调用者传入。
-                        dones[index] = true;
-                        count--;
-    
-                        //计数为 0 时，不一定就全部完成了，
-                        //因为调用者可能会恶意多次调用 done() 以使计数减少到 0。
-                        //但有一点可以肯定的：只要计数不为 0，说明至少有一项未完成。
-                        if (count > 0) { //性能优化
-                            return;
-                        }
-    
-                        //安全起见，检查每项的完成状态。
-                        for (let i = 0; i < total; i++) {
-                            if (!dones[i]) {
-                                return;
-                            }
-                        }
-    
-                        //至此，全部项都已完成。
-                        meta.emitter.fire('all', [values]);
-                    }]);
-    
-                })(index);
-    
-            });
-        }
-    
-        /**
-        * 串行处理。
-        * @param {Array} [list] 要处理的任务列表。 
-        *   如果不指定，则使用构造器中的。
-        */
-        serial(list) {
-            let meta = mapper.get(this);
-            list = list || meta.list;
-    
-    
-            //空的任务列表。
-            if (!list.length) {
-                meta.emitter.fire('all', []);
-                return;
-            }
-    
-            //非空的任务列表。
-            let total = list.length;        //总项数。
-            let values = new Array(total);  //收集每项异步操作的返回值。
-    
-    
-            function process(index) {
-                let item = list[index];
-    
-                //第三个参数是一个回调函数，即 done(value); 
-                //由业务层调用，以通知异步操作完成。
-                //done(value); 接受一个参数作为此项异步操作的返回值进行收集，
-                //最后会在全部完成后一起传过去给业务层。
-                meta.emitter.fire('each', [item, index, function (value) {
-                    values[index] = value; //需要收集的值，由调用者传入。
-                    index++;
-    
-                    if (index < total) {
-                        process(index);
-                    }
-                    else {
-                        meta.emitter.fire('all', [values]);
-                    }
-                }]);
-            }
-    
-            process(0);
-    
-        }
-    
-        /**
-        * 绑定事件。
-        */
-        on(...args) {
-            let meta = mapper.get(this);
-            meta.emitter.on(...args);
-        }
-    
-    
-        
-     
-    
-    }
-    
-    //静态成员。
-    Object.assign(Tasker, {
-        /**
-        * 支持多个并发异步加载操作，实际只会加载一次。
-        * 如果在加载过程中，再发起加载请求，则会放入待办列表中，加载完成后再依次执行。
-        * @param {String} sid 异步加载的名称，以此作为区分。 同一个名称的拥有同一个待办队列。
-        * @param {*} todo 要添加的待办项，可以是任意值。
-        * @param {function} load 实际要发起的异步加载操作函数。 异步加载函数体内必须显式调用传过去的函数，以调用异步加载完成。
-        */
-        todo(sid, todo, load) {
-            let todos = sid$todos[sid];
-    
-            if (todos) {
-                todos.push(todo);
-                return;
-            }
-    
-    
-            todos = sid$todos[sid] = [todo];
-    
-            load(function (each) {
-                sid$todos[sid] = null;
-    
-                if (typeof each == 'function') {
-                    todos.forEach(function (todo, index) {
-                        each(todo, index);
-                    });
-                }
-    
-                return todos;
-            });
-        }
-    });
-    
-    
-    module.exports = Tasker;
-});
-/**
-* src: @definejs/timer/modules/Timer.js
-* pkg: @definejs/timer@1.0.1
-*/
-define('Timer', function (require, module, exports) { 
-    /**
-    * 计时器。
-    */
-    
-    
-    const mapper = new Map();
-    let idCounter = 0;
-    
-    class Timer {
-        /**
-        * 构造器。
-        */
-        constructor() {
-            let id = `definejs-Timer-${idCounter++}`;
-    
-            let meta = {
-                'id': id,
-                't0': 0,
-                'list': [],
-            };
-    
-            mapper.set(this, meta);
-    
-            Object.assign(this, {
-                'id': meta.id,
-            });
-        }
-    
-        // /**
-        // * 当前实例的 id。
-        // */
-        // id = ''
-    
-        /**
-        * 开始计时。
-        */
-        start() {
-            let meta = mapper.get(this);
-            meta.t0 = new Date();
-        }
-    
-        /**
-        * 停止计时。
-        * @param {string} unit 对时间差进行转换的单位，可取的值为：
-        *   `ms`: 毫秒(默认值)。
-        *   `s`: 秒。
-        *   `m`: 分。
-        *   `h`: 小时。
-        *   `d`: 天。
-        * @returns 返回一个对象，结构为 
-        *   {
-        *       t0: Date,       //开始时间。
-        *       t1: Date,       //结束时间。
-        *       dt: Number,     //时间差，即耗时，单位为毫秒。
-        *       value: Number,  //针对参数 unit 传入的单位转换后的时间差值。 
-        *       unit: string,   //参数 unit 传入的值。
-        *   }
-        */
-        stop(unit = 'ms') {
-            let meta = mapper.get(this);
-            let t0 = meta.t0;
-            let t1 = new Date();
-            let dt = t1 - t0;
-            let value = 0;
-    
-            let item = {
-                't0': t0,
-                't1': t1,
-                'dt': dt,
-                'value': 0,
-                'unit': '',
-            };
-    
-            switch (unit) {
-                case 'ms':
-                    value = dt;
-                    break;
-                case 's':
-                    value = Math.ceil(dt / 1000);
-                    break;
-                case 'm':
-                    value = Math.ceil(dt / 1000 / 60);
-                    break;
-                case 'h':
-                    value = Math.ceil(dt / 1000 / 3600);
-                    break;
-                case 'd':
-                    value = Math.ceil(dt / 1000 / 3600 / 24);
-                    break;
-                default:
-                    throw new Error(`无法识别的参数 unit，只允许是以下值之一：ms、s、m、h、d。`);
-            }
-    
-            if (value) {
-                item.value = value;
-                item.unit = unit;
-            }
-    
-            meta.list.push(item);
-    
-            return item;
-        }
-    
-        /**
-        * 获取所有的计时历史列表。
-        */
-        list() {
-            let meta = mapper.get(this);
-            return [...meta.list,];
-        }
-    
-        /**
-        * 重置计时器。
-        * 会清空所有的计时历史，回到创建时的状态。
-        */
-        reset() { 
-            let meta = mapper.get(this);
-    
-            meta.t0 = 0;
-            meta.list = [];
-        }
-    }
-    
-    module.exports = Timer;
-});
-/**
-* src: @definejs/api/modules/API/Ajax.js
-* pkg: @definejs/api@1.0.1
-*/
-define('API/Ajax', function (require, module, exports) { 
-    
-    const $Object = require('Object');
-    const $String = require('String');
-    const $JSON = require('JSON');
-    const Proxy = require('Proxy');
-    const Query = require('Query');
-    
-    /**
-    * 发起 ajax 网络请求(核心方法)。
-    *   method: 'get' | 'post', //网络请求的方式：'get' 或 'post'。
-    *   config = {
-    *       url: '',            //可选，请求的 url 地址。
-    *       prefix: '',         //可选，url 的前缀。
-    *       name: '',           //必选，后台接口的名称，会用在 url 中。
-    *       ext: '',            //可选，要用在 url 中的后缀。
-    *       successCode: 200,   //指示请求成功时的代码。 数字或字符串。
-    *       random: true,       //是否给 url 加上随机数，以刷新缓存。
-    *       proxy: false,       //是否启用代理。 要启用，可以指定为 true，或一个具体的 json 或 js 文件名。
-    *       timeout: 0,         //超时时间。 如果指定为 0，则使用浏览器内置的超时管理，会调用 error 回调函数。
-    *
-    *       //该数据会给序列化成查询字符串，然后：
-    *       //当 method 为 'get' 时，数据拼接在 url 中。
-    *       //当 method 为 'post' 时，数据放在 form-data 表单中。
-    *       data: {},           //可选，要发送的数据。 
-    *       query: {},          //可选，要发送的查询字符串数据。 该字段仅在 method 为 'post' 时可用。
-    *       headers: {},        //可选，要发送的请求头数据。
-    *
-    *       field: {            //可选，响应中的映射字段。 如果不指定为 null，则不当成 json 进行解析。
-    *           code: 'code',   //状态码。
-    *           msg: 'msg',     //消息。
-    *           data: 'data',   //主体数据。
-    *       },
-    *
-    *       success: fn,        //请求成功时的回调函数。
-    *       fail: fn,           //请求失败时的回调函数。
-    *       error: fn,          //请求错误时的回调函数。
-    *       ontimeout: fn,      //请求超时时的回调函数。
-    *       serialize: fn,      //对 data 字段的子对象进行序列化的方法。
-    *   };
-    *
-    * 返回： 
-    *   XMLHTTPRequest 实例对象 xhr。 
-    *   如果使用的是代理，则返回 null。
-    */
-    function request(method, config) {
-        let proxy = config.proxy;
-    
-        if (proxy) { //使用了代理
-            Proxy.request(proxy, config);
-            return null;
-        }
-    
-    
-        //完整的 url
-        let url = [
-            config.url,
-            config.prefix,
-            config.name,
-            config.ext,
-        ].join('');
-    
-    
-        let data = config.data || null; // null 可能会在 xhr.send(data) 里用到。
-    
-        if (data) {
-            let serialize = config.serialize; //对子对象进行序列化的方法。
-    
-            data = $Object.map(data, function (key, value) {
-                if (typeof value == 'object' && value) { //子对象编码成 JSON 字符串
-                    return serialize(key, value);
-                }
-    
-                //其他的
-                return value; //原样返回
-            });
-        }
-    
-    
-        if (method == 'post') {
-            let query = config.query;
-            if (query) {
-                url = Query.add(url, query);
-            }
-            if (data) {
-                data = Query.stringify(data);
-            }
-        }
-        else if (data) { // 'get'
-            url = Query.add(url, data);
-            data = null; //要发送的数据已附加到 url 参数上
-        }
-    
-    
-        //增加一个随机字段，以使缓存失效
-        let random = config.random;
-        if (random) {
-            random = $String.random(4);
-            url = Query.add(url, random);
-        }
-    
-    
-        //同时启动超时器和发起请求，让它们去竞争。
-    
-        let isTimeout = false; //指示是否已超时
-        let tid = null;
-        let timeout = config.timeout || 0;
-    
-        if (timeout > 0) {
-            tid = setTimeout(function () {
-                isTimeout = true;
-                xhr.abort(); //取消当前响应，关闭连接并且结束任何未决的网络活动。
-    
-                let fn = config.ontimeout;
-                fn && fn(xhr);
-    
-            }, timeout);
-        }
-    
-    
-        let xhr = new XMLHttpRequest();
-        xhr.open(method, url, true);
-    
-        xhr.onreadystatechange = function () {
-            if (isTimeout || xhr.readyState != 4) {
-                return;
-            }
-    
-    
-            clearTimeout(tid);
-    
-            let successCode = config.successCode;
-            let fnError = config.error;
-            let fnSuccess = config.success;
-            let fnFail = config.fail;
-            let field = config.field || null;
-    
-            if (xhr.status != 200) {
-                fnError && fnError(xhr);
-                return;
-            }
-    
-            //没有指定 field 字段映射规则，则直接当作是请求成功了。
-            if (!field) {
-                fnSuccess && fnSuccess(xhr);
-                return;
-            }
-    
-            //以下都是指定了 field 字段映射规则的，则尝试解析成 json。
-            let json = $JSON.parse(xhr.responseText);
-    
-            if (!json) {
-                fnError && fnError(xhr);
-                return;
-            }
-    
-            let code = json[field.code];
-    
-            if (code == successCode) {
-                let data = field.data in json ? json[field.data] : {};
-                fnSuccess && fnSuccess(data, json, xhr);
-            }
-            else {
-                let msg = json[field.msg];
-                fnFail && fnFail(code, msg, json, xhr);
-            }
-        };
-    
-        //设置请求头。
-        let headers = config.headers;
-    
-        if (headers) {
-            $Object.each(headers, function (key, value) {
-                xhr.setRequestHeader(key, value);
-            });
-        }
-    
-    
-        if (method == 'post') {
-            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-        }
-    
-        xhr.send(data);
-    
-        return xhr;
-    }
-    
-    
-    module.exports = {
-    
-        get(config) {
-            return request('get', config);
-        },
-    
-        post(config) {
-            return request('post', config);
-        },
-    };
-});
-/**
-* src: @definejs/api/modules/API.defaults.js
-* pkg: @definejs/api@1.0.1
-*/
-define('API.defaults', function (require, module, exports) { 
-    /**
-    * API 模块的默认配置
-    */
-    module.exports = {
-        /** 
-        * 响应的数据类型。
-        * 只有指定为 `json` 时才进行 JSON 解析，如果请求成功了但解析失败则调用 fail 函数。
-        */
-        type: 'json',
-        /**
-        * 成功的状态码。 
-        * 只有状态码为该值是才表示成功，其它的均表示失败。
-        */
-        successCode: 200,
-        /**
-        * 字段映射。
-        * 如果指定为 null，则不对响应进行 json 解析。 即只有指定具体的映射规则时，才把响应当成 json 进行解析。
-        */
-        field: {
-            /**
-            * 状态码。
-            */
-            code: 'code',
-            /**
-            * 消息。
-            */
-            msg: 'msg',
-            /**
-            * 主体数据。
-            */
-            data: 'data',
-        },
-        /**
-        * 代理配置。
-        */
-        proxy: null,
-        /**
-        * 随机延迟时间，更真实模拟实际网络环境。
-        * 可指定为 false，或如 { min: 500, max: 2000 } 的格式。
-        */
-        delay: false,
-        /**
-        * 在 url 中增加一个随机 key，以解决缓存问题。
-        * 当指定为 false 时，则禁用。
-        */
-        random: true,
-        /**
-        * API 接口 Url 的主体部分。
-        */
-        url: '',
-        /**
-        * API 接口 Url 的前缀部分。
-        */
-        prefix: '',
-        /**
-        * API 接口 Url 的后缀部分。
-        * 针对那些如 '.do'、'.aspx' 等有后缀名的接口比较实用。
-        */
-        ext: '',
-        /**
-        * 要发送的数据。 可选的。
-        * 当发送方式为 get 时，该数据将会给序列化成查询字符串并附加到 url 查询参数中。
-        * 当发送方式为 post 时，会用在表单中。
-        */
-        data: null,
-        /**
-        * 要发送的查询参数，仅当发送方式为 post 时有效 (可选的)。
-        * 当发送方式为 post 时，该数据将会给序列化成查询字符串并附加到 url 查询参数中。
-        */
-        query: null,
-        /**
-        * 要发送的请求头。
-        */
-        headers: null,
-        /**
-        * 请求超时的最大值(毫秒)。
-        * 0 表示由浏览器控制，代码层面不控制。
-        */
-        timeout: 0,
-        /**
-        * 把请求时的 data 中的第一级子对象进行序列化的方法。
-        * @param {string} key 要进行处理的子对象的键。
-        * @param {Object} value 要进行处理的子对象的值对象。
-        * @return {string} 返回该子对象序列化的字符串。
-        */
-        serialize: function (key, value) {
-            let json = JSON.stringify(value);
-            return encodeURIComponent(json);
-        },
-        /**
-        * 用于发起 ajax 请求的 get 方法。
-        * 如果想实现自己的 get 方法，可以提供此函数。
-        * 否则使用内部默认的 Ajax.get() 方法。
-        */
-        get: null,
-        /**
-        * 用于发起 ajax 请求的 post 方法。
-        * 如果想实现自己的 post 方法，可以提供此函数。
-        * 否则使用内部默认的 Ajax.post() 方法。
-        */
-        post: null,
-    };
-});
-/**
-* src: @definejs/api/modules/API.js
-* pkg: @definejs/api@1.0.1
-*/
-define('API', function (require, module, exports) { 
-    const $Object = require('Object');
-    const Emitter = require('Emitter');
-    const Fn = require('Fn');
-    
-    const Ajax = module.require('Ajax');
-    
-    const mapper = new Map();
-    let idCounter = 0;
-    
-    class API {
-        /**
-        * API 构造器。
-        * 已重载 API(config);         此时 name 为空串。
-        * 已重载 API(name, config);     
-        * @param {string} name 后台接口的名称。 简短名称，且不包括后缀。
-        * @param {Object} [config] 配置对象。
-        *   config = {
-        *
-        *   };
-        */
-        constructor(name, config) {
-            //重载 API(config);
-            if (typeof name == 'object') {
-                config = name;
-                name = '';
-            }
-    
-            name = name || '';
-            config = $Object.deepAssign({}, exports.defaults, config);
-    
-            let id = `definejs-API-${idCounter++}`;
-            let emitter = new Emitter(this);
-            let successCode = config.successCode;
-            let proxy = config.proxy;
-    
-            //支持简写，代理的文件名跟 API 的名称一致。
-            switch (proxy) {
-                case true:
-                    proxy = name + '.js';   //如 `getUsers.js`。
-                    break;
-                case '.json':
-                case '.js':
-                    proxy = name + proxy;   //如 `getUsers.json`。
-                    break;
-            }
-    
-            //发起 ajax 请求所需要的配置对象。
-            let ajax = {
-                'name': name,
-                'data': config.data,
-                'query': config.query,
-                'url': config.url,
-                'prefix': config.prefix,
-                'ext': config.ext,
-                'random': config.random,
-    
-                'successCode': successCode,
-                'field': config.field,
-                'proxy': proxy,
-                'serialize': config.serialize,
-                'timeout': config.timeout,
-                'headers': config.headers,
-    
-                success(data, json, xhr) { //成功
-                    fireEvent('success', [data, json, xhr]);
-                },
-    
-                fail(code, msg, json, xhr) { //失败
-                    fireEvent('fail', [code, msg, json, xhr]);
-                },
-    
-                error(xhr) { //错误
-                    if (meta.aborted) { //避免因手动调用了 abort() 而导致触发 error 事件。
-                        meta.aborted = false; //归位
-                        return;
-                    }
-    
-                    fireEvent('error', [xhr]);
-                },
-    
-                ontimeout(xhr) { //超时，自定义的
-                    fireEvent('timeout', [xhr]);
-                },
-            };
-    
-            let meta = {
-                'id': id,
-                'ajax': ajax,
-                'status': '',
-                'args': [],
-                'emitter': emitter,
-                'xhr': null,            //缓存创建出来的 xhr 对象。
-                'aborted': false,       //指示是否已调用了 abort()。
-                'fireEvent': fireEvent, //
-    
-                /**
-                * 用于发起 ajax 请求的 get 方法。
-                * 如果想实现自己的 get 方法，可以提供此函数。
-                * 否则使用内部默认的 Ajax.get() 方法。
-                */
-                'get': config.get || Ajax.get,
-    
-                /**
-                * 用于发起 ajax 请求的 post 方法。
-                * 如果想实现自己的 post 方法，可以提供此函数。
-                * 否则使用内部默认的 Ajax.post() 方法。
-                */
-                'post': config.post || Ajax.post,
-            };
-    
-            mapper.set(this, meta);
-    
-    
-            Object.assign(this, {
-                'id': meta.id,
-            });
-    
-    
-            //内部共用函数。
-            function fireEvent(status, args, emitter) {
-                status = meta.status = status || meta.status;
-                args = meta.args = args || meta.args;
-                emitter = emitter || meta.emitter;
-                meta.xhr = null; //请求已完成，针对 abort() 方法。
-    
-                let len = args.length;
-                let xhr = args[len - 1];
-                let json = args[len - 2];
-                let isSuccess = status == 'success';
-                let isFail = status == 'fail';
-    
-    
-                Fn.delay(config.delay, function () {
-                    //最先触发
-                    let values = emitter.fire('response', [status, json, xhr]);
-    
-                    if (values.includes(false)) {
-                        return;
-                    }
-    
-    
-                    //进一步触发具体 code 对应的事件
-                    if (isSuccess || isFail) {
-                        let code = isSuccess ? successCode : args[0];
-                        values = emitter.fire('code', code, args);
-    
-                        if (values.includes(false)) {
-                            return;
-                        }
-                    }
-    
-    
-                    //在 Proxy 的响应中 xhr 为 null。
-                    if (xhr) {
-                        values = emitter.fire('status', xhr.status, args);
-    
-                        if (values.includes(false)) {
-                            return;
-                        }
-                    }
-    
-                    //触发命名的分类事件，如 success|fail|error|timeout
-                    values = emitter.fire(status, args);
-    
-                    if (values.includes(false)) {
-                        return;
-                    }
-    
-                    //触发总事件。
-                    emitter.fire('done', [status, json, xhr]);
-                });
-            }
-        }
-    
-        // /**
-        // * 当前实例的 id。
-        // * 也是最外层的 DOM 节点的 id。
-        // */
-        // id = '';
-    
-    
-        /**
-        * 发起网络 GET 请求。
-        * 请求完成后会最先触发相应的事件。
-        * @param {Object} [data] 请求的数据对象。
-        *   该数据会给序列化成查询字符串以拼接到 url 中。
-        * @example
-            var api = new API('test');
-            api.get({ name: 'micty' });
-        */
-        get(data) {
-            let meta = mapper.get(this);    //API 类给继承后，this 就是子类的实例。 比如 SSH 继承 API，则 this 为 SSH 的实例，不再是 API 的实例。
-            let emitter = meta.emitter;
-    
-            meta.aborted = false; //归位
-    
-            let obj = Object.assign({}, meta.ajax);
-            if (data) {
-                obj.data = data;
-            }
-    
-            data = obj.data;  //这里用 obj.data
-    
-            emitter.fire('request', 'get', [data]);
-            emitter.fire('request', ['get', data]);
-    
-            meta.xhr = meta.get(obj);
-    
-        }
-    
-        /**
-        * 发起网络 POST 请求。
-        * 请求完成后会最先触发相应的事件。
-        * @param {Object} [data] POST 请求的数据对象。
-        * @param {Object} [query] 查询字符串的数据对象。
-        *   该数据会给序列化成查询字符串，并且通过 form-data 发送出去。
-        * @return {API} 返回当前 API 的实例 this，因此进一步可用于链式调用。
-        */
-        post(data, query) {
-            let meta = mapper.get(this);
-            let emitter = meta.emitter;
-            let ajax = meta.ajax;
-    
-            meta.aborted = false; //归位
-    
-            let obj = Object.assign({}, ajax, {
-                'data': data || ajax.data,
-                'query': query || ajax.query,
-            });
-    
-            data = obj.data;    //这里用 obj.data
-            query = obj.query;  //这里用 obj.query
-    
-            emitter.fire('request', 'post', [data, query]);
-            emitter.fire('request', ['post', data, query]);
-    
-    
-            meta.xhr = meta.post(obj);
-    
-        }
-    
-        /**
-        * 取消当前已发起但未完成的请求。
-        * 只有已发起了请求但未完成，才会执行取消操作，并会触发 abort 事件。
-        */
-        abort() {
-            let meta = mapper.get(this);
-            let xhr = meta.xhr;
-    
-            if (!xhr) {
-                return;
-            }
-    
-            meta.aborted = true;        //先设置状态
-            xhr.abort();                //会触发 ajax.error 事件。
-            meta.emitter.fire('abort'); //
-        }
-    
-    
-        /**
-        * 绑定事件。
-        * 已重载 on({...}，因此支持批量绑定。
-        * @return {API} 返回当前 API 的实例 this，因此进一步可用于链式调用。
-        */
-        on(...args) {
-            let meta = mapper.get(this);
-            let emitter = meta.emitter;
-            let status = meta.status;
-    
-            emitter.on(...args);
-    
-            if (status) { //请求已完成，立即触发
-                let emt = new Emitter(this); //使用临时的事件触发器。
-                emt.on.apply(emt, args);
-                meta.fireEvent(status, meta.args, emt);
-                emt.destroy();
-            }
-    
-        }
-    
-    
-    
-        /**
-        * 销毁本实例对象。
-        */
-        destroy() {
-            let meta = mapper.get(this);
-            let emitter = meta.emitter;
-    
-            emitter.destroy();
-            mapper.delete(this);
-        }
-    }
-    
-    API.defaults = require('API.defaults');
-    module.exports = exports = API;
-});
-/**
-* src: @definejs/proxy/modules/Proxy/Url.js
-* pkg: @definejs/proxy@1.0.0
-*/
-define('Proxy/Url', function (require, module, exports) { 
-    
-    const Url = require('Url');
-    const Query = require('Query');
-    
-    
-    function get(url, base) {
-        //绝对地址
-        if (Url.isFull(url)) {
-            return url;
-        }
-    
-        //相对地址
-        if (Url.isFull(base)) {
-            return base + url;
-        }
-    
-        let root = Url.root();
-    
-        if (url.slice(0, 1) != '/') {
-            root = root + base;
-        }
-    
-        return root + url;
-    }
-    
-    
-    module.exports = {
-    
-        get(url, base) {
-            url = get(url, base);
-            url = Query.random(url); //增加随机查询字符串，确保拿到最新的
-    
-            return url;
-        },
-    };
-});
-/**
-* src: @definejs/proxy/modules/Proxy.defaults.js
-* pkg: @definejs/proxy@1.0.0
-*/
-define('Proxy.defaults', function (require, module, exports) { 
-    
-    /**
-    * Proxy 模块的默认配置
-    * @name Proxy.defaults
-    */
-    module.exports = {
-        /**
-        * 加载代理响应文件的起始位置(或目录)。
-        */
-        base: '',
-    
-        /**
-        * 为模拟真实网络环境而随机延迟的时间。
-        * 格式为 { min: 500, max: 3000 }。
-        * 当指定为 false 时，则禁用延迟。
-        */
-        delay: {
-            /**
-            * 随机延迟的最小毫秒数。
-            */
-            min: 500,
-            /**
-            * 随机延迟的最大毫秒数。
-            */
-            max: 3000,
-        },
-    };
-});
-/**
-* src: @definejs/proxy/modules/Proxy.js
-* pkg: @definejs/proxy@1.0.0
-*/
-define('Proxy', function (require, module, exports) { 
-    const $Url = require('Url');
-    const $JSON = require('JSON');
-    const Fn = require('Fn');
-    const Script = require('Script');
-    const Url = module.require('Url');
-    
-    
-    let current = null; //当前请求到的代理文件的响应结果 factory。
-    
-    
-    //模拟一个网络的随机延迟时间去执行一个回调函数
-    function delay(fn, ...args) {
-        let delay = exports.defaults.delay;
-        Fn.delay(delay, fn, args);
-    }
-    
-    
-    //加载完成后，根据状态分发事件。
-    function done(json, config) {
-        if (!json) {
-            delay(config.error);
-            return;
-        }
-    
-        let successCode = config.successCode;
-        let field = config.field;
-        let code = json[field.code];
-    
-        if (code == successCode) { // 成功
-            let data = json[field.data] || {};
-            delay(config.success, data, json);
-        }
-        else { //失败
-            let msg = json[field.msg] || '';
-            delay(config.fail, code, msg, json);
-        }
-    }
-    
-    /**
-    * 加载指定的 js 代理文件。
-    * 注意：加载完 js 代理文件后，会先执行 js 代理文件的逻辑，再触发 onload 事件。
-    * 经过试验发现，并发加载多个 js 文件，也会严格地按上述顺序对应的进行。
-    */
-    function loadJS(file, config) {
-        let base = exports.defaults.base;
-        let url = Url.get(file, base);
-    
-        Script.load(url, function () {
-            let factory = current;
-            current = null;
-    
-            if (typeof factory == 'function') {
-                factory = factory(config.data, config);
-            }
-    
-            done(factory, config);
-    
-        });
-    }
-    
-    /**
-    * 加载指定的 json 代理文件。
-    */
-    function loadJSON(file, config) {
-        let base = exports.defaults.base;
-        let url = Url.get(file, base);
-        let xhr = new XMLHttpRequest();
-    
-        xhr.open('get', url, true);
-    
-        xhr.onreadystatechange = function () {
-            if (xhr.readyState != 4) {
-                return;
-            }
-    
-            if (xhr.status != 200) {
-                delay(config.error);
-                return;
-            }
-    
-            let json = $JSON.parse(xhr.responseText);
-    
-            done(json, config);
-        };
-    
-        xhr.send(null);
-    }
-    
-    
-    module.exports = exports = {
-        /**
-        * 默认配置。 
-        */
-        defaults: require('Proxy.defaults'),
-        
-        /**
-        * 发起代理请求。
-        * @param {String} file 代理响应的文件地址。
-        * @param {Object} config 配置对象。
-        */
-        request(file, config) {
-            if ($Url.isExt(file, '.js')) { // 映射的响应是一个 js 文件
-                loadJS(file, config);
-                return;
-            }
-    
-            if ($Url.isExt(file, '.json')) {
-                loadJSON(file, config);
-                return;
-            }
-    
-            throw new Error('不支持参数 file 的文件类型: ' + file);
-        },
-    
-        /**
-        * 响应代理请求。
-        * 可以生成很复杂的动态数据，并根据提交的参数进行处理，具有真正模拟后台逻辑的能力。
-        * 该方法仅用在代理响应文件中，且在调用之前必须先调用 request 方法。
-        * 已重载 response(json)的情况。
-        * @param {function|Object} factory 响应的处理函数或 json 对象。
-        *   当传进来的 factory 为处理函数时，该函数会接收到两个参数：factory(data, config)。 其中：
-        *   data 为发起 get 或 post 请求时最终的 data 字段；
-        *   config 为发起 get 或 post 请求时全部的配置字段。
-        */
-        response(factory) {
-            //var type = typeof factory;
-            //var isValid = type == 'function' || type == 'object' && factory;
-    
-            //if (!isValid) {
-            //    throw new Error('参数 factory 只能是函数或非空对象');
-            //}
-    
-            current = factory;
-        },
-    
-    };
-});
-/**
 * src: @definejs/script/modules/Script.defaults.js
-* pkg: @definejs/script@1.0.0
+* pkg: @definejs/script@1.0.2
 */
 define('Script.defaults', function (require, module, exports) { 
     
@@ -5681,7 +6990,7 @@ define('Script.defaults', function (require, module, exports) {
 });
 /**
 * src: @definejs/script/modules/Script.js
-* pkg: @definejs/script@1.0.0
+* pkg: @definejs/script@1.0.2
 */
 define('Script', function (require, module, exports) { 
     
@@ -6483,8 +7792,166 @@ define('App', function (require, module, exports) {
     
 });
 /**
+* src: @definejs/app-module/modules/AppModule.defaults.js
+* pkg: @definejs/app-module@1.0.0
+*/
+define('AppModule.defaults', function (require, module, exports) { 
+    
+    const Emitter = require('Emitter');
+    
+    
+    module.exports = {
+        Emitter,   //事件驱动器。
+    
+        seperator: '/',     //私有模块的分隔符。
+        repeated: false,    //不允许重复定义同名的模块。
+        cross: false,       //不允许跨级加载模块。
+    };
+});
+/**
+* src: @definejs/app-module/modules/AppModule.js
+* pkg: @definejs/app-module@1.0.0
+*/
+define('AppModule', function (require, module, exports) { 
+    const ModuleManager = require('ModuleManager');
+    const $Object = require('Object');
+    const $String = require('String');
+    
+    let id$factory = {};//针对模板模块。
+    let $mm = null;
+    
+    function mm() { 
+        if (!$mm) {
+            $mm = new ModuleManager(exports.defaults);
+        }
+    
+        return $mm;
+    }
+    
+    
+    module.exports = exports = {
+        /**
+        * 默认配置。
+        */
+        defaults: require('AppModule.defaults'),
+    
+        /**
+        * 使用的模块管理器(函数)。
+        * 暴露出去，可以方便外界对 mm 进行各种扩展，如重写 require 方法等。
+        */
+        mm,
+        /**
+        * 定义一个指定名称的静态模块。
+        * 或者定义一个动态模块，模块的 id 是一个模板字符串。
+        * 该方法对外给业务层使用的。
+        * @function
+        * @param {string} id 模块的名称。 可以是一个模板。
+        * @param {Object|function} factory 模块的导出函数或对象。
+        */
+        define(id, factory) {
+            // id 为一个模板字符串，如 `{prefix}/Address`。
+            let isTPL = id.includes('{') && id.includes('}');
+    
+            if (isTPL) {
+                id$factory[id] = factory;   //定义一个模板模块，则先缓存起来。
+            }
+            else {
+                mm().define(id, factory);
+            }
+        },
+    
+        /**
+        * 加载指定的模块。
+        * （在 App 模块中用到，用于启动程序）。
+        *   
+        * @function
+        * @param {string} id 模块的名称。
+        * @return 返回指定的模块。 
+        */
+        require(...args) { 
+            return mm().require(...args);
+        },
+    
+        /**
+        * 绑定事件。
+        */
+        on(...args) { 
+            return mm().on(...args);
+        },
+    
+        /**
+        * 判断指定的模块是否已定义。
+        */
+        has(...args) {
+            return mm().has(...args);
+        },
+    
+        /**
+        * 设置业务层的指定模块的自定义数据。
+        * 已重载 data(id, data); //设置单个模块的自定义数据。
+        * 已重载 data(id$data);  //设置多个模块，每个模块有自己的自定义数据。
+        * 已重载 data(id$data);  //设置多个模块，它们共用同一个自定义数据。
+        */
+        data(id, data) { 
+            //重载 data(ids, data);
+            //多个模块共用一个自定义数据。
+            if (Array.isArray(id)) {
+                let ids = id;
+                ids.forEach((id) => {
+                    mm().data(id, data);
+                });
+                return data;
+            }
+    
+            //重载 data(id$data);   
+            //每个模块有自己的自定义数据。
+            if ($Object.isPlain(id)) {
+                let id$data = id;
+                $Object.each(id$data, function (id, data) { 
+                    mm().data(id, data);
+                });
+                return id$data;
+            }
+    
+            //重载 data(id, data);
+            //设置单个模块的自定义数据。
+            return mm().data(id, data);
+        },
+    
+        /**
+        * 使用模板模块动态定义一个模块。
+        * 即填充一个模板模块，以生成（定义）一个真正的模块。
+        *   sid: '',    //模板模块的 id，如 `{prefix}/Address`
+        *   data: {},   //要填充的数据，如 { prefix: 'Demo/User', }
+        */
+        fill(sid, data) {
+            //需要扫描所有模板，同时填充它的子模块。
+            $Object.each(id$factory, function (id, factory) {
+    
+                //所有以 sid 为开头的模板模块都要填充，
+                //如 sid 为 `{prefix}/Address`，id 为 `{prefix}/Address/API`
+                if (!id.startsWith(sid)) {
+                    return;
+                }
+    
+                //填充成完整的模块 id。
+                id = $String.format(id, data);
+    
+                console.log(`动态定义模块: ${id}`);
+    
+                mm().define(id, factory);
+    
+            });
+    
+        },
+    };
+    
+    //增加一个快捷方法，以便可以判断某个模块是否已定义。
+    exports.define.has = exports.has;
+});
+/**
 * src: @definejs/local-storage/modules/LocalStorage/Storage.js
-* pkg: @definejs/local-storage@1.0.0
+* pkg: @definejs/local-storage@1.0.2
 */
 define('LocalStorage/Storage', function (require, module, exports) { 
     const CircularJSON = require('circular-json');
@@ -6541,7 +8008,7 @@ define('LocalStorage/Storage', function (require, module, exports) {
 });
 /**
 * src: @definejs/local-storage/modules/LocalStorage.defaults.js
-* pkg: @definejs/local-storage@1.0.0
+* pkg: @definejs/local-storage@1.0.2
 */
 define('LocalStorage.defaults', function (require, module, exports) { 
     
@@ -6559,7 +8026,7 @@ define('LocalStorage.defaults', function (require, module, exports) {
 });
 /**
 * src: @definejs/local-storage/modules/LocalStorage.js
-* pkg: @definejs/local-storage@1.0.0
+* pkg: @definejs/local-storage@1.0.2
 */
 define('LocalStorage', function (require, module, exports) { 
     
@@ -7604,8 +9071,279 @@ define('Navigator', function (require, module, exports) {
     
 });
 /**
+* src: @definejs/hash/modules/Hash.js
+* pkg: @definejs/hash@1.0.0
+*/
+define('Hash', function (require, module, exports) { 
+    const $Object = require('Object');
+    const Query = require('Query');
+    
+    /**
+    * Url 中的哈希工具。
+    */
+    module.exports = exports = {
+        /**
+        * 获取指定 url 的 hash 中指定的键所对应的值。
+        * @param {string} url 要进行获取的 url 字符串。
+        * @param {string} [key] 要检索的键。
+        * @param {boolean} [ignoreCase=false] 是否忽略参数 key 的大小写。 默认区分大小写。
+            如果要忽略 key 的大小写，请指定为 true；否则不指定或指定为 false。
+            当指定为 true 时，将优先检索完全匹配的键所对应的项；若没找到然后再忽略大小写去检索。
+        * @retun {string|Object|undefined} 返回一个查询字符串值。
+            当不指定参数 key 时，则获取全部 hash 值，对其进行 unescape 解码，
+            然后返回一个等价的 Object 对象。
+            当指定参数 key 为一个空字符串，则获取全部 hash (不解码)，返回一个 string 类型值。
+        * @example
+            Hash.get('http://test.com?query#a%3D1%26b%3D2', 'a');  //返回 '1'
+            Hash.get('http://test.com?query#a%3D1%26b%3D2', 'c');  //返回 undefined
+            Hash.get('http://test.com?query#a%3D1%26A%3D2', 'A');  //返回 2
+            Hash.get('http://test.com?query#a%3D1%26b%3D2', 'A', true);//返回 1
+            Hash.get('http://test.com?query#a%3D1%26b%3D2', '');   //返回 'a%3D1%26b%3D2'
+            Hash.get('http://test.com?query#a%3D1%26b%3D2');       //返回 {a: '1', b: '2'}
+            Hash.get('http://test.com?query#a%3D%26b%3D');         //返回 {a: '', b: ''}
+            Hash.get('http://test.com??query#a%26b');              //返回 {a: '', b: ''}
+            Hash.get('http://test.com?query#a', 'a');              //返回 ''
+        */
+        get(url, key, ignoreCase) {
+            //重载 get(location, key, ignoreCase)
+            //重载 get(window, key, ignoreCase)
+            if (typeof url == 'object') {
+                let location = null;
+    
+                if ('href' in url) {            //url is `location`。
+                    location = url;
+                }
+                else if ('location' in url) {    //url is `window`。
+                    location = url.location;
+                }
+                else {
+                    throw new Error(`当参数 url 是一个 Object 类型时，只能是浏览器环境中的 location 或 window 对象。`);
+                }
+    
+                url = location.href;
+            }
+    
+            let beginIndex = url.indexOf('#');
+            if (beginIndex < 0) { //不存在查询字符串
+                return;
+            }
+    
+            let endIndex = url.length;
+            let hash = url.slice(beginIndex + 1, endIndex);
+            
+            hash = unescape(hash); //解码
+    
+            if (key === '') { //获取全部 hash 的 string 类型
+                return hash;
+            }
+    
+    
+            let obj = Query.parse(hash);
+    
+            if (key === undefined) { //未指定键，获取整个 Object 对象
+                return obj;
+            }
+    
+            if (!ignoreCase || key in obj) { //区分大小写或有完全匹配的键
+                return obj[key];
+            }
+    
+    
+            //以下是不区分大小写
+            key = key.toString().toLowerCase();
+    
+            for (let name in obj) {
+                if (name.toLowerCase() == key) {
+                    return obj[name];
+                }
+            }
+        },
+    
+        /**
+        * 把指定的 hash 设置到指定的 url 上。
+        * 该方法会对 hash 进行 escape 编码，再设置到 url 上，以避免 hash 破坏原有的 url。
+        * 同时原有的 hash 会移除掉而替换成新的。
+        * @param {string} url 要设置的 url 字符串。
+        * @param {string|number|boolean|Object} key 要设置的 hash 的键。
+            当传入一个 Object 对象时，会对键值对进行递归编码成查询字符串， 然后用 escape 编码来设置 hash 。
+            当传入的是一个 string|number|boolean 类型，并且不传入第三个参数， 则直接用 escape 编码来设置 hash 。
+        * @param {string} [value] 要添加的 hash 的值。
+        * @retun {string} 返回组装后的新的 url 字符串。
+        * @example
+            //返回 'http://test.com?#a%3D1'
+            Hash.set('http://test.com', 'a', 1);  
+            
+            //返回 'http://test.com?query#a%3D3%26d%3D4'
+            Hash.set('http://test.com?query#a%3D1%26b%3D2', {a: 3, d: 4});  
+     
+            //返回 'http://test.com?query#a%3D3%26d%3D4'
+            Hash.set('http://test.com?query#a%3D1%26b%3D2', 'a=3&b=4'); 
+            
+        */
+        set(url, key, value) {
+            let location = null;
+    
+            if (typeof url == 'object') {
+                if ('href' in url) {            //url is `location`。
+                    location = url;         
+                }
+                else if ('location' in url) {    //url is `window`。
+                    location = url.location; 
+                }
+                else {
+                    throw new Error(`当参数 url 是一个 Object 类型时，只能是浏览器环境中的 location 或 window 对象。`);
+                }
+    
+                url = location.href;
+            }
+    
+            let type = typeof key;
+            let isValueType = (/^(string|number|boolean)$/).test(type);
+            let hash = '';
+    
+            if (arguments.length == 2 && isValueType) {
+                hash = String(key);
+            }
+            else {
+                let obj = type == 'object' ? key : $Object.make(key, value);
+                hash = Query.stringify(obj);
+            }
+    
+    
+            hash = escape(hash); //要进行编码，避免破坏原有的 url
+    
+            let index = url.lastIndexOf('#');
+            if (index > -1) {
+                url = url.slice(0, index);
+            }
+    
+            url = url + '#' + hash;
+    
+            //在浏览器环境，立即应用。
+            if (location) {
+                location.hash = hash; //不要设置整个 location.href，否则会刷新
+            }
+    
+    
+            return url;
+    
+        },
+    
+        /**
+        * 判断指定的 url 是否包含特定名称的 hash。
+        * @param {string} url 要检查的 url。
+        * @param {string} [key] 要提取的查询字符串的键。
+        * @param {boolean} [ignoreCase=false] 是否忽略参数 key 的大小写，默认区分大小写。
+            如果要忽略 key 的大小写，请指定为 true；否则不指定或指定为 false。
+            当指定为 true 时，将优先检索完全匹配的键所对应的项；若没找到然后再忽略大小写去检索。
+        * @retun {boolean} 如果 url 中包含该名称的查询字符串，则返回 true；否则返回 false。
+        * @example
+            Hash.has('http://test.com?a=1&b=2#hash', 'a');  //返回 true
+            Hash.has('http://test.com?a=1&b=2#hash', 'b');  //返回 true
+            Hash.has('http://test.com?a=1&b=2#hash', 'c');  //返回 false
+            Hash.has('http://test.com?a=1&b=2#hash', 'A', true); //返回 true
+            Hash.has('http://test.com?a=1&b=2#hash');       //返回 true
+        */
+        has(url, key, ignoreCase) {
+            //重载 has(location, key, ignoreCase)
+            //重载 has(window, key, ignoreCase)
+            if (typeof url == 'object') {
+                let location = null;
+    
+                if ('href' in url) {            //url is `location`。
+                    location = url;
+                }
+                else if ('location' in url) {    //url is `window`。
+                    location = url.location;
+                }
+                else {
+                    throw new Error(`当参数 url 是一个 Object 类型时，只能是浏览器环境中的 location 或 window 对象。`);
+                }
+    
+                url = location.href;
+            }
+    
+            let obj = exports.get(url); //获取全部 hash 字符串的 Object 形式。
+    
+            if (!obj) {
+                return false;
+            }
+    
+    
+            if (!key) { //不指定名称，
+                return !$Object.isEmpty(obj); //只要有数据，就为 true
+            }
+    
+            if (key in obj) { //找到完全匹配的
+                return true;
+            }
+    
+    
+            if (ignoreCase) { //明确指定了忽略大小写
+                key = key.toString().toLowerCase();
+    
+                for (let name in obj) {
+                    if (name.toLowerCase() == key) {
+                        return true;
+                    }
+                }
+            }
+    
+            //区分大小写，但没找到。
+            return false;
+    
+        },
+    
+        /**
+        * 监听指定窗口 url 的 hash 变化，并触发一个回调函数。
+        * 已重载　onchange(window, fn);
+        * 已重载　onchange(window, immediate, fn);
+        * @param {Window} window 要监听的 window 窗口。
+        * @param {boolean} [immediate=false] 指示初始时是否要立即执行回调函数。
+            初始时如果要立即执行回调函数，请指定该参数为 true；
+            否则不指定或指定为 false。
+        * @param {function} fn 当监听窗口的 hash 发生变化时，要触发的回调函数。
+        *   该回调函数会接收到两个参数：hash 和 old，当前的 hash 值和旧的 hash 值。
+        *   注意，hash 和 old 都去掉了 '#' 号而直接保留 hash 值。
+        *   如果 old 不存在，则为 null。
+        *   该回调函数内部的 this 指向监听的窗口。
+        * @example
+            Hash.onchange(top, function (hash, old) {
+                console.log('new hash: ' + hash);
+                console.log('old hash: ' + old);
+                console.log(this === top); //true
+            });
+        */
+        onchange(window, immediate, fn) {
+            //重载 onchange(window, fn);
+            if (typeof immediate == 'function') {
+                fn = immediate;
+                immediate = false;
+            }
+    
+    
+            let hash = exports.get(window, '');
+    
+            //指定了要立即触发，则立即触发。
+            if (immediate) {
+                fn.call(window, hash, null, immediate);
+            }
+    
+    
+            window.addEventListener('hashchange', function () {
+                let old = hash;
+    
+                hash = exports.get(window, '');
+                fn && fn(hash, old, false);
+            });
+    
+        },
+    
+    };
+});
+/**
 * src: @definejs/session-storage/modules/SessionStorage/Storage.js
-* pkg: @definejs/session-storage@1.0.0
+* pkg: @definejs/session-storage@1.0.2
 */
 define('SessionStorage/Storage', function (require, module, exports) { 
     const CircularJSON = require('circular-json');
@@ -7664,7 +9402,7 @@ define('SessionStorage/Storage', function (require, module, exports) {
 });
 /**
 * src: @definejs/session-storage/modules/SessionStorage.defaults.js
-* pkg: @definejs/session-storage@1.0.0
+* pkg: @definejs/session-storage@1.0.2
 */
 define('SessionStorage.defaults', function (require, module, exports) { 
     
@@ -7682,7 +9420,7 @@ define('SessionStorage.defaults', function (require, module, exports) {
 });
 /**
 * src: @definejs/session-storage/modules/SessionStorage.js
-* pkg: @definejs/session-storage@1.0.0
+* pkg: @definejs/session-storage@1.0.2
 */
 define('SessionStorage', function (require, module, exports) { 
     const $Object = require('Object');
@@ -7827,7 +9565,7 @@ define('SessionStorage', function (require, module, exports) {
 });
 /**
 * src: @definejs/package/modules/Package/All.js
-* pkg: @definejs/package@1.0.0
+* pkg: @definejs/package@1.0.1
 */
 define('Package/All', function (require, module, exports) { 
     
@@ -7866,12 +9604,12 @@ define('Package/All', function (require, module, exports) {
     
         let api = new API({
             'url': url,
-            'field': {},    //指定为一个空对象，以把响应解析成 json。
+            'field': null,
         });
     
         api.on({
-            response(status, json, xhr) { 
-                all = json || {};
+            response(res) { 
+                all = res.json || {};
                 done && done(all);
             },
         });
@@ -7915,7 +9653,7 @@ define('Package/All', function (require, module, exports) {
 });
 /**
 * src: @definejs/package/modules/Package/Loader.js
-* pkg: @definejs/package@1.0.0
+* pkg: @definejs/package@1.0.1
 */
 define('Package/Loader', function (require, module, exports) { 
     
@@ -7958,20 +9696,19 @@ define('Package/Loader', function (require, module, exports) {
             let api = new API({
                 'url': url,
                 'random': false,//不需要加随机数。
-                'field': null,  //显式指定为 null，以当成是普通的请求（即非 json 响应）。
+                'field': null,  //显式指定为 null，以指定不要尝试去解析 json。
             });
     
             api.on({
-                success(xhr) { 
-                    let content = xhr.responseText;
+                'response': function (res) {
+                    if (res.hasError) {
+                        throw new Error('error: ' + res.status);
+                    }
     
                     success && success({
                         'url': url,
-                        'content': content,
+                        'content': res.origin,
                     });
-                },
-                error(xhr) { 
-                    throw new Error('error: ' + xhr.status);
                 },
             });
     
@@ -8001,15 +9738,21 @@ define('Package/Loader', function (require, module, exports) {
         json(url, done) {
             let api = new API({
                 'url': url,
-                'field': {},    //指定为一个空对象，以把响应解析成 json。
+                'field': null,  //显式指定为 null，以指定不要尝试去解析 json。
             });
     
             api.on({
-                response(status, json, xhr) {
-                    all = json || {};
+                'response': function (res) {
+                    if (res.hasError) {
+                        throw new Error('error: ' + res.status);
+                    }
+    
+                    all = res.json || {};
                     done && done(all);
                 },
             });
+    
+            
     
             api.get();
         },
@@ -8074,7 +9817,7 @@ define('Package/Loader', function (require, module, exports) {
 });
 /**
 * src: @definejs/package/modules/Package.defaults.js
-* pkg: @definejs/package@1.0.0
+* pkg: @definejs/package@1.0.1
 */
 define('Package.defaults', function (require, module, exports) { 
     module.exports = {
@@ -8114,7 +9857,7 @@ define('Package.defaults', function (require, module, exports) {
 });
 /**
 * src: @definejs/package/modules/Package.js
-* pkg: @definejs/package@1.0.0
+* pkg: @definejs/package@1.0.1
 */
 define('Package', function (require, module, exports) { 
     
@@ -8246,1068 +9989,141 @@ define('Package', function (require, module, exports) {
     };
 });
 /**
-* src: @definejs/html-parser/modules/HTMLParser.js
-* pkg: @definejs/html-parser@1.0.0
+* src: @definejs/tasker/modules/Tasker.js
+* pkg: @definejs/tasker@1.0.2
 */
-define('HTMLParser', function (require, module, exports) { 
-    
-    /**
-    * Parse a string of HTML into an HTML DOM.
-    *
-    * https://github.com/developit/htmlParser
-    */
-    module.exports = (function () { 
-    
-        var exports = {},
-            util = {},
-            splitAttrsTokenizer = /([a-z0-9_\:\-]*)\s*?=\s*?(['"]?)(.*?)\2\s+/gim,
-            domParserTokenizer = /(?:<(\/?)([a-zA-Z][a-zA-Z0-9\:]*)(?:\s([^>]*?))?((?:\s*\/)?)>|(<\!\-\-)([\s\S]*?)(\-\->)|(<\!\[CDATA\[)([\s\S]*?)(\]\]>))/gm;
-    
-        util.extend = function (a, b) {
-            for (var x in b) {
-                if (b.hasOwnProperty(x)) {
-                    a[x] = b[x];
-                }
-            }
-            return a;
-        };
-    
-        util.inherit = function (a, b) {
-            var p = a.prototype;
-            function F() {
-    
-            }
-    
-            F.prototype = b.prototype;
-            a.prototype = new F();
-    
-            util.extend(a.prototype, p);
-            a.prototype.constructor = a;
-        };
-    
-        //by micty。
-        //已添加了更多的。
-        util.selfClosingTags = ['area', 'base', 'br', 'col', 'embed', 'frame', 'hr', 'img', 'input', 'keygen', 'link', 'meta', 'object', 'param', 'source'];
-    
-        util.getElementsByTagName = function (el, tag) {
-            var els = [], c = 0, i, n;
-            if (!tag) {
-                tag = '*';
-            }
-            tag = tag.toLowerCase();
-    
-            if (el.childNodes) {
-                for (i = 0; i < el.childNodes.length; i++) {
-                    n = el.childNodes[i];
-                    if (n.nodeType === 1 && (tag === '*' || n.nodeName === tag)) {
-                        els[c++] = n;
-                    }
-    
-                    Array.prototype.splice.apply(els, [els.length, 0].concat(util.getElementsByTagName(n, tag)));
-                    c = els.length;
-                }
-            }
-    
-            return els;
-        };
-    
-        util.splitAttrs = function (str) {
-            var obj = {}, token;
-    
-            if (str) {
-                splitAttrsTokenizer.lastIndex = 0;
-                str = ' ' + (str || '') + ' ';
-    
-                while ((token = splitAttrsTokenizer.exec(str))) {
-                    obj[token[1]] = token[3];
-                }
-            }
-    
-            return obj;
-        };
-    
-        util.ta = document.createElement('textarea');
-    
-        util.encodeEntities = function (str) {
-            util.ta.value = str || '';
-            return util.ta.innerHTML;
-        };
-    
-        util.decodeEntities = function (str) {
-            util.ta.innerHTML = str || '';
-            return util.ta.value;
-        };
-    
-        util.htmlToText = function (html) {
-            html = html.replace(/<\/?[a-z].*?>/gim, '');
-            return util.decodeEntities(html);
-        };
-    
-        function HTMLElement() {
-            this.childNodes = [];
-        }
-    
-        util.extend(HTMLElement.prototype, {
-            nodeType: 1,
-            textContent: '',
-    
-            getElementsByTagName: function (tag) {
-                return util.getElementsByTagName(this, tag);
-            },
-    
-            getAttribute: function (a) {
-                if (this.attributes.hasOwnProperty(a)) {
-                    return this.attributes[a];
-                }
-            },
-    
-            setAttribute: function (name, value) {
-                var lcName = (name + '').toLowerCase();
-                this.attributes[name] = value + '';
-                if (lcName === 'id' || lcName === 'name') {
-                    this[lcName] = value;
-                }
-                if (lcName === 'class') {
-                    this.className = value;
-                }
-            },
-    
-            getElementById: function (id) {
-                var all = this.getElementsByTagName('*'),
-                    i;
-                for (i = all.length; i--;) {
-                    if (all[i].id === id) {
-                        return all[i];
-                    }
-                }
-            },
-    
-            appendChild: function (child) {
-                if (child.parentNode) {
-                    child.parentNode.removeChild(child);
-                }
-                this.childNodes.push(child);
-            },
-    
-            insertBefore: function (child, sibling) {
-                if (child.parentNode) {
-                    child.parentNode.removeChild(child);
-                }
-                for (var i = 0; i < this.childNodes.length; i++) {
-                    if (this.childNodes[i] === sibling) {
-                        break;
-                    }
-                }
-                this.childNodes.splice(i, 0, child);
-            },
-    
-            removeChild: function (child) {
-                for (var i = this.childNodes.length; i--;) {
-                    if (this.childNodes[i] === child) {
-                        this.childNodes.splice(i, 1);
-                        break;
-                    }
-                }
-            },
-        });
-    
-        exports.HTMLElement = HTMLElement;
-    
-    
-        function Node() {
-    
-        }
-    
-        util.extend(Node.prototype, {
-            toString: function () {
-                return this.textContent;
-            },
-        });
-    
-    
-        function Document() {
-            HTMLElement.call(this);
-        }
-    
-        util.inherit(Document, HTMLElement);
-    
-        util.extend(Document.prototype, {
-            nodeType: 9,
-            nodeName: '#document',
-        });
-    
-        exports.Document = Document;
-    
-        function TextNode() {
-    
-        }
-    
-        util.inherit(TextNode, Node);
-    
-        util.extend(TextNode.prototype, {
-            nodeType: 3,
-            nodeName: '#text'
-        });
-    
-    
-        exports.TextNode = TextNode;
-    
-        function CommentNode() {
-    
-        }
-    
-        util.inherit(CommentNode, Node);
-        util.extend(CommentNode.prototype, {
-            nodeType: 8,
-            nodeName: '#comment'
-        });
-    
-        exports.CommentNode = CommentNode;
-    
-    
-    
-        function CDATASectionNode() { }
-    
-        util.inherit(CDATASectionNode, Node);
-        util.extend(CDATASectionNode.prototype, {
-            nodeType: 4,
-            nodeName: '#cdata-section'
-        });
-        exports.CDATASectionNode = CDATASectionNode;
-    
-    
-        util.blockConstructors = {
-            '<!--': CommentNode,
-            '<![CDATA[': CDATASectionNode
-        };
-    
-    
-        /** Parse a string of HTML into an HTML DOM.
-         *  @param {String} str		A string containing HTML
-         *  @returns {Document}		A Node, the type corresponding to the type of the root HTML node.
-         */
-        exports.parse = function (str) {
-            var tags, doc, parent, prev, token, text, i,
-                bStart, bText, bEnd, BlockConstructor, commitTextNode, tag;
-            tags = [];
-            domParserTokenizer.lastIndex = 0;
-    
-            parent = doc = new Document();
-    
-            commitTextNode = function () {
-                // note: this is moved out of the loop but still uses its scope!!
-                if (parent && tags.length > 0) {
-                    prev = tags[tags.length - 1];
-                    i = (prev.documentPosition.closeTag || prev.documentPosition.openTag).end;
-                    if (prev.parentNode === parent && i && i < tag.documentPosition.openTag.start) {
-                        text = str.substring(i, tag.documentPosition.openTag.start);
-                        if (text) {
-                            text = util.decodeEntities(text);
-                            parent.childNodes.push(util.extend(new TextNode(), {
-                                textContent: text,
-                                nodeValue: text,
-                                parentNode: parent
-                            }));
-                        }
-                    }
-                }
-            };
-    
-            while ((token = domParserTokenizer.exec(str))) {
-                bStart = token[5] || token[8];
-                bText = token[6] || token[9];
-                bEnd = token[7] || token[10];
-                if (bStart === '<!--' || bStart === '<![CDATA[') {
-                    i = domParserTokenizer.lastIndex - token[0].length;
-                    BlockConstructor = util.blockConstructors[bStart];
-                    if (BlockConstructor) {
-                        tag = util.extend(new BlockConstructor(), {
-                            textContent: bText,
-                            nodeValue: bText,
-                            parentNode: parent,
-                            documentPosition: {
-                                openTag: {
-                                    start: i,
-                                    end: i + bStart.length
-                                },
-                                closeTag: {
-                                    start: domParserTokenizer.lastIndex - bEnd.length,
-                                    end: domParserTokenizer.lastIndex
-                                }
-                            }
-                        });
-                        commitTextNode();
-                        tags.push(tag);
-                        tag.parentNode.childNodes.push(tag);
-                    }
-                }
-                else if (token[1] !== '/') {
-                    tag = util.extend(new HTMLElement(), {
-                        nodeName: (token[2] + '').toLowerCase(),
-                        attributes: util.splitAttrs(token[3]),
-                        parentNode: parent,
-                        documentPosition: {
-                            openTag: {
-                                start: domParserTokenizer.lastIndex - token[0].length,
-                                end: domParserTokenizer.lastIndex
-                            }
-                        }
-                    });
-                    tag.className = tag.attributes['class'];
-                    tag.id = tag.attributes.id;
-                    tag.name = tag.attributes.name;
-                    commitTextNode();
-                    tags.push(tag);
-                    tag.parentNode.childNodes.push(tag);
-    
-                    //by micty。
-                    if ((token[4] && token[4].indexOf('/') > -1) || util.selfClosingTags.includes(tag.nodeName)) {
-                        tag.documentPosition.closeTag = tag.documentPosition.openTag;
-                        tag.isSelfClosingTag = true;
-                        tag.innerHTML = '';
-                        tag.outerHTML = str.substring(tag.documentPosition.openTag.start, tag.documentPosition.closeTag.end);
-                    }
-                    else {
-                        parent = tag;
-                    }
-                }
-                else {
-                    // Close parent node if end-tag matches
-                    if ((token[2] + '').toLowerCase() === parent.nodeName) {
-                        tag = parent;
-                        parent = tag.parentNode;
-                        delete tag.isSelfClosingTag;
-                        tag.documentPosition.closeTag = {
-                            start: domParserTokenizer.lastIndex - token[0].length,
-                            end: domParserTokenizer.lastIndex
-                        };
-                        tag.innerHTML = str.substring(tag.documentPosition.openTag.end, tag.documentPosition.closeTag.start);
-                        tag.outerHTML = str.substring(tag.documentPosition.openTag.start, tag.documentPosition.closeTag.end);
-                        tag.textContent = util.htmlToText(tag.innerHTML);
-                    }
-                    // account for abuse of self-closing tags when an end-tag is also provided:
-                    else if ((token[2] + '').toLowerCase() === tags[tags.length - 1].nodeName && tags[tags.length - 1].isSelfClosingTag === true) {
-                        tag = tags[tags.length - 1];
-                        console.warn('HTML Error: discarding dangling <\/' + token[2] + '> tag. Already closed via: ' + tag.outerHTML);
-                        delete tag.isSelfClosing;
-                        tag.documentPosition.closeTag = {
-                            start: domParserTokenizer.lastIndex - token[0].length,
-                            end: domParserTokenizer.lastIndex
-                        };
-                    }
-                    else {
-                        console.warn('tag mismatch: "' + token[2] + '" vs "' + tag.nodeName + '"', tag);
-                    }
-                }
-            }
-    
-            doc.documentElement = doc.getElementsByTagName('html')[0];
-            doc.body = doc.getElementsByTagName('body')[0];
-    
-            return doc;
-        };
-    
-        return exports;
-    
-    
-    })();
-});
-/**
-* src: @definejs/template/modules/Template/Parser/Templates.js
-* pkg: @definejs/template@1.0.0
-*/
-define('Template/Parser/Templates', function (require, module, exports) { 
-    /**
-    * 获取指定 template 节点的父亲 template 节点(。
-    */
-    function getParent(tpl) {
-        tpl = tpl.parentNode;
-    
-        while (tpl) {
-            if (tpl.nodeName == 'template') {
-                return tpl;
-            }
-    
-            tpl = tpl.parentNode;
-        }
-    
-        return null;
-    }
-    
-    
-    module.exports = {
-        /**
-        * 把所有的 template 节点信息提取出来。
-        * 返回一个由顶层 template 节点对应的描述信息对象组成的数组。
-        */
-        get(dom) {
-            let tpls = dom.getElementsByTagName('template');
-            let tpl$item = new Map();
-    
-            let list = tpls.map(function (tpl) {
-                let attributes = tpl.attributes;
-                let innerHTML = tpl.innerHTML;
-    
-                let item = {
-                    'id': tpl.id || '',
-                    'name': tpl.name || '',
-                    'placeholder': attributes.placeholder || '',
-                    'innerHTML': innerHTML,
-                    'outerHTML': tpl.outerHTML,
-                    'node': tpl,
-                    'sample': innerHTML,
-                    'parent': null,
-                    'attributes': attributes,
-                    'items': [],    //直接下级列表。
-                };
-    
-                tpl$item.set(tpl, item);
-    
-                return item;
-            });
-    
-    
-            let roots = list.filter(function (item) {
-                let tpl = getParent(item.node);
-                let parent = tpl$item.get(tpl);
-    
-                //收集根节点。
-                if (!parent) {
-                    return true;
-                }
-    
-                //顺便处理一下其它。
-                item.parent = parent;
-                parent.items.push(item);
-    
-                //替换掉子模板在父模板中的内容。
-                let sample = parent.sample;
-                let outerHTML = item.outerHTML;
-                let placeholder = item.placeholder;
-    
-                if (placeholder) {
-                    placeholder = '{' + placeholder + '}';
-                }
-    
-                parent.sample = sample.replace(outerHTML, placeholder);
-    
-            });
-    
-            return roots;
-        },
-    };
-    
-    
-    
-});
-/**
-* src: @definejs/template/modules/Template/Child.js
-* pkg: @definejs/template@1.0.0
-*/
-define('Template/Child', function (require, module, exports) { 
-    /**
-    * 
-    */
-    module.exports = {
-        /**
-        * 根据已解析到的数据节点创建一个子级实例，并设置父子关系等。
-        */
-        create(Template, meta, item) {
-            let name = item.name;
-            let sibling = meta.name$tpl[name]; //兄弟节点。
-    
-            //检测同一级下是否已存在同名的模板。
-            if (sibling) {
-                throw new Error('同一级下已存在名为 `' + name + '` 的模板。');
-            }
-    
-            let tpl = new Template(item);
-    
-            meta.name$tpl[name] = tpl;
-            meta.parent = meta.this;    //设置父实例，内部使用的。
-            tpl.parent = meta.this;     //设置父实例，外部使用的。
-    
-            tpl.on('process', function (...args) {
-                meta.emitter.fire('process', args);
-            });
-    
-            return tpl;
-    
-        },
-    
-    
-    
-    
-    };
-    
-    
-    
-    
-});
-/**
-* src: @definejs/template/modules/Template/Meta.js
-* pkg: @definejs/template@1.0.0
-*/
-define('Template/Meta', function (require, module, exports) { 
-    
-    const $String = require('String');
-    
-    const prefix = 'definejs-template-';    //用于生成组件 id 的前缀部分。
-    const suffix = 4;                       //用于生成组件 id 的随机部分的长度。
-    
-    
-    //默认的处理函数。
-    function process(data) {
-        return data;
-    }
-    
-    
-    module.exports = {
-        /**
-        *
-        */
-        create(others) {
-            let id = $String.randomId(prefix, suffix);
-    
-            let meta = {
-                'id': id,               //
-                'sample': '',           //
-                'name': '',             //
-                'placeholder': '',      //
-                'innerHTML': '',        //
-                'outerHTML': '',        //
-    
-                'tpls': [],             //下级实例列表。
-                'name$tpl': {},         //命名的下级实例映射，方便按名称读取。
-    
-                'node': null,           //DOM 节点。
-                'parent': null,         //父实例。
-                'emitter': null,        //
-                'this': null,           //
-    
-                'process': process,     //默认的处理函数。
-            };
-    
-    
-            Object.assign(meta, others);
-    
-            return meta;
-    
-        },
-    
-        /**
-        *
-        */
-        assign(meta, item) {
-            Object.assign(meta, {
-                'sample': item.sample,
-                'name': item.name,
-                'placeholder': item.placeholder,
-                'innerHTML': item.innerHTML,
-                'outerHTML': item.outerHTML,
-                'node': item.node,
-            });
-        },
-    
-    };
-    
-    
-    
-});
-/**
-* src: @definejs/template/modules/Template/Parser.js
-* pkg: @definejs/template@1.0.0
-*/
-define('Template/Parser', function (require, module, exports) { 
-    const HTMLParser = require('HTMLParser');
-    const Templates = module.require('Templates');
-    
-    module.exports = {
-        /**
-        *
-        */
-        parse(html) {
-            let dom = HTMLParser.parse(html);
-            let tpls = Templates.get(dom);
-    
-            return { dom, tpls, };
-        },
-    };
-    
-    
-    
-});
-/**
-* src: @definejs/template/modules/Template/Sample.js
-* pkg: @definejs/template@1.0.0
-*/
-define('Template/Sample', function (require, module, exports) { 
-    
-    
-    const $String = require('String');
-    
-    const script = {
-        begin: '<script type="text/template">',
-        end: '</script>',
-    };
-    
-    const comment = {
-        begin: '<!--',
-        end: '-->',
-    };
-    
-    
-    
-    module.exports = exports = {
-        /**
-        * 替换掉子模板在父模板中的内容。
-        *   sample: 父模板的内容。
-        *   item: 解析到的模板数据结构。
-        */
-        replace(sample, item) {
-            let { outerHTML, placeholder, } = item;
-    
-            if (placeholder) {
-                placeholder = '{' + placeholder + '}';
-            }
-    
-            sample = exports.removeScript(sample);
-            sample = sample.replace(outerHTML, placeholder); //这里不要用全部替换，否则可能会误及后面的。
-    
-            return sample;
-        },
-    
-        /**
-        * 提取 `<!--` 和 `-->` 之间的内容作为 sample。
-        */
-        betweenComment(sample) {
-            let { begin, end, } = comment;
-    
-            if (sample.includes(begin) &&
-                sample.includes(end)) {
-    
-                sample = $String.between(sample, begin, end);   //这里用提取。
-            }
-    
-            return sample;
-        },
-    
-        /** 
-        * 移除 html 中的 `<script type="text/template">` 和 `</script>` 标签。
-        * 如果不存在 script 包裹标签，则原样返回。
-        */
-        removeScript(html) {
-            let { begin, end, } = script;
-    
-            if (html.includes(begin) &&
-                html.includes(end)) {
-    
-                html = html.split(begin).join('');   //这里用删除。
-                html = html.split(end).join('');
-            }
-    
-            return html;
-        },
-    
-    };
-    
-    
-});
-/**
-* src: @definejs/template/modules/Template.js
-* pkg: @definejs/template@1.0.0
-*/
-define('Template', function (require, module, exports) { 
-    
-    const $ = require('jquery');
-    const $String = require('String');
-    const $Object = require('Object');
+define('Tasker', function (require, module, exports) { 
     const Emitter = require('Emitter');
-    const HTMLParser = require('HTMLParser');
-    
-    const Meta = module.require('Meta');
-    const Parser = module.require('Parser');
-    const Sample = module.require('Sample');
-    const Child = module.require('Child');
     
     const mapper = new Map();
+    const sid$todos = {};
+    let idCounter = 0;
     
-    
-    class Template {
+    class Tasker {
         /**
         * 构造器。
-        * 参数：
-        *   selector: '' | DOM | jQuery | {}, //DOM 节点或选择器。 也可以是一个分析到的数据结构对象。
+        * @param {Array} [list] 任务列表。
         */
-        constructor(selector) {
-            //如果传入的是一个纯对象，则认为是内部解析到的数据结构。
-            //即要从一个已解析到的数据对象中创建实例。
-            let isParsedData = $Object.isPlain(selector);
+        constructor(list) {
+            let id = `definejs-Tasker-${idCounter++}`;
     
-            let meta = Meta.create({
+            let meta = {
+                'id': id,
                 'emitter': new Emitter(this),
-                'this': this,
-            });
+                'list': list || [],
+            };
     
             mapper.set(this, meta);
     
-    
-            //传入的是一个普通的 DOM 节点或其选择器。
-            if (!isParsedData) {
-                let node = $(selector).get(0); //包装、拆装，可以让入参多样化。
-    
-                if (!node) {
-                    selector = (selector instanceof $) ? selector.selector : selector;
-                    throw new Error('不存在模板节点: ' + selector);
-                }
-    
-                let isTPL = node.nodeName.toLowerCase() == 'template'; //判断是否为 <template> 模板节点。
-                let html = Sample.removeScript(node.innerHTML);         //要先移除可能给 `script` 标签包含的内容
-                let info = Parser.parse(html);
-    
-                meta.sample = Sample.betweenComment(html);
-                meta.name = isTPL ? node.getAttribute('name') : '';
-                meta.placeholder = isTPL ? node.getAttribute('placeholder') : '';
-                meta.innerHTML = html;
-                meta.outerHTML = node.outerHTML;
-                meta.node = node;
-    
-                meta.tpls = info.tpls.map(function (item) {
-                    let tpl = Child.create(Template, meta, item);
-                    let sample = meta.sample;
-    
-                    meta.sample = Sample.replace(sample, item); //替换掉当前模板在父模板中的内容。
-    
-                    return tpl;
-                });
-            }
-            else {//传入的是一个已解析到的数据对象。
-                let item = selector;
-    
-                Meta.assign(meta, item);
-    
-                meta.tpls = item.items.map(function (item) {
-                    let tpl = Child.create(Template, meta, item);
-    
-                    return tpl;
-                });
-            }
-    
-    
-            /**
-            * 这里增加个限制：
-            * 某一层里只允许出现一个纯 `<template>` 标签，且不允许再嵌套子级 `<template>` 标签。
-            * 纯 `<template>` 标签是指无 `name` 和 `placeholder` 属性的 `<template>` 标签。
-            * 这段逻辑会把该 template 实例中的 sample 上升为父级实例的 sample 值。
-            * 这样可以方便把一级模板用一对 `<template></template>` 标签括起来，等价于直接注释掉当模板的方式，
-            * 但比后者多了个语法高亮的优点。 例如：
-            *   <ul>
-            *       <template>
-            *           <li></li>
-            *       </temlate>
-            *   </ul>
-            * 与传统的用注释方式是等价的：
-            *   <ul>
-            *       <!--
-            *       <li></li>
-            *       -->
-            *   </ul>
-            */
-            (function () {
-                //获取空白名称的直接子级 tpl。
-                let tpl = meta.name$tpl[''];
-    
-                if (!tpl) {
-                    return;
-                }
-    
-                //空白名称的直接子级 tpl 对应 meta。
-                let tplMeta = mapper.get(tpl);
-                let keys = Object.keys(tplMeta.name$tpl);
-    
-                if (keys.length > 0) {
-                    throw new Error('无名称的 template 标签下不能再嵌套子级 template。');
-                }
-    
-                if (tplMeta.placeholder) {
-                    throw new Error('无名称的 template 标签不能设置 placeholder 属性。');
-                }
-    
-                //把空白名称的直接子级 tpl 的 sample 当成本级的 sample。
-                meta.sample = tplMeta.sample;
-    
-            })();
-    
-    
-            //对外暴露的属性。
             Object.assign(this, {
                 'id': meta.id,
-                '_meta': meta, //用于测试。
             });
-    
         }
     
         // /**
         // * 当前实例的 id。
         // */
-        // id = '';
-    
-        // /**
-        // * 父实例。
-        // */
-        // parent = null;
-    
+        // id = ''
     
         /**
-        * 获取指定名称(或由多个名称组成的路径)节点所对应的下级 Template 实例。
-        * 已重载 template(names);                      //传入子模板的名称列表。
-        * 已重载 template(name0, name1, ..., nameN);   //依次传入多个子模板的名称。
+        * 并行处理。
+        * @param {Array} [list] 要处理的任务列表。 
+        *   如果不指定，则使用构造器中的。
         */
-        template(names) {
-            //重载 template(name0, name1, ..., nameN); 
-            if (!Array.isArray(names)) {
-                names = [...arguments];
-            }
-    
-            //从当前实例开始。
-            let tpl = this;
-            let meta = mapper.get(tpl);
-    
-            names.map(function (name) {
-                tpl = meta.name$tpl[name];  //取子级的实例。
-                meta = mapper.get(tpl);     //子级实例对应的元数据。
-            });
-    
-            return tpl;
-        }
-    
-        /**
-        * 获取指定名称(或由多个名称组成的路径)节点所对应的下级 sample 模板。
-        */
-        sample(...names) {
-            let tpl = this.template(...names);
-            let meta = mapper.get(tpl);
-    
-            if (!meta) {
-                throw new Error(`当前实例下不存在名称路径为 ${names.join(' ')} 的 Template 子实例。`);
-            }
-    
-            return meta.sample;
-        }
-    
-    
-        /**
-        * 对当前模板进行填充，并用填充后的 html 字符串渲染容器节点。
-        * @param {Object|Array} data 要填充的数据，可以是一个对象或数组。
-        * @param {function} process 填充规则的处理器，即处理函数。
-        * @return 填充后的 html 内容。
-        */
-        render(data, process) {
-            if (process) {
-                this.process(process);
-            }
-    
+        parallel(list) {
             let meta = mapper.get(this);
-            let node = meta.node;
-            let html = this.fill(data);
+            list = list || meta.list;
     
-            if (node) {
-                node.innerHTML = html;
-            }
-    
-            return html;
-        }
-    
-        /**
-        * 对当前模板及子模板(如果有)进行填充。
-        * 已重载 fill(data);
-        * 已重载 fill(data, param0, ..., paramN);
-        * 已重载 fill(name0, name1, ..., nameN, data);
-        * 已重载 fill(name0, name1, ..., nameN, data, param0, ..., paramN);
-        * @return {string} 返回填充后的 html 字符串。
-        */
-        fill(data, ...params) {
-            //重载 fill(name0, name1, ..., nameN, data, param0, ..., paramN);
-            //即一步到位填充指定路径的子模板。
-    
-            //全部参数列表。
-            let args = [...arguments];
-    
-    
-            //找出 data 在参数列表中所在的位置。
-            let index = args.findIndex(function (item) {
-                return Array.isArray(item) || $Object.isPlain(item);
-            });
-    
-            //参数列表中没找到任何可用于填充的数据。
-            if (index < 0) {
-                throw new Error('填充模板时必须指定数据为一个数组或纯对象。');
-            }
-    
-            //找到该数据，但它前面有子模板的名称。
-            //使用子模板进行填充。
-            if (index > 0) {
-                let names = args.slice(0, index);   //子模板名称列表，[name0, name1, ..., nameN];
-                let tpl = this.template(...names);
-    
-                if (!tpl) {
-                    throw new Error(`不存在路径为 ${names.join('.')} 的模板节点，请检查 html 模板树。`);
-                }
-    
-                let rest = args.slice(index);   //[data, param0, ..., paramN];
-                let html = tpl.fill(...rest);
-                return html;
-            }
-    
-    
-            //以下情况是直接传入数据进行填充的，不存在传入子模板的情况。
-    
-            let meta = mapper.get(this);
-    
-    
-            //这里不要缓存 sample，应该实时去获取 meta.sample，
-            //因为它可能在 process 函数中给使用者调用了 this.fix() 更改了。
-            //var sample = meta.sample; !!!
-    
-            //单个纯对象形式。
-            if (!Array.isArray(data)) {
-                meta.emitter.fire('process', args);
-    
-                //调用处理器获得填充数据。
-                //此处特意让处理器函数获得 `this` 执行环境。
-                data = meta.process.apply(meta.this, args);
-    
-                //处理器已直接返回 html 内容，则不需要用模板去填充。
-                if (typeof data == 'string') {
-                    return data;
-                }
-    
-                let html = $String.format(meta.sample, data);
-                return html;
-            }
-    
-            //传进来的是一个数组，则迭代每一项去填充。
-            //每一项都会调用处理器函数，并传递一些参数。
-            let htmls = data.map(function (item, index) {
-                //传给处理器的参数列表。
-                //除了传当前迭代的 item 和 index 外，还把 params 也一同传过去。
-                //params 就是用户在 fill(data, ...params) 传进来的、data 后面的其它参数。
-                //params 用于透传给处理器函数。
-                let args = [item, index, ...params];
-    
-                meta.emitter.fire('process', args);
-    
-                //调用处理器获得填充数据。
-                //此处特意让处理器函数获得 `this` 执行环境。
-                let data = meta.process.apply(meta.this, args);
-    
-                //处理器已直接返回 html 内容，则不需要用模板去填充。
-                if (typeof data == 'string') {
-                    return data;
-                }
-    
-                if (!data) {
-                    return ''; //这里要返回空串。
-                }
-    
-                let html = $String.format(meta.sample, data);
-                return html;
-            });
-    
-            return htmls.join('');
-        }
-    
-        /**
-        * 设置模板填充的处理规则。
-        * 已重载 process(fn);      //设置当前实例的处理器。
-        * 已重载 process({...});   //批量设置当前实例以及子实例的处理器。                 
-        * 已重载 process(name0, ..., nameN, fn);       //设置路径为 `name0->name1->...->nameN` 的子实例的处理器。
-        * 已重载 process(name0, ..., nameN, {...});    //批量设置前缀路径为`name0->name1->...->nameN` 的子实例的处理器。
-        */
-        process(process) {
-            let meta = mapper.get(this);
-    
-            //重载 process(fn); 
-            //设置当前实例的 process 处理函数。
-            if (typeof process == 'function') {
-                meta.process = process;
+            //空的任务列表。
+            if (!list.length) {
+                meta.emitter.fire('all', [[]]); //里面要套个空数组。
                 return;
             }
     
+            //非空的任务列表。
+            let total = list.length;        //总项数。
+            let count = total;              //待处理的项数。
+            let values = new Array(total);  //收集每项异步操作的返回值。
+            let dones = new Array(total);   //[true, undefined, true, ..., ] 记录对应的项是否已完成。
     
-            let args = [...arguments];
+            list.forEach(function (item, index) {
+                //done(index) 是异步调用，要多一层闭包。
+                (function (index) {
+                    //第三个参数是一个回调函数，即 done(value); 
+                    //由业务层调用，以通知异步操作完成。
+                    //done(value); 接受一个参数作为此项异步操作的返回值进行收集，
+                    //最后会在全部完成后一起传过去给业务层。
+                    meta.emitter.fire('each', [item, index, function (value) {
+                        values[index] = value; //需要收集的值，由调用者传入。
+                        dones[index] = true;
+                        count--;
     
-            //查找处理器所在的位置。
-            let index = args.findIndex(function (item) {
-                return typeof item == 'function' || $Object.isPlain(item);
-            });
+                        //计数为 0 时，不一定就全部完成了，
+                        //因为调用者可能会恶意多次调用 done() 以使计数减少到 0。
+                        //但有一点可以肯定的：只要计数不为 0，说明至少有一项未完成。
+                        if (count > 0) { //性能优化
+                            return;
+                        }
     
-            if (index < 0) {
-                throw new Error(`模板节点 ${meta.name} 缺少处理器。`);
-            }
+                        //安全起见，检查每项的完成状态。
+                        for (let i = 0; i < total; i++) {
+                            if (!dones[i]) {
+                                return;
+                            }
+                        }
     
+                        //至此，全部项都已完成。
+                        meta.emitter.fire('all', [values]);
+                    }]);
     
-            //前面存在前缀名称，则跟后面的处理器合并为一个完整对象，方便后续统一处理。
-            //如 process('A', 'B', 'C', process); 则合并为 { A: { B: { C: process } } };
-            if (index > 0) {
-                let keys = args.slice(0, index);    //如 ['A', 'B', ]
-                let item = args[index];             //
-    
-                process = $Object.make({}, keys, item); //此时 process 是一个 {...}。
-            }
-    
-    
-            //展开成扁平结构。
-            //如：list = [ { keys: ['A', 'B', 'C'], value: fn, } ];
-            let list = $Object.flat(process);
-    
-            list.forEach(function (item) {
-                //去掉空字符串。 因为空串是代表自身。
-                let keys = item.keys.filter(function (key) {
-                    return !!key;
-                });
-    
-                let value = item.value;
-    
-                if (typeof value != 'function') {
-                    throw new Error(`模板节点 ${keys.join('.')} 的处理器必须为一个函数。`);
-                }
-    
-    
-                let tpl = meta.this.template(keys);
-    
-                if (!tpl) {
-                    console.warn(`不存在模板节点: ${keys.join('.')}`);
-                    return;
-                }
-    
-                //此时 value 为一个函数。
-                tpl.process(value);
+                })(index);
     
             });
-    
         }
     
         /**
-        * 修正模板中指定的占位符。
-        * 因为模板中的 html 给 DOM 解析和处理后，没有等号的占位符属性会给替换成有空值的属性值。
-        * 如 `<img {test} />` 经过 DOM 解析后会变成 `<img {test}="" />`，这并不是我们想要的结果。
-        * 因此我们需要手动修正以替换回我们写模板时的结果。
+        * 串行处理。
+        * @param {Array} [list] 要处理的任务列表。 
+        *   如果不指定，则使用构造器中的。
         */
-        fix(keys) {
+        serial(list) {
             let meta = mapper.get(this);
-            let sample = meta.sample;
+            list = list || meta.list;
     
-            keys = Array.isArray(keys) ? keys : [keys];
     
-            keys.map(function (key) {
-                let target = '{' + key + '}';
-                let old = target + '=""';
+            //空的任务列表。
+            if (!list.length) {
+                meta.emitter.fire('all', []);
+                return;
+            }
     
-                sample = sample.split(old).join(target); //replaceAll
-            });
+            //非空的任务列表。
+            let total = list.length;        //总项数。
+            let values = new Array(total);  //收集每项异步操作的返回值。
     
-            meta.sample = sample;
+    
+            function process(index) {
+                let item = list[index];
+    
+                //第三个参数是一个回调函数，即 done(value); 
+                //由业务层调用，以通知异步操作完成。
+                //done(value); 接受一个参数作为此项异步操作的返回值进行收集，
+                //最后会在全部完成后一起传过去给业务层。
+                meta.emitter.fire('each', [item, index, function (value) {
+                    values[index] = value; //需要收集的值，由调用者传入。
+                    index++;
+    
+                    if (index < total) {
+                        process(index);
+                    }
+                    else {
+                        meta.emitter.fire('all', [values]);
+                    }
+                }]);
+            }
+    
+            process(0);
+    
         }
     
         /**
@@ -9318,1641 +10134,309 @@ define('Template', function (require, module, exports) {
             meta.emitter.on(...args);
         }
     
-        /**
-        * 销毁本组件。
-        */
-        destroy() {
-            let meta = mapper.get(this);
-            if (!meta) {
-                return;
-            }
     
-            meta.tpls.map(function (tpl) {
-                tpl.destroy();
-            });
-    
-            meta.emitter.destroy();
-            meta.node = null;
-            meta.parent = null;
-            meta.emitter = null;
-    
-            mapper.delete(this);
-    
-        }
-    
-        //静态成员。
-        /**
-        * 从一段 html 中解析出信息，并创建一个 Template 实例。
-        */
-        static create(html) {
-            html = `<template>${html}</template>`;
-    
-            let dom = HTMLParser.parse(html);
-    
-            //if (dom.childNodes.length != 1) {
-            //    throw new Error('要解析的 html 最外层只允许(必须)有一个节点。');
-            //}
-    
-            let tpl = new Template(dom.childNodes[0]);
-    
-            return tpl;
-        }
-    }
-    
-    module.exports = Template;
-});
-/**
-* src: @definejs/alert/modules/Alert/Dialog/Height.js
-* pkg: @definejs/alert@1.0.2
-*/
-define('Alert/Dialog/Height', function (require, module, exports) { 
-    const $String = require('String');
-    
-    //根据文本来计算高度，大概值，并不要求很准确。
-    function getHeightByLength(text) {
-        text = String(text);
-    
-        let len = $String.getByteLength(text);
-        let h = Math.max(len, 125);
-        let max = document.documentElement.clientHeight;
-    
-        if (h >= max * 0.8) {
-            h = '80%';
-        }
-    
-    
-        return h;
-    }
-    
-    //根据文本来计算高度，大概值，并不要求很准确。
-    function getHeightByLines(text) {
-        text = String(text);
-    
-        let lines = text.split('\n');
-        let h = lines.length * 25 + 60;
-        let max = document.documentElement.clientHeight;
-    
-        if (h >= max * 0.8) {
-            h = '80%';
-        }
-    
-    
-        return h;
-    }
-    
-    
-    module.exports = {
-        /**
-        * 根据文本获取对话框的高度。
-        */
-        get(text) {
-            let h0 = getHeightByLength(text);
-            let h1 = getHeightByLines(text);
-    
-            let h = Math.max(h0, h1);
-    
-    
-            //保证取偶数。
-            //因为奇数的高度，如 `height: 125px;`，
-            //会导致 footer 的 `border-top` 变粗，暂未找到原因。
-            if (typeof h == 'number') {
-                h = h % 2 == 1 ? h + 1 : h;
-            }
-    
-            return h;
-    
-        },
-    };
-});
-/**
-* src: @definejs/alert/modules/Alert/Dialog.js
-* pkg: @definejs/alert@1.0.2
-*/
-define('Alert/Dialog', function (require, module, exports) { 
-    const Height = module.require('Height');
-    
-    let dialog = null;
-    let visible = false;
-    let list = [];
-    let activeElement = null;   //上次获得焦点的元素。
-    let showFrom = 13;          //记录一下是否由于按下回车键导致的显示。
-    let defaults = null;        //使用的是父模拟的配置，由父模块传进来。
-    
-    //创建对话框。
-    function create() {
-        let config = Object.assign({}, defaults);
-        let Dialog = config.Dialog;
-    
-        let dialog = new Dialog({
-            'cssClass': 'definejs-Alert',
-            'volatile': config.volatile,
-            'mask': config.mask,
-            'autoClose': config.autoClose,
-            'width': config.width,
-            'z-index': config['z-index'],
-            'buttons': config.buttons,
-        });
-    
-    
-    
-        dialog.on('button', {
-            ok() {
-                let fn = dialog.data('fn');
-    
-                fn && fn();
-            },
-        });
-    
-    
-        dialog.on({
-            show() {
-                visible = true;
-    
-                showFrom = showFrom == 13 ? 'enter' : '';
-                activeElement = document.activeElement;
-                activeElement.blur();
-            },
-    
-            hide() {
-                visible = false;
-    
-                let item = list.shift();
-    
-                if (item) {
-                    render(item.text, item.fn);
-                }
-    
-                activeElement = null;
-                showFrom = '';
-            },
-        });
-    
-        //响应回车键。
-    
-        document.addEventListener('keydown', (event) => { 
-            showFrom = event.keyCode;
-        });
-    
-        document.addEventListener('keyup', (event) => { 
-            let invalid =
-                event.keyCode != 13 ||  //不是回车键。
-                !visible ||             //已是隐藏，避免再次触发。
-                showFrom == 'enter';    //由于之前按下回车键导致的显示。
-    
-            if (invalid) {
-                return;
-            }
-    
-            dialog.hide();
-    
-            let fn = dialog.data('fn');
-            fn && fn();
-        });
-    
-        return dialog;
-    }
-    
-    
-    function render(text, fn) {
-        let height = Height.get(text);
-    
-        dialog = dialog || create();
-    
-        dialog.data('fn', fn);
-    
-        dialog.set({
-            'content': text,
-            'height': height,
-        });
-    
-        dialog.show();
-    
-    }
-    
-    
-    module.exports = {
-        /**
-        * 由父模块把默认配置传进来以供本模块使用。
-        * @param {Object} defaultsData 父模块的默认配置。
-        */
-        init(defaultsData) {
-            defaults = defaultsData;
-        },
-    
-        /**
-        * 把要显示的文本和要执行的回调函数加到队列里，并在特定时机显示出来。
-        */
-        add(text, fn) {
-            //首次显示，或之前显示的已经给隐藏了，立即显示出来。
-            if (!visible) {
-                render(text, fn);
-                return;
-            }
-    
-            //已经是显示的，加到队列里进行排队。
-            list.push({ text, fn, });
-        },
-    };
-});
-/**
-* src: @definejs/alert/modules/Alert/Sample.js
-* pkg: @definejs/alert@1.0.2
-*/
-define('Alert/Sample', function (require, module, exports) { 
-    //这里不要在 <pre> 中换行，它是一个保持原格式的标签。
-    module.exports = `<pre class="JSON">{text}</pre>`;
-});
-/**
-* src: @definejs/alert/modules/Alert.defaults.js
-* pkg: @definejs/alert@1.0.2
-*/
-define('Alert.defaults', function (require, module, exports) { 
-    
-    const Dialog = require('Dialog');
-    
-    
-    /**
-    * Alert 模块的默认配置
-    * @name Alert.defaults
-    */
-    module.exports = {
-        Dialog, //这里提供一个默认的，移动端的会传入一个移动版的 Dialog。
-    
-        volatile: false,
-        mask: true,
-        autoClose: true,
-        width: 450,
-    
-        'z-index': 99999,
-    
-        buttons: [
-            { text: '确定', cmd: 'ok', cssClass: 'OK', },
-        ],
-    };
-});
-/**
-* src: @definejs/alert/modules/Alert.js
-* pkg: @definejs/alert@1.0.2
-*/
-define('Alert', function (require, module, exports) { 
-    /**
-    * alert 对话框。
-    */
-    const $String = require('String');
-    const Dialog = module.require('Dialog');
-    const Sample = module.require('Sample');
-    
-    
-    module.exports = exports = {
-        /**
-        * 默认配置。
-        */
-        defaults: require('Alert.defaults'),
         
+     
+    
+    }
+    
+    //静态成员。
+    Object.assign(Tasker, {
         /**
-        * 显示一个 alert 对话框。 
-        * 支持多次调用，会将多次调用加进队列，在显示完上一次后进行下一次的显示。
+        * 支持多个并发异步加载操作，实际只会加载一次。
+        * 如果在加载过程中，再发起加载请求，则会放入待办列表中，加载完成后再依次执行。
+        * @param {String} sid 异步加载的名称，以此作为区分。 同一个名称的拥有同一个待办队列。
+        * @param {*} todo 要添加的待办项，可以是任意值。
+        * @param {function} load 实际要发起的异步加载操作函数。 异步加载函数体内必须显式调用传过去的函数，以调用异步加载完成。
         */
-        show(text, text1, textN, fn) {
-            //重载 show(obj); 
-            //以方便程序员调试查看 json 对象。
-            if (typeof text == 'object') {
-                text = JSON.stringify(text, null, 4);
-                text = $String.format(Sample, { 'text': text, });
+        todo(sid, todo, load) {
+            let todos = sid$todos[sid];
+    
+            if (todos) {
+                todos.push(todo);
+                return;
             }
     
-            let args = [...arguments];
     
-            //在参数列表中找到的第一个函数当作是回调函数，并忽略后面的参数。
-            let index = args.findIndex(function (item, index) {
-                return typeof item == 'function';
+            todos = sid$todos[sid] = [todo];
+    
+            load(function (each) {
+                sid$todos[sid] = null;
+    
+                if (typeof each == 'function') {
+                    todos.forEach(function (todo, index) {
+                        each(todo, index);
+                    });
+                }
+    
+                return todos;
             });
-    
-            if (index > 0) { //找到回调函数
-                fn = args[index];
-                args = args.slice(0, index); //回调函数前面的都当作是要显示的文本
-            }
-            else {
-                fn = null;
-            }
-    
-            text = $String.format(...args);
-            
-            Dialog.init(exports.defaults);
-            Dialog.add(text, fn);
-        },
-    };
-    
-    
-});
-/**
-* src: @definejs/dialog/modules/Dialog/Template/Sample.js
-* pkg: @definejs/dialog@1.0.4
-*/
-define('Dialog/Template/Sample', function (require, module, exports) { 
-    
-    module.exports = `
-    <div id="{id}" class="definejs-Dialog {cssClass}" style="{style} display: none;">
-        <template name="header" placeholder="header">
-            <header id="{headerId}">
-                {title}
-            </header>
-        </template>
-    
-        <template name="content" placeholder="content">
-            <article id="{articleId}" class="{noHeader} {noFooter}">
-                <div id="{contentId}">{content}</div>
-            </article>
-        </template>
-    
-        <template name="footer" placeholder="footer">
-            <footer id="{footerId}" class="Buttons-{count}">
-                <template name="button" placeholder="buttons">
-                    <button data-index="{index}" class="{cssClass}" style="{style}">{text}</button>
-                </template>
-            </footer>
-        </template>
-    </div>
-    `;
-    
-});
-/**
-* src: @definejs/dialog/modules/Dialog/Events.js
-* pkg: @definejs/dialog@1.0.4
-*/
-define('Dialog/Events', function (require, module, exports) { 
-    const $ = require('jquery');
-    
-    
-    module.exports = {
-    
-        bind(meta) {
-            //监控 masker 层的隐藏。
-            if (meta.masker && meta.volatile) {
-                meta.masker.on({
-                    'show'() {
-    
-                    },
-                    'hide'() {
-                        meta.this.hide();
-                    },
-                });
-            }
-    
-    
-            //底部按钮。
-            (function () {
-                if (!meta.buttons.length) {
-                    return;
-                }
-    
-                let $footer = meta.$footer;
-                let eventName = meta.eventName;
-                let selector = 'button[data-index]';
-                let pressed = meta.pressedClass;
-    
-                //移动端。
-                if (eventName == 'touch') {
-                    $footer.touch(selector, handler, pressed);
-                    return;
-                }
-    
-                //PC 端。
-                $footer.on(eventName, selector, handler); //如 on('click', selector);
-    
-                $footer.on('mousedown', selector, function (event) {
-                    $(this).addClass(pressed);
-                });
-    
-                $footer.on('mouseup mouseout', selector, function (event) {
-                    $(this).removeClass(pressed);
-                });
-    
-    
-                //内部共用的处理器。
-                function handler(event) {
-                    let button = this;
-                    let index = +button.getAttribute('data-index');
-                    let item = meta.buttons[index];
-                    let cmd = item.cmd || String(index);
-                    let fn = item.fn;
-    
-                    fn && fn(item, index);
-    
-                    meta.emitter.fire('button', cmd, [item, index]);
-                    meta.emitter.fire('button', [item, index]);
-    
-    
-                    // item.autoClose 优先级高于 meta.autoClose。
-                    let autoClose = item.autoClose;
-    
-                    if (autoClose === undefined) {
-                        autoClose = meta.autoClose;
-                    }
-    
-                    if (autoClose) {
-                        meta.this.hide();
-                    }
-                }
-    
-            })();
-    
-    
-    
-        },
-    };
-});
-/**
-* src: @definejs/dialog/modules/Dialog/Masker.js
-* pkg: @definejs/dialog@1.0.4
-*/
-define('Dialog/Masker', function (require, module, exports) { 
-    
-    
-    
-    module.exports = {
-    
-        create(config) {
-            let Masker = config.Masker;
-    
-            let defaults = {
-                'container': config.container,
-            };
-    
-            let options = Masker.normalize(defaults, config.mask); //返回一个 {} 或 null。
-    
-            if (!options) {
-                return null;
-            }
-    
-    
-            Object.assign(options, {
-                'volatile': config.volatile,
-                'z-index': config['z-index'] - 1,
-            });
-    
-    
-            let masker = new Masker(options);
-    
-            return masker;
-    
-        },
-    };
-});
-/**
-* src: @definejs/dialog/modules/Dialog/Meta.js
-* pkg: @definejs/dialog@1.0.4
-*/
-define('Dialog/Meta', function (require, module, exports) { 
-    
-    const IDMaker = require('IDMaker');
-    
-    
-    
-    module.exports = {
-        create(config, others) {
-            let maker = new IDMaker(config.idPrefix);
-            let buttons = config.buttons || [];
-    
-    
-            buttons = buttons.map(function (item) {
-                return item == 'string' ? { 'text': item, } : item;
-            });
-    
-    
-            let meta = {
-                'id': maker.next(),
-                'headerId': maker.next('header'),
-                'articleId': maker.next('article'),
-                'contentId': maker.next('content'),
-                'footerId': maker.next('footer'),
-    
-                'Masker': config.Masker,            //遮罩层的构造函数。 由外面按需要传入，从而避免内部关联加载。 针对移动端，如果传入了则使用。
-                'Scroller': config.Scroller,        //滚动器的构造函数，由外面按需要传入，从而避免内部关联加载。 针对移动端，如果传入了则使用。
-                'scrollable': config.scrollable,    //是否需要滚动内容，如果指定为 true，则必须传入 Scroller 构造器。
-                'scrollerConfig': config.scroller,
-                'eventName': config.eventName,
-                'title': config.title,
-                'content': config.content,
-                'buttons': buttons,
-                'z-index': config['z-index'],       //生成透明层时要用到。
-                'width': config.width,              //宽度。
-                'height': config.height,            //高度。
-                'autoClose': config.autoClose,      //点击任何一个按钮后是否自动关闭组件
-                'volatile': config.volatile,        //是否易消失。 即点击对话框外的 masker 时自动关闭对话框。
-                'cssClass': config.cssClass || '',  //
-                'container': config.container,      //
-    
-                'pressedClass': 'Pressed',  //底部按钮按下去时的样式类名。
-                'visible': false,           //记录当前组件是否已显示
-                'style': {},                //样式对象。
-                'data': {},                 //供 this.data() 方法使用
-    
-                'scroller': null,           //针对移动端的滚动器。
-                'masker': null,             //Masker 的实例，重复使用。
-                'emitter': null,            //事件驱动器。
-                'this': null,               //当前实例，方便内部使用。
-                '$': null,                  //组件最外层的 DOM 节点的 jQuery 实例。
-                '$header': null,            //$(headerId)。
-                '$content': null,           //$(contentId)。
-                '$footer': null,            //$(footerId)。
-            };
-    
-    
-    
-            Object.assign(meta, others);
-    
-    
-            return meta;
-    
-    
-        },
-    };
-});
-/**
-* src: @definejs/dialog/modules/Dialog/Style.js
-* pkg: @definejs/dialog@1.0.4
-*/
-define('Dialog/Style', function (require, module, exports) { 
-    const $Object = require('Object');
-    const Style = require('Style');
-    
-    module.exports = {
-        /**
-        *
-        */
-        get(config) {
-            let obj = $Object.filter(config, ['height', 'width', 'z-index']);
-            let style = Style.objectify(config.style);
-    
-            style = Style.merge(style, obj);
-            style = Style.pixelize(style, ['height', 'width',]);
-    
-            return style;
-    
-        },
-    
-    
-    };
-    
-    
-});
-/**
-* src: @definejs/dialog/modules/Dialog/Template.js
-* pkg: @definejs/dialog@1.0.4
-*/
-define('Dialog/Template', function (require, module, exports) { 
-    const Template = require('Template');
-    const Style = require('Style');
-    
-    const Sample = module.require('Sample');
-    
-    const tpl = Template.create(Sample);
-    
-    
-    
-    tpl.process({
-        '': function (data) {
-            let header = this.fill('header', data);
-            let content = this.fill('content', data);
-            let footer = this.fill('footer', data);
-    
-            let style = Style.stringify(data.style);
-    
-            return {
-                'id': data.id,
-                'cssClass': data.cssClass || '',
-                'style': style,
-                'header': header,
-                'content': content,
-                'footer': footer,
-            };
-        },
-    
-        'header': function (data) {
-            let title = data.title;
-    
-            if (!title) {
-                return '';
-            }
-    
-    
-            return {
-                'headerId': data.headerId,
-                'title': title,
-            };
-        },
-    
-        'content': function (data) {
-    
-            return {
-                'articleId': data.articleId,
-                'contentId': data.contentId,
-                'content': data.content,
-                'noHeader': data.title ? '' : 'NoHeader',              //针对无标题时。
-                'noFooter': data.buttons.length > 0 ? '' : 'NoFooter', //针对无按钮时。
-            };
-        },
-    
-        'footer': {
-            '': function (data) {
-                let buttons = data.buttons;
-                let count = buttons.length;
-    
-                if (!count) {
-                    return '';
-                }
-    
-                buttons = this.fill('button', buttons);
-    
-                return {
-                    'footerId': data.footerId,
-                    'count': count,
-                    'buttons': buttons,
-                };
-    
-            },
-    
-            'button': function (item, index) {
-                let style = Style.stringify(item.style);
-    
-                return {
-                    'index': index,
-                    'text': item.text,
-                    'cssClass': item.cssClass || '',
-                    'style': style,
-    
-                };
-            },
-        },
-    
+        }
     });
     
     
-    module.exports = tpl;
-    
+    module.exports = Tasker;
 });
 /**
-* src: @definejs/dialog/modules/Dialog.defaults.js
-* pkg: @definejs/dialog@1.0.4
+* src: @definejs/array/modules/Array.js
+* pkg: @definejs/array@1.1.0
 */
-define('Dialog.defaults', function (require, module, exports) { 
-    const Masker = require('Masker');
+define('Array', function (require, module, exports) { 
     
     /**
-    * Dialog 模块的默认配置
-    * @name Dialog.defaults
+    * 数组工具。
     */
-    module.exports = {
+    module.exports = exports = {
         /**
-        * 生成组件时的 id 前缀。
-        * 建议保留现状。
+        * 把一个数组中的元素转换到另一个数组中，返回一个新的数组。
+        * 已重载 map(array, fn);
+        * 已重载 map(deep, array, fn);
+        * @param {boolean} [deep=false] 指定是否进行深层次迭代。
+        *   如果要进行深层次迭代，即对数组元素为数组继续迭代的，请指定 true；否则为浅迭代。
+        * @param {Array} array 要进行转换的数组。
+        * @param {function} fn 转换函数。
+        *   该转换函数会为每个数组元素调用，它会接收到两个参数：当前迭代的数组元素和该元素的索引。
+        *   转换函数可以返回转换后的值，有两个特殊值影响到迭代行为：
+        *   null：忽略当前数组元素，即该元素在新的数组中不存在对应的项（相当于 continue）；
+        *   undefined：忽略当前数组元素到最后一个元素（相当于break）；
+        * @return {Array} 返回一个转换后的新数组。
         */
-        idPrefix: 'definejs-Dialog',
+        map(deep, array, fn) {
+            //重载 map(array, fn); 此时 deep 为 false。
+            if (typeof deep != 'boolean') {
+                fn = array;
+                array = deep;
+                deep = false;
+            }
+    
+            let map = exports.map; //引用自身，用于递归
+            let list = [];
+    
+            for (let i = 0, len = array.length; i < len; i++) {
+                let item = array[i];
+                let value;
+    
+                if (deep === true && Array.isArray(item)) {
+                    value = map(true, item, fn); // 此时的 value 是一个 []。
+                }
+                else {
+                    value = fn(item, i);
+    
+                    //忽略掉 null 值的项。
+                    if (value === null) {
+                        continue;
+                    }
+    
+                    //注意，当回调函数 fn 不返回值时，迭代会给停止掉。
+                    if (value === undefined) { 
+                        break;
+                    }
+                }
+    
+                list.push(value);
+            }
+    
+            return list;
+        },
+    
         /**
-        * 遮罩层的构造函数。
-        * 移动端需要在外部加载 Masker 模块后传入。
+        * 用滑动窗口的方式创建分组，即转成二维数组。
+        * @param {Array} array 要进行切割的原数组。
+        * @param {Number} windowSize 窗口大小。
+        * @param {Number} [stepSize=1] 步长。 默认为 1。
+        * @returns {Array} 返回一个二维数组。
+        * @example
+        *   $Array.slide(['a', 'b', 'c', 'd', 'e'], 3, 1); 
+        *   返回结果（窗口大小为 3，移动步长为 1）：
+        *   [
+        *       ['a', 'b', 'c'],
+        *       ['b', 'c', 'd'],
+        *       ['c', 'd', 'e'],
+        *   ]
         */
-        Masker, //这里提供一个默认的，以用于 PC 端。 至于移动端的，则需要提供 `@definejs/masker-mobile` 的。
+        slide(array, windowSize, stepSize = 1) {
+            let len = array.length;
+    
+            //只够创建一组
+            if (len <= windowSize) {
+                return [array];
+            }
+    
+    
+            let groups = [];
+    
+            for (let i = 0; i < len; i = i + stepSize) {
+                let end = i + windowSize;
+                let a = array.slice(i, end);
+    
+                groups.push(a);
+    
+                if (end >= len) {
+                    break; //已达到最后一组
+                }
+            }
+    
+            return groups;
+        },
+    
         /**
-        * 滚动器的构造函数。
-        * 移动端需要在外部加载 Scroller 模块后传入。
-        */
-        Scroller: null, //这里由移动端提供。
-        /**
-        * 组件添加到的容器。
-        * 默认为 document.body。
-        */
-        container: 'body',
-        /**
-        * 是否启用 mask 层。
-        */
-        mask: true,
-        /**
-        * 点击按钮后是否自动关闭组件。
-        * 可取值为: true|false，默认为 true，即自动关闭。
-        */
-        autoClose: true,
-        /**
-        * 指定是否易消失，即点击 mask 层就是否隐藏/移除。
-        * 可取值为: true|false，默认为不易消失。
-        */
-        volatile: false,
-        /**
-        * 组件的标题文本。
-        */
-        title: '',
-        /**
-        * 组件的内容文本。
-        */
-        content: '',
-        /**
-        * 点击按钮时需要用到的事件名。
-        */
-        eventName: 'click',
-        /**
-        * 组件用到的 css 类名。
-        */
-        cssClass: '',
-        /**
-        * 组件的 css 样式 z-index 值。
-        */
-        'z-index': 1024,
-        /**
+        * 创建分组，即转成二维数组。
+        * @param {Array} array 要进行切割的原数组。
+        * @param {Number} size 分组大小。
+        * @param {boolean} isPadRight 是否向右对齐数据。
+        * @returns {Array} 返回一个二维数组。
+        * @example
+        *   $Array.group(['a', 'b', 'c', 'd', 'e'], 3);
+        *   返回结果（窗口大小为 3，移动步长为 3）：
+        *   [
+        *       ['a', 'b', 'c'],
+        *       ['d', 'e'],
+        *   ]
         * 
+        *   $Array.group(['a', 'b', 'c', 'd', 'e'], 3, true); 
+        *   则返回：
+        *   [
+        *       ['a', 'b'],
+        *       ['c', 'd', 'e']
+        *   ]
+        *   
         */
-        width: 600,
-        /**
-        * 组件高度。
-        * 可以指定为百分比的字符串，或指定具体的数值（单位为像素），
-        */
-        height: '50%',
-        /**
-        * 样式集合。
-        * 外层里面的同名字段优先级高于里面的。
-        */
-        style: {},
-        /**
-        * 按钮数组。
-        */
-        buttons: [],
-        /**
-        * 内容区是否可滚动。
-        * PC 端用不可滚动。
-        */
-        scrollable: false,
-        /**
-        * 针对滚动器 Scroller 的配置。
-        */
-        scroller: null,
-    };
-});
-/**
-* src: @definejs/dialog/modules/Dialog.js
-* pkg: @definejs/dialog@1.0.4
-*/
-define('Dialog', function (require, module, exports) { 
-    const $ = require('jquery');
-    const $Object = require('Object');
-    const Emitter = require('Emitter');
-    const Style = module.require('Style');
-    const Meta = module.require('Meta');
-    const Masker = module.require('Masker');
-    const Events = module.require('Events');
-    const Template = module.require('Template');
+        group(array, size, isPadRight) {
+            let groups = exports.slide(array, size, size);
     
-    const mapper = new Map();
+            if (isPadRight === true) {
+                groups[groups.length - 1] = array.slice(-size); //右对齐最后一组
+            }
     
-    
-    class Dialog {
+            return groups;
+        },
     
         /**
-        * 构造器。
-        */
-        constructor(config) {
-            config = $Object.deepAssign({}, exports.defaults, config);
-    
-            let emitter = new Emitter(this);        //事件驱动器。
-            let style = Style.get(config);          //
-            let masker = Masker.create(config);     //
-    
-            let meta = Meta.create(config, {
-                'style': style,         //从配置中过滤出样式成员，并进行规范化处理，style 是一个 {}。
-                'emitter': emitter,     //事件驱动器。
-                'masker': masker,       //遮罩层实例。
-                'this': this,           //当前实例，方便内部使用。
+        * 产生一个区间为 [start, end) 的半开区间的数组。
+        * 已重载 pad(start, end, step, fn);
+        * 已重载 pad(start, end, fn);
+        * 已重载 pad(start, end);
+        * @param {number} start 半开区间的开始值。
+        * @param {number} end 半开区间的结束值。
+        * @param {number} [step=1] 填充的步长，默认值为 1。可以指定为负数。
+        * @param {function} [fn] 转换函数。 会收到当前项和索引值作为参数。
+        * @return {Array} 返回一个递增（减）的数组。
+        *   当 start 与 end 相等时，返回一个空数组。
+        * @example
+            $Array.pad(2, 5); //产生一个从 2 到 5 的数组，步长为1，结果为[2, 3, 4]
+            $Array.pad(1, 9, 2); //产生一个从1到9的数组，步长为2，结果为[1, 3, 5, 7]
+            $Array.pad(5, 2, -1); //产生一个从5到2的数组，步长为-1，结果为[5, 4, 3]
+            //下面的例子得到 [10, 20]
+            $Array.pad(1, 3, function (item, index) {
+                return item * 10;
             });
-    
-    
-            mapper.set(this, meta);
-    
-            //对外暴露的属性。
-            Object.assign(this, {
-                'id': meta.id,
-                '$': null,
-            });
-    
-        }
-    
-        // /**
-        // * 当前实例的 id。
-        // * 也是最外层的 DOM 节点的 id。
-        // */
-        // id = '';
-    
-        // /**
-        // * 当前组件最外层的 DOM 节点对应的 jQuery 实例。
-        // * 必须在 render 之后才存在。
-        // */
-        // $ = null;
-    
-    
-        /**
-        * 渲染本组件，生成 html 到容器 DOM 节点中。
-        * 该方法只需要调用一次。
-        * 触发事件: `render`。
         */
-        render() {
-            let meta = mapper.get(this);
+        pad(start, end, step, fn) {
+            if (start == end) {
+                return [];
+            }
     
-            //已经渲染过了。
-            if (meta.$) {
-                return;
+            // 重载 pad(start, end, fn)
+            if (typeof step == 'function') {
+                fn = step;
+                step = 1;
+            }
+            else {
+                step = Math.abs(step || 1);
             }
     
     
-            let html = Template.fill(meta);
+            let a = [];
+            let index = 0;
     
-            $(meta.container).append(html);
-    
-            meta.$ = this.$ = $(`#${meta.id}`);
-            meta.$header = $(`#${meta.headerId}`);
-            meta.$article = $(`#${meta.articleId}`);
-            meta.$content = $(`#${meta.contentId}`);
-            meta.$footer = $(`#${meta.footerId}`);
-    
-           
-            //指定了可滚动
-            if (meta.scrollable) {
-                let Scroller = meta.Scroller;
-                if (!Scroller) {
-                    throw new Error('你已指定了内容区域可滚动，请传入滚动器模块对应的构造函数 Scroller。');
+            if (start < end) { //升序
+                for (let i = start; i < end; i += step) {
+                    let item = fn ? fn(i, index) : i;
+                    a.push(item);
+                    index++;
                 }
-                meta.scroller = new Scroller(meta.$article, meta.scrollerConfig);
-                meta.scroller.render();
             }
-           
-            Events.bind(meta);
-    
-            meta.emitter.fire('render');
-    
-        }
-    
-        /**
-        * 显示本组件。
-        */
-        show() {
-            let meta = mapper.get(this);
-    
-            //已是显示状态。
-            if (meta.visible) {
-                meta.scroller && meta.scroller.refresh(200);
-                return;
-            }
-    
-            if (!meta.$) {
-                this.render();
-            }
-    
-    
-            meta.$.show();
-            meta.visible = true;
-            meta.masker && meta.masker.show();
-            meta.scroller && meta.scroller.refresh(200);
-            meta.emitter.fire('show');
-        }
-    
-        /**
-        * 隐藏本组件。
-        */
-        hide() {
-            let meta = mapper.get(this);
-    
-            //未渲染或已隐藏。
-            if (!meta.$ || !meta.visible) {
-                return;
-            }
-    
-            meta.$.hide();
-            meta.visible = false;
-            meta.masker && meta.masker.hide();
-            meta.emitter.fire('hide');
-    
-        }
-    
-        /**
-        * 移除本组件对应的 DOM 节点。
-        */
-        remove() {
-            let meta = mapper.get(this);
-    
-            if (!meta.$) {
-                return;
-            }
-    
-    
-            meta.masker && meta.masker.remove();
-            meta.layer && meta.layer.remove();
-    
-            //reset
-            let div = meta.$.get(0);
-            div.parentNode.removeChild(div);
-    
-            meta.$.off();
-            meta.visible = false;
-            meta.masker = null;
-            meta.layer = null;
-            meta.$ = null;
-            meta.$header = null;
-            meta.$content = null;
-            meta.$footer = null;
-    
-            meta.emitter.fire('remove');
-    
-        }
-    
-        /**
-        * 绑定事件。
-        */
-        on(...args) {
-            let meta = mapper.get(this);
-            meta.emitter.on(...args);
-        }
-    
-        /**
-        * 销毁本组件。
-        */
-        destroy() {
-            let meta = mapper.get(this);
-            if (!meta) {
-                throw new Error('该实例已给销毁，无法再次调用 destroy 方法。');
-            }
-    
-    
-            this.remove();
-    
-            meta.emitter.destroy();
-            meta.scroller && meta.scroller.destroy(); //在 PC 端为 null
-    
-            mapper.delete(this);
-        }
-    
-        /**
-        * 设置指定的属性。
-        * 已重载 set({}); //批量设置多个字段。
-        * 已重载 set(key, value); //设置单个指定的字段。
-        * @param {string} key 要设置的属性的名称。 
-        *  目前支持的字段有：'title', 'content', 'height', 'width。
-        * @param value 要设置的属性的值，可以是任何类型。
-        */
-        set(key, value) {
-            this.render();
-    
-    
-            let meta = mapper.get(this);
-            let scroller = meta.scroller;
-            let obj = typeof key == 'object' ? key : { [key]: value, };
-    
-            $Object.each(obj, function (key, value) {
-                switch (key) {
-                    case 'title':
-                        meta.$header.html(value);
-                        break;
-    
-                    case 'content':
-                        meta.$content.html(value);
-                        scroller && scroller.refresh(200);
-                        break;
-    
-                    case 'height':
-                    case 'width':
-                        let obj = {};
-    
-                        obj[key] = meta[key] = value;
-                        obj = Style.get(obj);
-    
-                        Object.assign(meta.style, obj); //回写
-                        meta.$.css(obj);
-                        scroller && scroller.refresh(300);
-                        break;
-    
-                    default:
-                        throw new Error(`${module.id} 目前不支持设置属性: ${key}`);
+            else { //降序
+                for (let i = start; i > end; i -= step) {
+                    let item = fn ? fn(i, index) : i;
+                    a.push(item);
+                    index++;
                 }
-    
-            });
-    
-        }
-    
-        /**
-        * 获取或设置自定义数据。 
-        * 在跨函数中传递数据时会比较方便。
-        * 已重载 data();           //获取全部自定义数据。
-        * 已重载 data(key);        //获取指定键的自定义数据。
-        * 已重载 data(obj);        //批量设置多个字段的自定义数据。
-        * 已重载 data(key, value); //单个设置指定字段的自定义数据。
-        * @param {string|Object} key 要获取或设置的数据的名称(键)。
-            当指定为一个纯对象 {} 时，则表示批量设置。
-            当指定为字符串或可以转为字符串的类型时，则表示获取指定名称的数据。
-        * @param value 要设置的数据的值。 只有显式提供该参数，才表示设置。
-        * @return 返回获取到的或设置进来的值。
-        */
-        data(key, value) {
-            let meta = mapper.get(this);
-            let data = meta.data;
-    
-            let len = arguments.length;
-            if (len == 0) { //获取全部
-                return data;
             }
     
-            //重载 data(obj); 批量设置
-            if ($Object.isPlain(key)) {
-                Object.assign(data, key);
-                return key;
-            }
-    
-            //get(key)
-            if (len == 1) {
-                return data[key];
-            }
-    
-            //set(key, value)
-            data[key] = value;
-    
-            return value;
-    
-        }
-    }
-    
-    Dialog.defaults = require('Dialog.defaults');
-    module.exports = exports = Dialog;
-});
-/**
-* src: @definejs/id-maker/modules/IDMaker.defaults.js
-* pkg: @definejs/id-maker@1.0.1
-*/
-define('IDMaker.defaults', function (require, module, exports) { 
-    
-    
-    /**
-    * IDMaker 模块的默认配置
-    * @name IDMaker.defaults
-    */
-    module.exports = {
-        /**
-        * 生成随机串部分的长度。
-        */
-        random: 4,
-    
-        /**
-        * 生成 id 的模板。
-        */
-        sample: {
-            /**
-            * 没有指定分组时的生成 id 的模板。
-            */
-            '': '{name}-{index}-{random}',
-    
-            /**
-            * 有指定分组时的生成 id 的模板。
-            */
-            'group': '{name}-{group}-{index}-{random}'
-        },
-    };
-});
-/**
-* src: @definejs/id-maker/modules/IDMaker.js
-* pkg: @definejs/id-maker@1.0.1
-*/
-define('IDMaker', function (require, module, exports) { 
-    
-    const $Object = require('Object');
-    const $String = require('String');
-    
-    const mapper = new Map();
-    const name$maker = {};
-    
-    
-    
-    class IDMaker {
-        
-        /**
-        * id 生成器的构造器。
-        * @param {string} name 命名空间的名称，用于跟其它实例区分。 同一个名称共用同一个实例。
-        * @returns {IDMaker} 返回指定命名空间的实例。
-        */
-        constructor(name, config) {
-            if (!name) {
-                throw new Error(`必须指定参数 name 为一个非空字符串。`);
-            }
-    
-            let maker = name$maker[name];
-    
-            if (maker) {
-                return maker;
-            }
-    
-            config = $Object.deepAssign({}, exports.defaults, config);
-    
-            let meta = {
-                'name': name,
-                'random': config.random,
-                'sample': config.sample,
-                'group$ids': {},
-            };
-    
-            mapper.set(this, meta);
-    
-            maker = name$maker[name] = this;
-            
-        }
-    
-        /**
-        * 获取（生成）指定分组的下一个递增 id。
-        * @param {string} [group] 可选，分组名称。 默认为空串。 
-        * @returns {string} 指定分组的 id。
-        */
-        next(group = '') {
-            let meta = mapper.get(this);
-            let { name, group$ids, random, sample, } = meta;
-            let ids = group$ids[group] = group$ids[group] || [];
-    
-            random = $String.random(random);
-            sample = sample[group ? 'group' : ''];
-    
-            let id = $String.format(sample, {
-                'name': name,
-                'group': group,
-                'index': ids.length, //会自动递增。 从 0 开始。
-                'random': random,
-            });
-    
-            ids.push(id);
-    
-            return id;
-    
-        }
-    
-        /**
-        * 获取指定分组的 id 的计数。
-        * @param {string} [group] 可选，分组名称。 默认为空串。
-        * @returns {number} 指定分组的 id 的计数。
-        */
-        list(group = '') {
-            let meta = mapper.get(this);
-            let ids = meta.group$ids[group];
-    
-            //如果有，则复制一份。
-            return ids ? ids.slice(0) : null;
-        }
-    }
-    
-    
-    
-    IDMaker.defaults = require('IDMaker.defaults');
-    module.exports = exports = IDMaker;
-});
-/**
-* src: @definejs/masker/modules/Masker/Meta.js
-* pkg: @definejs/masker@1.0.1
-*/
-define('Masker/Meta', function (require, module, exports) { 
-    const IDMaker = require('IDMaker');
-    
-    
-    
-    module.exports = {
-    
-        create(config, others) {
-            let maker = new IDMaker(config.idPrefix);
-            let eventName = config.eventName;
-            let volatile = config.volatile;
-    
-            let meta = {
-                'id': maker.next(),
-                'sample': '',
-                'eventName': eventName,         //兼容 PC 端和移动端。 PC 端的为 `click`，移动端的为 `touch`。
-                'volatile': volatile,           //是否易消失的。 即点击后自动隐藏。
-                'container': config.container,  //组件要装入的容器 DOM 节点。
-                'duration': config.duration,    //要持续显示的时间，单位是毫秒。
-                'fadeIn': config.fadeIn,        //显示时要使用淡入动画的时间。 如果不指定或指定为 0，则禁用淡入动画。
-                'fadeOut': config.fadeOut,      //隐藏时要使用淡出动画的时间。 如果不指定或指定为 0，则禁用淡出动画。
-                'opacity': config.opacity,      //不透明度。 在淡入淡出时要到进行计算。
-    
-                'emitter': null,    //事件驱动器。
-                'style': null,      //样式对象。
-                'this': null,       //当前实例，方便内部使用。
-                '$': null,          //组件最外层的 DOM 节点的 jQuery 实例。
-    
-                bindVolatile(fn) {
-                    if (!volatile) {
-                        return;
-                    }
-    
-                    if (eventName == 'touch') {
-                        meta.$.touch(fn);
-                    }
-                    else {
-                        meta.$.on(eventName, fn);
-                    }
-                },
-            };
-    
-    
-    
-            Object.assign(meta, others);
-    
-            return meta;
-    
+            return a;
     
         },
-    };
-});
-/**
-* src: @definejs/masker/modules/Masker/Sample.js
-* pkg: @definejs/masker@1.0.1
-*/
-define('Masker/Sample', function (require, module, exports) { 
-    
-    module.exports = `<div id="{id}" class="definejs-Masker" style="{style} display: none;"></div>`;
-});
-/**
-* src: @definejs/masker/modules/Masker/Style.js
-* pkg: @definejs/masker@1.0.1
-*/
-define('Masker/Style', function (require, module, exports) { 
-    const $Object = require('Object');
-    const Style = require('Style');
-    
-    /**
-    *
-    */
-    module.exports = {
-        /**
-        * 从配置对象中过滤出样式成员，并进行规范化处理。
-        * 返回一个样式对象 {}。
-        */
-        get(config) {
-            let obj = $Object.filter(config, ['opacity', 'z-index']);
-            let style = Style.objectify(config.style);
-    
-            style = Style.merge(style, obj);
-    
-            return style;
-    
-        },
-    };
-});
-/**
-* src: @definejs/masker/modules/Masker.defaults.js
-* pkg: @definejs/masker@1.0.1
-*/
-define('Masker.defaults', function (require, module, exports) { 
-    
-    /**
-    * Masker 模块的默认配置
-    * @name Masker.defaults
-    */
-    module.exports = {
-        /**
-        * 生成组件时的 id 前缀。
-        * 建议保留现状。
-        */
-        idPrefix: 'definejs-Masker',
-        /**
-        * 指定是否易消失，即点击 mask 层就是否隐藏/移除。
-        * 可取值为: true|false|"hide"|"remove"，默认为 false，即不易消失。
-        */
-        volatile: false,
-        /**
-        * 组件添加到的容器。
-        */
-        container: 'body',
-        /**
-        * 点击时需要用到的事件名。
-        */
-        eventName: 'click',
-        /**
-        * 需要持续显示的毫秒数。
-        * 指定为 0 或不指定则表示一直显示。
-        */
-        duration: 0,
-        /**
-        * 显示时要使用淡入动画的时间。 
-        * 如果不指定或指定为 0，则禁用淡入动画。
-        */
-        fadeIn: 0,
-        /**
-        * 隐藏时要使用淡出动画的时间。 
-        * 如果不指定或指定为 0，则禁用淡出动画。
-        */
-        fadeOut: 0,
-        /**
-        * 组件用到的 css 类名。
-        */
-        cssClass: '',
-        /**
-        * 不透明度。
-        */
-        opacity: 0.5,
-        /**
-        * 组件的 css 样式 z-index 值。
-        */
-        'z-index': 1024,
-        /**
-        * 样式集合。
-        * 外层的同名字段优先级高于里面的。
-        */
-        style: {},
-    };
-});
-/**
-* src: @definejs/masker/modules/Masker.js
-* pkg: @definejs/masker@1.0.1
-*/
-define('Masker', function (require, module, exports) { 
-    
-    const $ = require('jquery');
-    const Emitter = require('Emitter');
-    const $Object = require('Object');
-    const $String = require('String');
-    const $Style = require('Style');
-    
-    const Sample = module.require('Sample');
-    const Style = module.require('Style');
-    const Meta = module.require('Meta');
-    
-    
-    const mapper = new Map();
-    
-    
-    class Masker {
-        /**
-        * 构造器。
-        */
-        constructor(config) {
-            config = $Object.deepAssign({}, exports.defaults, config);
-    
-            let emitter = new Emitter(this);
-            let style = Style.get(config);
-    
-            let meta = Meta.create(config, {
-                'sample': Sample,       //相应的 html 模板。
-                'style': style,         //从配置中过滤出样式成员，并进行规范化处理，style 是一个 {}。
-                'emitter': emitter,     //事件驱动器。
-                'this': this,           //当前实例，方便内部使用。
-            });
-    
-    
-            mapper.set(this, meta);
-    
-            //对外暴露的属性。
-            Object.assign(this, {
-                'id': meta.id,
-                '$': null,
-            });
-    
-        }
-    
-    
-        // /**
-        // * 当前实例的 id。
-        // * 也是最外层的 DOM 节点的 id。
-        // */
-        // id = '';
-    
-        // /**
-        // * 当前组件最外层的 DOM 节点对应的 jQuery 实例。
-        // * 必须在 render 之后才存在。
-        // */
-        // $ = null;
     
         /**
-        * 渲染本组件。
-        * 该方法会创建 DOM 节点，并且绑定事件，但没有调用 show()。
-        * 该方法只需要调用一次。
-        * 触发事件: `render`。
+        * 添加元素到多级分组列表中。
+        * 已重载 add(key$list, keys, item);
+        * 已重载 add(key$list, key0, key1, ..., keyN, item);
+        * @param {Object}} key$list 多级结构的容器普通对象。
+        * @param {Array} keys 节点对应的键数组。
+        * @param {*} item 要添加的元素。
+        * @example
+        *   let city$area$town = {};
+        *   add(city$area$town, '深圳市', '宝安区', '沙井', 100);
+        *   add(city$area$town, '深圳市', '宝安区', '沙井', 200);
+        *   add(city$area$town, '深圳市', '宝安区', '西乡', 300);
+        *   add(city$area$town, '深圳市', '宝安区', '西乡', 400);
+        *   add(city$area$town, '深圳市', '南山区', '后海', 500);
+        *   add(city$area$town, '深圳市', '南山区', '后海', 600);
+        *   add(city$area$town, '深圳市', '南山区', '前海', 700);
+        * 则 
+        *   city$area$town = {
+        *       '深圳市': {
+        *           '宝安区': {
+        *               '沙井': [100, 200],
+        *               '西乡': [300, 400],
+        *           },
+        *           '南山区': {
+        *               '后海': [500, 600],
+        *               '前海': [700],
+        *           },
+        *       },
+        *   };
         */
-        render() {
-            let meta = mapper.get(this);
-    
-            //已经渲染过了。
-            if (meta.$) {
-                return;
+        add(key$list, keys, item) {
+            //重载 add(key$list, key0, key1, ..., keyN, item); 的形式。
+            if (!Array.isArray(keys)) {
+                let args = [...arguments];
+                keys = args.slice(1, -1);
+                item = args.slice(-1)[0]; //最后一项。
             }
     
     
-            //首次渲染
+            let maxIndex = keys.length - 1; //判断是否为最后一个。
+            let obj = key$list;
     
-            let style = $Style.stringify(meta.style);
+            keys.forEach((key, index) => {
+                let list = obj[key];
     
-            let html = $String.format(meta.sample, {
-                'id': meta.id,
-                'style': style,
-            });
+                if (index < maxIndex) {
+                    if (!list) {
+                        obj[key] = {};
+                    }
     
-    
-            $(meta.container).append(html);
-    
-            this.$ = meta.$ = $(`#${meta.id}`);
-    
-    
-            //根据是否指定了易消失来绑定事件，即点击 mask 层就隐藏。
-            meta.bindVolatile(function () {
-                let ok = meta.this.hide();
-    
-                //在 hide() 中明确返回 false 的，则取消关闭。
-                if (ok === false) {
+                    obj = obj[key];
                     return;
                 }
     
-                //先备份原来的 opacity
-                let opacity = meta.$.css('opacity');
     
-                //显示一个完全透明的层 200ms，防止点透。
-                //并且禁用事件，避免触发 show 事件。
-                meta.$.css('opacity', 0);
-                meta.this.show({ quiet: true, });
+                //最后一项。
+                if (!list) {
+                    list = obj[key] = [];
+                }
+                else if (!Array.isArray(list)) {
+                    //防止添加到中间节点上。
+                    throw new Error(`Can not add the item to a Non-Array node.`);
+                }
     
-                setTimeout(function () {
-                    meta.$.css('opacity', opacity);
-                    meta.$.hide();
-                }, 200);
+                list.push(item);
             });
     
-            meta.emitter.fire('render');
-        }
-    
-        /**
-        * 显示遮罩层。
-        * 触发事件: `show`。
-        *   config = {
-        *       quiet: false,   //是否触发 `show` 事件。 该选项仅开放给组件内部使用。
-        *       duration: 0,    //要持续显示的时间，单位是毫秒。 如果不指定，则使用创建实例时的配置。
-        *       fadeIn: 200,    //可选。 需要淡入的动画时间，如果不指定或为指定为 0，则禁用淡入动画。
-        *   };
-        */
-        show(config = {}) {
-            let meta = mapper.get(this);
-            let duration = 'duration' in config ? config.duration : meta.duration;
-            let fadeIn = 'fadeIn' in config ? config.fadeIn : meta.fadeIn;
-    
-    
-            //尚未渲染。
-            //首次渲染。
-            if (!meta.$) {
-                this.render();
-            }
-    
-    
-            if (duration) {
-                setTimeout(function () {
-                    meta.this.hide();
-                }, duration);
-            }
-    
-    
-            if (fadeIn) {
-                meta.$.css('opacity', 0);
-            }
-    
-            meta.$.show();
-    
-            if (fadeIn) {
-                meta.$.animate({
-                    'opacity': meta.opacity,
-                }, fadeIn);
-            }
-    
-            //没有明确指定要使用安静模式，则触发事件。
-            if (!config.quiet) {
-                meta.emitter.fire('show');
-            }
-    
-        }
-    
-        /**
-        * 隐藏遮罩层。
-        * 触发事件: `hide`。
-        * 如果在 hide 事件中明确返回 false，则取消隐藏。
-        *   config = {
-        *       fadeOut: 200,    //可选。 需要淡出的动画时间，如果不指定或为指定为 0，则禁用淡出动画。
-        *   };
-        */
-        hide(config = {}) {
-            let meta = mapper.get(this);
-            let fadeOut = 'fadeOut' in config ? config.fadeOut : meta.fadeOut;
-    
-            //尚未渲染。
-            if (!meta.$) {
-                return;
-            }
-    
-            let values = meta.emitter.fire('hide');
-    
-            //明确返回 false 的，则取消关闭。
-            if (values.includes(false)) {
-                return false;
-            }
-    
-            if (fadeOut) {
-                meta.$.animate({
-                    'opacity': 0,
-                }, fadeOut, function () {
-                    meta.$.css('opacity', meta.opacity);
-                    meta.$.hide();
-                });
-            }
-            else {
-                meta.$.hide();
-            }
-        }
-    
-        /**
-        * 移除本组件已生成的 DOM 节点。
-        * 触发事件: `remove`。
-        */
-        remove() {
-            let meta = mapper.get(this);
-    
-            //尚未渲染。
-            if (!meta.$) {
-                return;
-            }
-    
-            let div = meta.$.get(0);
-            div.parentNode.removeChild(div);
-    
-            meta.$.off();
-    
-            this.$ = meta.$ = null;
-            meta.emitter.fire('remove');
-        }
-    
-        /**
-        * 绑定事件。
-        */
-        on(...args) {
-            let meta = mapper.get(this);
-            meta.emitter.on(...args);
-        }
-    
-        /**
-        * 销毁本组件
-        */
-        destroy() {
-            let meta = mapper.get(this);
-    
-            this.remove();
-            meta.emitter.destroy();
-    
-            mapper.delete(this);
-        }
-    
-    
-        /**
-        * 把配置参数规格化。
-        * 已重载 normalize(0, 0);              //任意一个为数字，则当成透明度。 如果都为数字，则使用后者的。   
-        * 已重载 normalize(defaults, false);   //第二个参数显式指定了要禁用 mask，返回 null。
-        * 已重载 normalize({}, {});
-        */
-        static normalize(defaults, config) {
-    
-            //第二个参数显式指定了要禁用 mask。
-            if (config === false) {
-                return null;
-            }
-    
-    
-            //输入的是数字，则当成是透明度。
-            if (typeof defaults == 'number') { //透明度
-                defaults = { 'opacity': defaults };
-            }
-    
-            if (typeof config == 'number') { //透明度
-                config = { 'opacity': config };
-            }
-    
-    
-            let type0 = typeof defaults;
-            let type1 = typeof config;
-    
-            if (type0 == 'object' && type1 == 'object') {
-                return Object.assign({}, defaults, config);
-            }
-    
-    
-            //显式指定使用 mask。
-            //如果 defaults 没有，则显式分配一个。
-            if (config === true) {
-                return !defaults || type0 != 'object' ? {} : defaults;
-            }
-    
-    
-            //未指定，则使用默认配置指定的，有或没有
-            if (config === undefined) {
-                return type0 == 'object' ? defaults :
-                    defaults ? {} : null;
-            }
-    
-            return type1 == 'object' ? config :
-                config ? {} : null;
-        }
-    }
-    
-    Masker.defaults = require('Masker.defaults');
-    module.exports = exports = Masker;
+        },
+    };
 });
 /**
 * src: @definejs/confirm/modules/Confirm.defaults.js
@@ -11154,6 +10638,651 @@ define('Confirm', function (require, module, exports) {
     
     
     
+});
+/**
+* src: @definejs/date/modules/Date.js
+* pkg: @definejs/date@1.0.0
+*/
+define('Date', function (require, module, exports) { 
+    const $String = require('String');
+    
+    let DELTA = 0; //用于存放参考时间(如服务器时间)和本地时间的差值。
+    
+    
+    function getDateItem(s) {
+        let separator =
+            s.indexOf('.') > 0 ? '.' :
+            s.indexOf('-') > 0 ? '-' :
+            s.indexOf('/') > 0 ? '/' :
+            s.indexOf('_') > 0 ? '_' : null;
+    
+        if (!separator) {
+            return null;
+        }
+    
+        let ps = s.split(separator);
+    
+        return {
+            'yyyy': ps[0],
+            'MM': ps[1] || 0,
+            'dd': ps[2] || 1,
+        };
+    }
+    
+    function getTimeItem(s) {
+        let separator = s.indexOf(':') > 0 ? ':' : null;
+        
+        if (!separator) {
+            return null;
+        }
+    
+        let ps = s.split(separator);
+    
+        return {
+            'HH': ps[0] || 0,
+            'mm': ps[1] || 0,
+            'ss': ps[2] || 0,
+        };
+    }
+    
+    /**
+    * 日期时间工具。
+    */
+    module.exports = exports = {
+        /**
+        * 把参数 value 解析成等价的日期时间实例。
+        * @param {Date|String} value 要进行解析的参数，可接受的类型为：
+        *   1.Date 实例
+        *   2.String 字符串，包括调用 Date 实例的 toString 方法得到的字符串；也包括以下格式: 
+        *       yyyy-MM-dd
+        *       yyyy.MM.dd
+        *       yyyy/MM/dd
+        *       yyyy_MM_dd
+        *       HH:mm:ss
+        *       yyyy-MM-dd HH:mm:ss
+        *       yyyy.MM.dd HH:mm:ss
+        *       yyyy/MM/dd HH:mm:ss
+        *       yyyy_MM_dd HH:mm:ss
+        * @return 返回一个日期时间的实例。
+        *   如果解析失败，则返回 null。
+        * @example
+        *   $Date.parse('2013-04-29 09:31:20');
+        */
+        parse(value) {
+            //已经是一个 Date 实例，则判断它是否有值。
+            if (value instanceof Date) {
+                let tv = value.getTime();
+                return isNaN(tv) ? null : value;
+            }
+    
+            let isString = false;
+    
+            switch (typeof value) {
+                case 'number':
+                    let dt = new Date(value);
+                    let tv = dt.getTime();
+                    return isNaN(tv) ? null : dt;
+    
+                case 'string':
+                    isString = true;
+                    break;
+    
+            }
+    
+            if (!isString) {
+                return null;
+            }
+    
+    
+            //标准方式
+            let date = new Date(value);
+            if (!isNaN(date.getTime())) {
+                return date;
+            }
+    
+            /*
+             自定义方式：
+                yyyy-MM-dd
+                yyyy.MM.dd
+                yyyy/MM/dd
+                yyyy_MM_dd
+                HH:mm:ss
+                yyyy-MM-dd HH:mm:ss
+                yyyy.MM.dd HH:mm:ss
+                yyyy/MM/dd HH:mm:ss
+                yyyy_MM_dd HH:mm:ss
+                    
+            */
+    
+            let parts = value.split(' ');
+            let left = parts[0];
+    
+            if (!left) {
+                return null;
+            }
+    
+            //冒号只能用在时间的部分，而不能用在日期部分
+            date = left.indexOf(':') > 0 ? null : left;
+            let time = date ? (parts[1] || null) : date;
+    
+            //既没指定日期部分，也没指定时间部分
+            if (!date && !time) {
+                return null;
+            }
+    
+    
+            if (date && time) {
+                let d = getDateItem(date);
+                let t = getTimeItem(time);
+                return new Date(d.yyyy, d.MM - 1, d.dd, t.HH, t.mm, t.ss);
+            }
+    
+            if (date) {
+                let d = getDateItem(date);
+                return new Date(d.yyyy, d.MM - 1, d.dd);
+            }
+    
+            if (time) {
+                let now = new Date();
+                let t = getTimeItem(time);
+                return new Date(now.getFullYear(), now.getMonth(), now.getDate(), t.HH, t.mm, t.ss);
+            }
+    
+        },
+    
+        /**
+        * 把日期时间格式化指定格式的字符串。
+        * 已重载 format(formatter)。
+        * @param {Date} datetime 要进行格式化的日期时间。
+        *   如果不指定，则默认为当前时间，即 new Date()。
+        * @param {string} formater 格式化的字符串。 其中保留的占位符有：
+            'yyyy': 4位数年份
+            'yy': 2位数年份
+            'MM': 2位数的月份(01-12)
+            'M': 1位数的月份(1-12)
+            'dddd': '星期日|一|二|三|四|五|六'
+            'dd': 2位数的日份(01-31)
+            'd': 1位数的日份(1-31)
+            'HH': 24小时制的2位数小时数(00-23)
+            'H': 24小时制的1位数小时数(0-23)
+            'hh': 12小时制的2位数小时数(00-12)
+            'h': 12小时制的1位数小时数(0-12)
+            'mm': 2位数的分钟数(00-59)
+            'm': 1位数的分钟数(0-59)
+            'ss': 2位数的秒钟数(00-59)
+            's': 1位数的秒数(0-59)
+            'tt': 上午：'AM'；下午: 'PM'
+            't': 上午：'A'；下午: 'P'
+            'TT': 上午： '上午'； 下午: '下午'
+            'T': 上午： '上'； 下午: '下'
+        * @return {string} 返回一个格式化的字符串。
+        * @example
+            //返回当前时间的格式字符串，类似 '2013年4月29日 9:21:59 星期一'
+            $Date.format(new Date(), 'yyyy年M月d日 h:m:s dddd');
+            $Date.format('yyyy年M月d日 h:m:s dddd');
+        */
+        format(datetime, formater) {
+            //重载 format(formater);
+            if (arguments.length == 1) {
+                formater = datetime;
+                datetime = new Date();
+            }
+            else {
+                datetime = exports.parse(datetime);
+            }
+    
+            let year = datetime.getFullYear();
+            let month = datetime.getMonth() + 1;
+            let date = datetime.getDate();
+            let hour = datetime.getHours();
+            let minute = datetime.getMinutes();
+            let second = datetime.getSeconds();
+    
+            let padLeft = function (value, length) {
+                return $String.padLeft(value, length, '0');
+            };
+    
+    
+            let isAM = hour <= 12;
+    
+            //这里不要用 {} 来映射，因为 for in 的顺序不确定
+            let maps = [
+                ['yyyy', padLeft(year, 4)],
+                ['yy', String(year).slice(2)],
+                ['MM', padLeft(month, 2)],
+                ['M', month],
+                ['dddd', '星期' + ('日一二三四五六'.charAt(datetime.getDay()))],
+                ['dd', padLeft(date, 2)],
+                ['d', date],
+                ['HH', padLeft(hour, 2)],
+                ['H', hour],
+                ['hh', padLeft(isAM ? hour : hour - 12, 2)],
+                ['h', isAM ? hour : hour - 12],
+                ['mm', padLeft(minute, 2)],
+                ['m', minute],
+                ['ss', padLeft(second, 2)],
+                ['s', second],
+                ['tt', isAM ? 'AM' : 'PM'],
+                ['t', isAM ? 'A' : 'P'],
+                ['TT', isAM ? '上午' : '下午'],
+                ['T', isAM ? '上' : '下']
+            ];
+    
+    
+            let s = formater;
+    
+            maps.forEach(function (item, index) {
+                s = $String.replaceAll(s, item[0], item[1]);
+            });
+    
+            return s;
+        },
+    
+    
+        /**
+        * 将指定的毫秒数加到指定的 Date 上。
+        * 此方法不更改参数 datetime 的值，而是返回一个新的 Date，其值是此运算的结果。
+        * @param {Date} datetime 要进行操作的日期时间。
+        * @param {Number} value 要增加/减少的毫秒数。 
+            可以为正数，也可以为负数。
+        * @param {string} [formater] 可选的，对结果进行格式化的字符串。 
+        * @return {Date|string} 返回一个新的日期实例或字符串值。
+            如果指定了参数 formater，则进行格式化，返回格式化后的字符串值；
+            否则返回 Date 的实例对象。
+        * @example
+            $Date.addMilliseconds(new Date(), 2000); //给当前时间加上2000毫秒
+        */
+        add(datetime, value, formater) {
+            datetime = exports.parse(datetime);
+    
+            let ms = datetime.getMilliseconds();
+            let dt = new Date(datetime);//新建一个副本，避免修改参数
+    
+            dt.setMilliseconds(ms + value);
+    
+            if (formater) {
+                dt = exports.format(dt, formater);
+            }
+    
+            return dt;
+        },
+    
+        /**
+        * 将指定的秒数加到指定的 Date 实例上。
+        * @param {Date} datetime 要进行操作的日期时间实例。
+        * @param {Number} value 要增加/减少的秒数。可以为正数，也可以为负数。
+        * @param {string} [formater] 可选的，对结果进行格式化的字符串。 
+        * @return {Date} 返回一个新的日期实例。
+            此方法不更改参数 datetime 的值。而是返回一个新的 Date，其值是此运算的结果。
+        * @example
+            $Date.addSeconds(new Date(), 90); //给当前时间加上90秒
+        */
+        addSeconds(datetime, value, formater) {
+            return exports.add(datetime, value * 1000, formater);
+        },
+    
+        /**
+         * 将指定的分钟数加到指定的 Date 实例上。
+         * @param {Date} datetime 要进行操作的日期时间实例。
+         * @param {Number} value 要增加/减少的分钟数。可以为正数，也可以为负数。
+         * @param {string} [formater] 可选的，对结果进行格式化的字符串。 
+         * @return {Date} 返回一个新的日期实例。
+            此方法不更改参数 datetime 的值。而是返回一个新的 Date，其值是此运算的结果。
+         * @example
+            $Date.addMinutes(new Date(), 90); //给当前时间加上90分钟
+         */
+        addMinutes(datetime, value, formater) {
+            return exports.addSeconds(datetime, value * 60, formater);
+        },
+    
+        /**
+         * 将指定的小时数加到指定的 Date 实例上。
+         * @param {Date} datetime 要进行操作的日期时间实例。
+         * @param {Number} value 要增加/减少的小时数。可以为正数，也可以为负数。
+         * @return {Date} 返回一个新的日期实例。
+            此方法不更改参数 datetime 的值。而是返回一个新的 Date，其值是此运算的结果。
+         * @example
+            $Date.addHours(new Date(), 35); //给当前时间加上35小时
+         */
+        addHours(datetime, value, formater) {
+            return exports.addMinutes(datetime, value * 60, formater);
+        },
+    
+    
+        /**
+        * 将指定的天数加到指定的 Date 实例上。
+        * @param {Date} datetime 要进行操作的日期时间实例。
+        * @param {Number} value 要增加/减少的天数。可以为正数，也可以为负数。
+        * @return {Date} 返回一个新的日期实例。。
+            此方法不更改参数 datetime 的值。而是返回一个新的 Date，其值是此运算的结果。
+        * @example
+            $Date.addDays(new Date(), 35); //给当前时间加上35天
+        */
+        addDays(datetime, value, formater) {
+            return exports.addHours(datetime, value * 24, formater);
+        },
+    
+        /**
+        * 将指定的周数加到指定的 Date 实例上。
+        * @param {Date} datetime 要进行操作的日期时间实例。
+        * @param {Number} value 要增加/减少的周数。可以为正数，也可以为负数。
+        * @return {Date} 返回一个新的日期实例。
+            此方法不更改参数 datetime 的值。 而是返回一个新的 Date，其值是此运算的结果。
+        * @example
+            $Date.addWeeks(new Date(), 3); //给当前时间加上3周
+        */
+        addWeeks(datetime, value, formater) {
+            return exports.addDays(datetime, value * 7, formater);
+        },
+    
+        /**
+        * 将指定的月份数加到指定的 Date 实例上。
+        * @param {Date} datetime 要进行操作的日期时间实例。
+        * @param {Number} value 要增加/减少的月份数。可以为正数，也可以为负数。
+        * @return {Date} 返回一个新的日期实例。
+            此方法不更改参数 datetime 的值。而是返回一个新的 Date，其值是此运算的结果。
+        * @example
+            $Date.addMonths(new Date(), 15); //给当前时间加上15个月
+        */
+        addMonths(datetime, value, formater) {
+            datetime = exports.parse(datetime);
+    
+            let dt = new Date(datetime);//新建一个副本，避免修改参数
+            let old = datetime.getMonth();
+    
+            dt.setMonth(old + value);
+    
+            if (formater) {
+                dt = exports.format(dt, formater);
+            }
+    
+            return dt;
+        },
+    
+        /**
+        * 将指定的年份数加到指定的 Date 实例上。
+        * @param {Date} datetime 要进行操作的日期时间实例。
+        * @param {Number} value 要增加/减少的年份数。可以为正数，也可以为负数。
+        * @return {Date} 返回一个新的日期实例。
+            此方法不更改参数 datetime 的值。 而是返回一个新的 Date，其值是此运算的结果。
+        * @example
+            $Date.addYear(new Date(), 5); //假如当前时间是2013年，则返回的日期实例的年份为2018
+        */
+        addYears(datetime, value, formater) {
+            return exports.addMonths(datetime, value * 12, formater);
+        },
+    
+        /**
+        * 设置一个参考时间在本地的初始值，随着时间的流逝，参考时间也会同步增长。
+        * 如用来设置服务器时间在本地的初始值。
+        * 
+        */
+        set(datetime) {
+            let dt = exports.parse(datetime);
+    
+            if (!dt) {
+                throw new Error('无法识别的日期时间格式: ' + datetime);
+            }
+    
+            DELTA = dt - Date.now();
+        },
+    
+        /**
+        * 获取之前设置的参考时间。
+        */
+        get(formater) {
+            let dt = new Date();
+    
+            if (DELTA != 0) {
+                dt = exports.add(dt, DELTA);
+            }
+    
+            if (formater) {
+                dt = exports.format(dt, formater);
+            }
+    
+            return dt;
+        },
+    };
+});
+/**
+* src: @definejs/defaults/modules/Defaults.js
+* pkg: @definejs/defaults@1.0.0
+*/
+define('Defaults', function (require, module, exports) { 
+    //注意，此模块仅供自动化打包工具 `@definejs/packer` 使用的。
+    //不能单独使用，因为它依赖 `@definejs/packer` 中一个变量 `InnerMM`。
+    //由打包工具把其它模块和本模块打包成一个独立的库时，需要用到本模块。  
+    //本模块用于充当`@definejs/` 内部模块使用的默认配置管理器。   
+    
+    //const InnerMM; //内部模块管理器。
+    
+    const $Object = require('Object');
+    const id$defaults = {}; //记录模块 id 对应的默认配置。
+    const id$obj = {};
+    const hookKey = '__hooked_for_defaults__';
+    const suffix = '.defaults';
+    
+    
+    module.exports = exports = {
+        /**
+        * 设置内部模块的默认配置。
+        * 会跟原有的配置作深度合并。
+        * 已重载 set(id, data); //设置单个模块的配置。
+        * 已重载 set(id$data);  //设置多个模块的配置，每个模块有自己的配置。
+        * 已重载 set(ids, data);  //设置多个模块的配置，它们共用同一个配置。
+        * @param {string} id 要设置的模块 id。
+        * @param {Object} data 默认配置。
+        */
+        set(id, data) {
+            //重载 set(ids, data); 批量设置，多个模块共用一个配置数据。
+            if (Array.isArray(id)) {
+                let ids = id;
+                ids.forEach(function (id) {
+                    exports.set(id, data);
+                });
+                return;
+            }
+    
+            //重载 set(id$data); 批量设置，每个模块有自己的配置。
+            if ($Object.isPlain(id)) {
+                let id$data = id;
+                $Object.each(id$data, function (id, data) {
+                    exports.set(id, data);
+                });
+                return;
+            }
+    
+            //重载 set(id, data); 单个设置。
+    
+            //1，已加载过了，直接合并。
+            let defaults = id$defaults[id];
+            if (defaults) {
+                $Object.deepAssign(defaults, data);
+                return;
+            }
+    
+            //2，尚未加载过，先缓存起来。
+    
+            //2.1，之前已设置过一次，则与之前的合并，缓存起来。
+            let obj = id$obj[id];
+            if (obj) {
+                $Object.deepAssign(obj, data);
+                return;
+            }
+    
+            //2.2，首次设置。
+    
+            //先缓存起来。
+            id$obj[id] = $Object.deepAssign({}, data);
+    
+            let mm = InnerMM.create();
+    
+            if (!mm.require[hookKey]) {
+                let mm_require = mm.require.bind(mm);
+    
+                //使用钩子函数进行重写，以便对 mm.require() 进行拦载，执行附加的逻辑。
+                mm.require = function ($id) {
+                    let $exports = mm_require($id);
+    
+                    //如果是 `*.defaults` 的格式，则注入附加的逻辑。
+                    if ($id.endsWith(suffix)) {
+                        let id = $id.slice(0, -suffix.length); //去掉 `.defaults` 后缀，如 `API.defaults` 变为 `API`。
+                        let obj = id$obj[id];
+                        let defaults = $exports;
+    
+                        id$defaults[id] = $Object.deepAssign(defaults, obj);
+                    }
+                    
+                    //这个必须无条件返回出去，是原有的 require() 函数要求的。
+                    return $exports;
+                };
+    
+                mm.require[hookKey] = true;
+            }
+    
+    
+            // //绑定加载事件，在被加载时，再进行合并。
+            // mm.on('require', `${id}.defaults`, function ($module, $exports) {
+            //     let defaults = $exports;
+            //     let obj = id$obj[id];
+            //     id$defaults[id] = $Object.deepAssign(defaults, obj);
+            // });
+        },
+    
+        /**
+        * 获取指定模块的默认配置。
+        * @param {string} id 要获取默认配置的模块 id。
+        */
+        get(id) {
+            let defaults = id$defaults[id];
+    
+            if (!defaults) {
+                defaults = id$defaults[id] = require(`${id}.defaults`);
+            }
+    
+            return defaults;
+        },
+    
+        /**
+        * 获取或设置 definejs 内部模块的默认配置。
+        * 已重载 config(id); //获取指定 id 的模块的默认配置。
+        * 已重载 config(id, data); //单个设置指定 id 的模块的默认配置。
+        * 已重载 config(id$data); //批量设置模块的默认配置。
+        */
+        config(...args) {
+            //get(id)
+            if (args.length == 1 && typeof args[0] == 'string') {
+                return exports.get(...args);
+            }
+    
+            //set()
+            exports.set(...args);
+        },
+    
+    
+    };
+});
+/**
+* src: @definejs/escape/modules/Escape.js
+* pkg: @definejs/escape@1.0.0
+*/
+define('Escape', function (require, module, exports) { 
+    
+    /**
+    * HTML 转码工具。
+    */
+    module.exports = exports = {
+        /**
+        * 把用户产生的内容做转换，以便可以安全地放在 html 里展示。
+        * @return {String}
+        */
+        html(string) {
+            var s = String(string);
+            var reg = /[&'"<>\/\\\-\x00-\x09\x0b-\x0c\x1f\x80-\xff]/g;
+    
+            s = s.replace(reg, function (r) {
+                return "&#" + r.charCodeAt(0) + ";"
+            });
+    
+            s = s.replace(/ /g, "&nbsp;");
+            s = s.replace(/\r\n/g, "<br />");
+            s = s.replace(/\n/g, "<br />");
+            s = s.replace(/\r/g, "<br />");
+    
+            return s;
+        },
+    
+        /**
+        * 把用户产生的内容做转换，以便可以安全地放在节点的属性里展示。
+        * @example 如 `<input value="XXX">`，`XXX` 就是要转换的部分。
+        * @return {String}
+        */
+        attribute(string) {
+            var s = String(string);
+            var reg = /[&'"<>\/\\\-\x00-\x1f\x80-\xff]/g;
+    
+            return s.replace(reg, function (r) {
+                return "&#" + r.charCodeAt(0) + ";"
+            });
+        },
+    
+        /**
+        * 用做过滤直接放到 HTML 里 j s中的。
+        * @return {String}
+        */
+        script(string) {
+            var s = String(string);
+            var reg = /[\\"']/g;
+    
+            s = s.replace(reg, function (r) {
+                return "\\" + r;
+            });
+    
+            s = s.replace(/%/g, "\\x25");
+            s = s.replace(/\n/g, "\\n");
+            s = s.replace(/\r/g, "\\r");
+            s = s.replace(/\x01/g, "\\x01");
+    
+            return s;
+        },
+    
+        /**
+        * 对查询字符串中的值部分进行转换。
+        * 如 `http://www.test.com/?a=XXX`，其中 `XXX` 就是要过滤的部分。
+        * @return {String}
+        */
+        query(string) {
+            var s = String(string);
+            return escape(s).replace(/\+/g, "%2B");
+        },
+    
+        /**
+        * 用做过滤直接放到<a href="javascript:alert('XXX')">中的XXX
+        * @return {String}
+        */
+        hrefScript(string) {
+            var s = exports.escapeScript(string);
+    
+            s = s.replace(/%/g, "%25"); //escMiniUrl
+            s = exports.escapeElementAttribute(s);
+            return s;
+    
+        },
+    
+        /**
+        * 用做过滤直接放到正则表达式中的。
+        * @return {String}
+        */
+        regexp(string) {
+            var s = String(string);
+            var reg = /[\\\^\$\*\+\?\{\}\.\(\)\[\]]/g;
+    
+            return s.replace(reg, function (a, b) {
+                return "\\" + a;
+            });
+        },
+    };
 });
 /**
 * src: @definejs/loading/modules/Loading/Masker.js
@@ -12462,7 +12591,7 @@ define('Panel', function (require, module, exports) {
 });
 /**
 * src: @definejs/tabs/modules/Tabs/Events.js
-* pkg: @definejs/tabs@1.0.2
+* pkg: @definejs/tabs@1.0.3
 */
 define('Tabs/Events', function (require, module, exports) { 
     const $ = require('jquery');
@@ -12514,7 +12643,7 @@ define('Tabs/Events', function (require, module, exports) {
 });
 /**
 * src: @definejs/tabs/modules/Tabs/Meta.js
-* pkg: @definejs/tabs@1.0.2
+* pkg: @definejs/tabs@1.0.3
 */
 define('Tabs/Meta', function (require, module, exports) { 
     
@@ -12583,7 +12712,7 @@ define('Tabs/Meta', function (require, module, exports) {
 });
 /**
 * src: @definejs/tabs/modules/Tabs.defaults.js
-* pkg: @definejs/tabs@1.0.2
+* pkg: @definejs/tabs@1.0.3
 */
 define('Tabs.defaults', function (require, module, exports) { 
     /**
@@ -12628,7 +12757,7 @@ define('Tabs.defaults', function (require, module, exports) {
 });
 /**
 * src: @definejs/tabs/modules/Tabs.js
-* pkg: @definejs/tabs@1.0.2
+* pkg: @definejs/tabs@1.0.3
 */
 define('Tabs', function (require, module, exports) { 
     const $ = require('jquery');
@@ -12934,6 +13063,136 @@ define('Tabs', function (require, module, exports) {
     
     Tabs.defaults = require('Tabs.defaults');
     module.exports = exports = Tabs;
+});
+/**
+* src: @definejs/timer/modules/Timer.js
+* pkg: @definejs/timer@1.0.1
+*/
+define('Timer', function (require, module, exports) { 
+    /**
+    * 计时器。
+    */
+    
+    
+    const mapper = new Map();
+    let idCounter = 0;
+    
+    class Timer {
+        /**
+        * 构造器。
+        */
+        constructor() {
+            let id = `definejs-Timer-${idCounter++}`;
+    
+            let meta = {
+                'id': id,
+                't0': 0,
+                'list': [],
+            };
+    
+            mapper.set(this, meta);
+    
+            Object.assign(this, {
+                'id': meta.id,
+            });
+        }
+    
+        // /**
+        // * 当前实例的 id。
+        // */
+        // id = ''
+    
+        /**
+        * 开始计时。
+        */
+        start() {
+            let meta = mapper.get(this);
+            meta.t0 = new Date();
+        }
+    
+        /**
+        * 停止计时。
+        * @param {string} unit 对时间差进行转换的单位，可取的值为：
+        *   `ms`: 毫秒(默认值)。
+        *   `s`: 秒。
+        *   `m`: 分。
+        *   `h`: 小时。
+        *   `d`: 天。
+        * @returns 返回一个对象，结构为 
+        *   {
+        *       t0: Date,       //开始时间。
+        *       t1: Date,       //结束时间。
+        *       dt: Number,     //时间差，即耗时，单位为毫秒。
+        *       value: Number,  //针对参数 unit 传入的单位转换后的时间差值。 
+        *       unit: string,   //参数 unit 传入的值。
+        *   }
+        */
+        stop(unit = 'ms') {
+            let meta = mapper.get(this);
+            let t0 = meta.t0;
+            let t1 = new Date();
+            let dt = t1 - t0;
+            let value = 0;
+    
+            let item = {
+                't0': t0,
+                't1': t1,
+                'dt': dt,
+                'value': 0,
+                'unit': '',
+            };
+    
+            switch (unit) {
+                case 'ms':
+                    value = dt;
+                    break;
+                case 's':
+                    value = Math.ceil(dt / 1000);
+                    break;
+                case 'm':
+                    value = Math.ceil(dt / 1000 / 60);
+                    break;
+                case 'h':
+                    value = Math.ceil(dt / 1000 / 3600);
+                    break;
+                case 'd':
+                    value = Math.ceil(dt / 1000 / 3600 / 24);
+                    break;
+                default:
+                    throw new Error(`无法识别的参数 unit，只允许是以下值之一：ms、s、m、h、d。`);
+            }
+    
+            if (value) {
+                item.value = value;
+                item.unit = unit;
+            }
+    
+            meta.list.push(item);
+    
+            return item;
+        }
+    
+        /**
+        * 获取所有的计时历史列表。
+        */
+        list() {
+            let meta = mapper.get(this);
+            return [...meta.list,];
+        }
+    
+        /**
+        * 重置计时器。
+        * 会清空所有的计时历史，回到创建时的状态。
+        */
+        reset() { 
+            let meta = mapper.get(this);
+    
+            meta.t0 = 0;
+            meta.list = [];
+        }
+    }
+    
+    module.exports = Timer;
 });
 /**
 * src: @definejs/toast/modules/Toast/Masker.js
@@ -13740,7 +13999,6 @@ const GlobalExports = (function ({ require, bind, }) {
         '@definejs/object': 'Object',
         '@definejs/package': 'Package',
         '@definejs/panel': 'Panel',
-        '@definejs/proxy': 'Proxy',
         '@definejs/query': 'Query',
         '@definejs/script': 'Script',
         '@definejs/session-storage': 'SessionStorage',
@@ -13766,7 +14024,7 @@ const GlobalExports = (function ({ require, bind, }) {
     exports['load'] = bind('Package', 'load');
     exports['module'] = bind('AppModule', 'define');
     exports['panel'] = bind('Panel', 'define');
-    exports['proxy'] = bind('Proxy', 'response');
+    exports['proxy'] = bind('API', 'proxy');
     exports['route'] = bind('App', 'route');
     exports['view'] = bind('View', 'define');
     exports['create'] = function (id, ...args) {

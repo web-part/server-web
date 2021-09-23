@@ -1,6 +1,6 @@
 /**
 * src: @definejs/package/modules/Package.js
-* pkg: @definejs/package@1.0.0
+* pkg: @definejs/package@1.0.1
 */
 define('Package', function (require, module, exports) { 
     

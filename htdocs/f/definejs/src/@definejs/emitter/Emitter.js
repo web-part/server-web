@@ -1,6 +1,6 @@
 /**
 * src: @definejs/emitter/modules/Emitter.js
-* pkg: @definejs/emitter@1.0.5
+* pkg: @definejs/emitter@1.1.0
 */
 define('Emitter', function (require, module, exports) { 
     
@@ -15,15 +15,23 @@ define('Emitter', function (require, module, exports) {
         * 构造器。
         * @param {Object} [context=null] 事件处理函数中的 this 上下文对象。
         *   如果不指定，则默认为 null。
+        * @param {Object} [config] 配置选项对象。
+        *   config = {
+        *       stopValue: undefined,
+        *   };
         */
-        constructor(context) {
+        constructor(context, config) {
+            context = context || null;
+            config = Object.assign({}, exports.defaults, config);
     
             let id = `definejs-Emitter-${idCounter++}`;
+            let tree = new Tree();
     
             let meta = {
                 'id': id,
                 'context': context,
-                'tree': new Tree(),
+                'tree': tree,
+                'stopValue': config.stopValue,
             };
     
             mapper.set(this, meta);
@@ -255,11 +263,8 @@ define('Emitter', function (require, module, exports) {
         */
         fire(name, params) {
             let meta = mapper.get(this);
-            if (!meta) {
-                console.log(arguments, this.id);
-            }
+            let { context, stopValue, } = meta;
     
-            let context = meta.context;
             let args = [...arguments];
     
             let index = args.findIndex(function (item, index) {
@@ -281,10 +286,19 @@ define('Emitter', function (require, module, exports) {
             params = args[index] || [];
             node.count++;
     
-            node.list.forEach(function (fn, index) {
+            node.list.some(function (fn, index) {
                 //让 fn 内的 this 指向 context，并收集返回值。
                 let value = fn.apply(context, params);
+    
                 returns.push(value);
+    
+                //返回值为指定的停止值，则不再执行后续回调函数。
+                //换言之，如果外部代码想要中途停止继续执行后面的回调函数，只需要返回一个指定的停止值即可。
+                //停止值不能为 undefined。
+                if (value !== undefined && value === stopValue) {
+                    return true;
+                }
+              
             });
     
             return returns;
@@ -332,6 +346,8 @@ define('Emitter', function (require, module, exports) {
     /**
     * 
     */
+    Emitter.defaults = require('Emitter.defaults');
+    module.exports = exports = Emitter;
     
-    module.exports = Emitter;
+    
 });

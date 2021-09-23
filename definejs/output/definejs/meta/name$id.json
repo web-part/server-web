@@ -24,7 +24,6 @@
     "@definejs/object": "Object",
     "@definejs/package": "Package",
     "@definejs/panel": "Panel",
-    "@definejs/proxy": "Proxy",
     "@definejs/query": "Query",
     "@definejs/script": "Script",
     "@definejs/session-storage": "SessionStorage",

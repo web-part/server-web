@@ -1,16 +1,20 @@
 /**
 * src: @definejs/api/modules/API.js
-* pkg: @definejs/api@1.0.1
+* pkg: @definejs/api@2.0.1
 */
 define('API', function (require, module, exports) { 
-    const $Object = require('Object');
-    const Emitter = require('Emitter');
-    const Fn = require('Fn');
     
+    
+    const Headers = module.require('Headers');
     const Ajax = module.require('Ajax');
+    const Proxy = module.require('Proxy');
+    const Response = module.require('Response');
+    const Meta = module.require('Meta');
     
     const mapper = new Map();
-    let idCounter = 0;
+    
+    
+    
     
     class API {
         /**
@@ -31,87 +35,20 @@ define('API', function (require, module, exports) {
             }
     
             name = name || '';
-            config = $Object.deepAssign({}, exports.defaults, config);
+            config = Object.assign({}, exports.defaults, config);
     
-            let id = `definejs-API-${idCounter++}`;
-            let emitter = new Emitter(this);
-            let successCode = config.successCode;
-            let proxy = config.proxy;
+            let ajax = Ajax.make(name, config);
     
-            //支持简写，代理的文件名跟 API 的名称一致。
-            switch (proxy) {
-                case true:
-                    proxy = name + '.js';   //如 `getUsers.js`。
-                    break;
-                case '.json':
-                case '.js':
-                    proxy = name + proxy;   //如 `getUsers.json`。
-                    break;
-            }
-    
-            //发起 ajax 请求所需要的配置对象。
-            let ajax = {
+            let meta = Meta.get(config, {
                 'name': name,
-                'data': config.data,
-                'query': config.query,
-                'url': config.url,
-                'prefix': config.prefix,
-                'ext': config.ext,
-                'random': config.random,
-    
-                'successCode': successCode,
-                'field': config.field,
-                'proxy': proxy,
-                'serialize': config.serialize,
-                'timeout': config.timeout,
-                'headers': config.headers,
-    
-                success(data, json, xhr) { //成功
-                    fireEvent('success', [data, json, xhr]);
-                },
-    
-                fail(code, msg, json, xhr) { //失败
-                    fireEvent('fail', [code, msg, json, xhr]);
-                },
-    
-                error(xhr) { //错误
-                    if (meta.aborted) { //避免因手动调用了 abort() 而导致触发 error 事件。
-                        meta.aborted = false; //归位
-                        return;
-                    }
-    
-                    fireEvent('error', [xhr]);
-                },
-    
-                ontimeout(xhr) { //超时，自定义的
-                    fireEvent('timeout', [xhr]);
-                },
-            };
-    
-            let meta = {
-                'id': id,
                 'ajax': ajax,
-                'status': '',
-                'args': [],
-                'emitter': emitter,
-                'xhr': null,            //缓存创建出来的 xhr 对象。
-                'aborted': false,       //指示是否已调用了 abort()。
-                'fireEvent': fireEvent, //
+                'this': this,
+                'done': function (opt) {
+                    Response.process(meta, opt);
+                },
+            });
     
-                /**
-                * 用于发起 ajax 请求的 get 方法。
-                * 如果想实现自己的 get 方法，可以提供此函数。
-                * 否则使用内部默认的 Ajax.get() 方法。
-                */
-                'get': config.get || Ajax.get,
-    
-                /**
-                * 用于发起 ajax 请求的 post 方法。
-                * 如果想实现自己的 post 方法，可以提供此函数。
-                * 否则使用内部默认的 Ajax.post() 方法。
-                */
-                'post': config.post || Ajax.post,
-            };
+           
     
             mapper.set(this, meta);
     
@@ -121,179 +58,125 @@ define('API', function (require, module, exports) {
             });
     
     
-            //内部共用函数。
-            function fireEvent(status, args, emitter) {
-                status = meta.status = status || meta.status;
-                args = meta.args = args || meta.args;
-                emitter = emitter || meta.emitter;
-                meta.xhr = null; //请求已完成，针对 abort() 方法。
     
-                let len = args.length;
-                let xhr = args[len - 1];
-                let json = args[len - 2];
-                let isSuccess = status == 'success';
-                let isFail = status == 'fail';
-    
-    
-                Fn.delay(config.delay, function () {
-                    //最先触发
-                    let values = emitter.fire('response', [status, json, xhr]);
-    
-                    if (values.includes(false)) {
-                        return;
-                    }
-    
-    
-                    //进一步触发具体 code 对应的事件
-                    if (isSuccess || isFail) {
-                        let code = isSuccess ? successCode : args[0];
-                        values = emitter.fire('code', code, args);
-    
-                        if (values.includes(false)) {
-                            return;
-                        }
-                    }
-    
-    
-                    //在 Proxy 的响应中 xhr 为 null。
-                    if (xhr) {
-                        values = emitter.fire('status', xhr.status, args);
-    
-                        if (values.includes(false)) {
-                            return;
-                        }
-                    }
-    
-                    //触发命名的分类事件，如 success|fail|error|timeout
-                    values = emitter.fire(status, args);
-    
-                    if (values.includes(false)) {
-                        return;
-                    }
-    
-                    //触发总事件。
-                    emitter.fire('done', [status, json, xhr]);
-                });
-            }
         }
     
         // /**
         // * 当前实例的 id。
-        // * 也是最外层的 DOM 节点的 id。
         // */
         // id = '';
     
     
         /**
-        * 发起网络 GET 请求。
+        * 发起 GET 网络请求。
         * 请求完成后会最先触发相应的事件。
-        * @param {Object} [data] 请求的数据对象。
+        * @param {Object} [query] 可选，请求的数据对象。
         *   该数据会给序列化成查询字符串以拼接到 url 中。
+        * @param {Object} [headers] 可选，自定义的请求头键值对对象。
         * @example
             var api = new API('test');
             api.get({ name: 'micty' });
         */
-        get(data) {
-            let meta = mapper.get(this);    //API 类给继承后，this 就是子类的实例。 比如 SSH 继承 API，则 this 为 SSH 的实例，不再是 API 的实例。
-            let emitter = meta.emitter;
+        get(query, headers) {
+            //API 类给继承后，this 就是子类的实例。 
+            //比如 SSH 继承 API，则 this 为 SSH 的实例，不再是 API 的实例。
+            let meta = mapper.get(this);
+            let allHeaders = Headers.make(meta, 'get', headers);
     
-            meta.aborted = false; //归位
+            let req = {
+                time: Date.now(),
+                method: 'get',
+                headers: allHeaders,
+                query,
+            };
     
-            let obj = Object.assign({}, meta.ajax);
-            if (data) {
-                obj.data = data;
+            meta.fire('request', [req]);
+    
+            if (meta.proxy) {
+                Proxy.request(meta, req);
             }
-    
-            data = obj.data;  //这里用 obj.data
-    
-            emitter.fire('request', 'get', [data]);
-            emitter.fire('request', ['get', data]);
-    
-            meta.xhr = meta.get(obj);
+            else {
+                Ajax.request(meta, req);
+            }
     
         }
     
         /**
-        * 发起网络 POST 请求。
+        * 发起 POST 网络请求。
         * 请求完成后会最先触发相应的事件。
-        * @param {Object} [data] POST 请求的数据对象。
-        * @param {Object} [query] 查询字符串的数据对象。
-        *   该数据会给序列化成查询字符串，并且通过 form-data 发送出去。
-        * @return {API} 返回当前 API 的实例 this，因此进一步可用于链式调用。
+        * @param {Object} [data] 可选，post 请求的数据对象。
+        *   该数据会给序列化成字符串，并且通过 form-data 发送出去。
+        * @param {Object} [query] 可选，查询字符串的数据对象。
+        *   该数据会给序列化成查询字符串以拼接到 url 中。
+        * @param {Object} [headers] 可选，自定义的请求头键值对对象。
+        *   该数据会以键值对的方式添加到请求头中。
         */
-        post(data, query) {
+        post(data, query, headers) {
             let meta = mapper.get(this);
-            let emitter = meta.emitter;
-            let ajax = meta.ajax;
+            let allHeaders = Headers.make(meta, 'post', headers);
     
-            meta.aborted = false; //归位
+            let req = {
+                time: Date.now(),
+                method: 'post',
+                headers: allHeaders,
+                query,
+                data,
+            };
     
-            let obj = Object.assign({}, ajax, {
-                'data': data || ajax.data,
-                'query': query || ajax.query,
-            });
+            meta.fire('request', [req]);
     
-            data = obj.data;    //这里用 obj.data
-            query = obj.query;  //这里用 obj.query
-    
-            emitter.fire('request', 'post', [data, query]);
-            emitter.fire('request', ['post', data, query]);
-    
-    
-            meta.xhr = meta.post(obj);
-    
-        }
-    
-        /**
-        * 取消当前已发起但未完成的请求。
-        * 只有已发起了请求但未完成，才会执行取消操作，并会触发 abort 事件。
-        */
-        abort() {
-            let meta = mapper.get(this);
-            let xhr = meta.xhr;
-    
-            if (!xhr) {
-                return;
+            if (meta.proxy) {
+                Proxy.request(meta, req);
+            }
+            else {
+                Ajax.request(meta, req);
             }
     
-            meta.aborted = true;        //先设置状态
-            xhr.abort();                //会触发 ajax.error 事件。
-            meta.emitter.fire('abort'); //
         }
     
     
         /**
         * 绑定事件。
         * 已重载 on({...}，因此支持批量绑定。
-        * @return {API} 返回当前 API 的实例 this，因此进一步可用于链式调用。
         */
         on(...args) {
             let meta = mapper.get(this);
-            let emitter = meta.emitter;
-            let status = meta.status;
-    
-            emitter.on(...args);
-    
-            if (status) { //请求已完成，立即触发
-                let emt = new Emitter(this); //使用临时的事件触发器。
-                emt.on.apply(emt, args);
-                meta.fireEvent(status, meta.args, emt);
-                emt.destroy();
-            }
-    
+            meta.emitter.on(...args);
         }
-    
-    
     
         /**
         * 销毁本实例对象。
         */
         destroy() {
             let meta = mapper.get(this);
-            let emitter = meta.emitter;
-    
-            emitter.destroy();
+            meta.emitter.destroy();
             mapper.delete(this);
+        }
+    
+        /**
+        * 响应代理请求。
+        * 可以生成很复杂的动态数据，并根据提交的参数进行处理，具有真正模拟后台逻辑的能力。
+        * 已重载 response(fn)的情况。
+        * 已重载 response(json)的情况。
+        * @param {function|Object} factory 响应的处理函数或 json 对象。
+        *   当传进来的 factory 为处理函数时，该函数会接收到两个参数：factory(context)。 
+        * 其中： 
+        *   context = {
+        *       method: '',     //请求类型，值为 `get` 或 `post`。
+        *       name: '',       //请求的接口名称，如 `getUsers`。
+        *       base: '',       //代理响应的基础目录，如 `api/`。
+        *       file: '',       //请求代理的实际响应文件，如 `getUsers.js`。
+        *       ext: '',        //请求代理的实际响应文件的后缀名，如 `.js`。
+        *       url: '',        //请求代理的实际响应文件地址，如 `http://localhost:3001/htdocs/api/getUsers.js?E9E4`。
+        *       query: {},      //请求的 query 部分。
+        *       data: {},       //针对 post 请求时的表单数据。
+        *       time: 0,        //请求发起时的客户端时间戳，如 1631608915540。
+        *       headers: {},    //自定义的请求头。
+        *       factory: fn,    //针对代理响应为 js 文件时，此 js 文件里面对应的工厂函数。
+        *   }
+        */
+        static proxy(factory) {
+            Proxy.response(factory);
         }
     }
     

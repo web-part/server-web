@@ -1,6 +1,6 @@
 /**
 * src: @definejs/package/modules/Package/All.js
-* pkg: @definejs/package@1.0.0
+* pkg: @definejs/package@1.0.1
 */
 define('Package/All', function (require, module, exports) { 
     
@@ -39,12 +39,12 @@ define('Package/All', function (require, module, exports) {
     
         let api = new API({
             'url': url,
-            'field': {},    //指定为一个空对象，以把响应解析成 json。
+            'field': null,
         });
     
         api.on({
-            response(status, json, xhr) { 
-                all = json || {};
+            response(res) { 
+                all = res.json || {};
                 done && done(all);
             },
         });

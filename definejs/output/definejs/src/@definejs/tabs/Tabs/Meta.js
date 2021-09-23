@@ -1,6 +1,6 @@
 /**
 * src: @definejs/tabs/modules/Tabs/Meta.js
-* pkg: @definejs/tabs@1.0.2
+* pkg: @definejs/tabs@1.0.3
 */
 define('Tabs/Meta', function (require, module, exports) { 
     
