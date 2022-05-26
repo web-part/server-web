@@ -15,7 +15,6 @@ define.panel('/FileList/Body/Main/Tree/Main', function (require, module, panel) 
     panel.on('init', function () {
         tree = new TextTree({
             'container': panel.$,
-            // 'secondaryKey': 'id',   //如果不指定，则不生成对应的 html 内容。
         });
 
         tree.on('cmd', function (cmd, item) {
@@ -31,11 +30,20 @@ define.panel('/FileList/Body/Main/Tree/Main', function (require, module, panel) 
     panel.on('render', function (opt) {
         let { id, list, } = opt;
 
+        list = list.map((item) => {
+            let keys = item.id.split('/');
+
+            return {
+                'keys': keys,
+            };
+        });
+
+
         tree.render(list);
 
-        if (typeof id == 'string') {
-            tree.highlight(id);
-        }
+        // if (typeof id == 'string') {
+        //     tree.highlight(id);
+        // }
 
 
         panel.fire('render');

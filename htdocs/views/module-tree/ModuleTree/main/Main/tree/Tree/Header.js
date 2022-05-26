@@ -8,7 +8,7 @@ define.panel('/ModuleTree/Main/Tree/Header', function (require, module, panel) {
  
 
     let chks = [
-        { id: 'secondary', text: '文件', chk: null, },
+        { id: 'value', text: '文件', chk: null, },
         { id: 'icon', text: '图标', chk: null, },
         { id: 'tab', text: '缩进', chk: null, },
         { id: 'color', text: '彩色', chk: null, },

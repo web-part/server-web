@@ -19,8 +19,8 @@ define.panel('/ModuleTree/Main/Tree', function (require, module, panel) {
 
 
         Main.on({
-            'cmd': function (cmd, item) {
-                let value = item[cmd];      //cmd 为 `id`、`file`。
+            'cmd': function (cmd, value) {
+                //cmd 为 `id`、`file`。
                 panel.fire(cmd, [value]);
             },
 

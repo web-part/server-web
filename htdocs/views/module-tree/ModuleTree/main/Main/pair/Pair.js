@@ -34,6 +34,7 @@ define.panel('/ModuleTree/Main/Pair', function (require, module, panel) {
 
 
     panel.on('render', function (opt) {
+        
         Data.init(opt);
 
         Header.render();

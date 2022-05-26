@@ -1,6 +1,5 @@
 ﻿
 define.panel('/FileList/Body/Main/List/Dir/GridView', function (require, module, panel) {
-    const $Date = require('@definejs/date');
     const GridView = require('GridView');
     const File = require('File');
 
@@ -18,31 +17,26 @@ define.panel('/FileList/Body/Main/List/Dir/GridView', function (require, module,
 
         gridview = new GridView({
             container: panel.$,
-            primaryKey: 'id',
-            check: false,
-            order: true,
-            class: '',
-            footer: false,
-
             fields: [
-                { caption: '路径', name: 'name', width: 600, class: 'name', dragable: true, delegate: '[data-cmd]', },
-                { caption: '大小', name: 'size', width: 95, class: 'size number', dragable: true, },
-                { caption: '文件数', name: 'files', width: 74, class: 'files number', dragable: true, },
-                { caption: '目录数', name: 'dirs', width: 74, class: 'dirs number', dragable: true, },
+                { caption: '序号', name: 'order', width: 40, class: 'order', },
+                { caption: '路径', name: 'name', width: 600, class: 'name', click: '[data-cmd]', },
+                { caption: '大小', name: 'size', width: 95, class: 'size number', },
+                { caption: '文件数', name: 'files', width: 74, class: 'files number', },
+                { caption: '目录数', name: 'dirs', width: 74, class: 'dirs number', },
             ],
 
         });
 
-        gridview.on('process', 'row', function (row) {
-            
-        });
 
         gridview.on('process', 'cell', {
+            'order': function (cell, { no, }) {
+                return no + 1;
+            },
+
             'name': function (cell) {
-                let item = cell.row.data;
-                let name = item.name;
-                let icon = File.getIcon(item.item);
-                
+                let { name, raw, } = cell.row.item;
+                let icon = File.getIcon(raw);
+
                 if (meta.keyword) {
                     name = name.split(meta.keyword).join(meta.keywordHtml);
                 }
@@ -64,27 +58,16 @@ define.panel('/FileList/Body/Main/List/Dir/GridView', function (require, module,
 
         gridview.on('click', 'cell', {
             'name': {
-                '': function (cell, event) {
-
-                },
-
-                '[data-cmd]': function (cell, event) {
-                    event.stopPropagation();
-                    let item = cell.row.data.item;
+                '[data-cmd]': function (cell, { event, }) {
+                    let item = cell.row.item.raw;
                     panel.fire('item', [item]);
+                    event.stopPropagation();
 
                 },
             },
         });
 
-        gridview.on('click', 'table', function (table, event) {
-            table.column('name', function (cell) {
-                $(cell.element).removeClass('text');
-            });
-        });
 
-
-        gridview.render();
 
 
     });
@@ -109,10 +92,10 @@ define.panel('/FileList/Body/Main/List/Dir/GridView', function (require, module,
         list = list.map(function (item, index) {
             let isFile = item.type == 'file';
             let size = File.getSizeDesc(item.size);
-            let {  name, } = item;
+            let { name, } = item;
 
             if (isFile) {
-      
+
             }
             else { //目录。
                 name += '/';
@@ -124,12 +107,17 @@ define.panel('/FileList/Body/Main/List/Dir/GridView', function (require, module,
                 'size': size.value + ' ' + size.desc,
                 'dirs': item.dirs.length,
                 'files': item.files.length,
-                'item': item, //点击时会用到。
+                'raw': item,       //点击时会用到。
             };
 
         });
 
-        gridview.fill(list);
+
+        //内部分页。
+        gridview.render(list, {
+            no: 1,
+            size: 20,
+        });
 
     });
 

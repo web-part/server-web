@@ -37,8 +37,8 @@ define.panel('/ModuleTree/Main/ModuleInfo/Base', function (require, module, pane
         meta.item = item;
         
         panel.fill({
-            'id': module.id,
-            'name': module.name,
+            'id': module.id || none,
+            'name': module.name || none,
             'parent': parent || '',
             'method': module.method,
             'factory-type': module.factory.type,

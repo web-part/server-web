@@ -37,8 +37,9 @@ define('/ModuleTree/Main/Pair/Data', function (require, module, exports) {
 
             //非根节点，则要包括当前节点。
             if (item.parent) {
-                let pid = id === '' ? '/' : id;
+                let pid = `${id}/`; // id 可能为空串，此时展现为 '(app)'
 
+                //过滤出所有的子节点。
                 list = ids.filter((mid) => {
                     return mid.startsWith(pid);
                 });

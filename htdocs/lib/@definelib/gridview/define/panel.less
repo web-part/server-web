@@ -1,0 +1,116 @@
+
+
+
+.GridView {
+    height: 100%;
+    color: #5a646e;
+
+
+    &.no-data {
+        > p {
+            display: block;
+        }
+    }
+    
+    > header {
+        table {
+            border-spacing: 0;
+
+            thead {
+                background: #f7f7f7;
+                
+                th {
+                    font-size: 12px;
+                    border: solid 1px #e8ecef;
+                    border-right: none;
+                    color: #5f5f5f;
+                    padding: 6px 5px;
+                }
+
+                th:last-child {
+                    border-right: solid 1px #e8ecef;
+                }
+            }
+           
+        }
+    }
+
+    > main {
+        //没有分页器时。
+        &.no-pager {
+            max-height: calc(100% - 31px);
+        }
+
+      
+
+        max-height: calc(100% - 80px);
+        overflow-y: auto;
+        overflow-x: auto;
+        font-size: 14px;
+
+        table {
+            thead {
+                display: none;
+            }
+
+
+            tbody {
+                tr {
+                    th, td {
+                        border-color: #e8ecef !important;
+                    }
+                }
+
+                tr:hover {
+                    background: #FFF6E9;
+                }
+
+                tr:first-child {
+                    td {
+                        border-top: none;
+                    }
+                }
+                tr:last-child {
+                    td {
+                        border-bottom: none;
+                    }
+                }
+            }
+        }
+
+
+        
+    }
+
+    //无数据时。
+    > p {
+        display: none;
+        position: relative;
+        box-sizing: border-box;
+        height: calc(100% - 80px);
+        width: calc(100% - 15px);
+        color: #6a6a6a;
+        border: solid 1px #e8ecef;
+        border-top: none;
+        border-bottom: none;
+        background: #f7f7f74f;
+        min-height: 50px;
+
+        span {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 12px;
+        }
+    }
+
+  
+
+    > footer {
+        text-align: right;
+        margin-right: 15px;
+        border-top: solid 1px #e8ecef;
+
+    }
+}

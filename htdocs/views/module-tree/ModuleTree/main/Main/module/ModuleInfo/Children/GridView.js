@@ -1,38 +1,34 @@
 ﻿
 define.panel('/ModuleTree/Main/ModuleInfo/Children/GridView', function (require, module, panel) {
     const GridView = require('GridView');
- 
+
 
     let gridview = null;
     let tpl = null;
-  
+
 
     panel.on('init', function () {
         tpl = panel.template();
 
         gridview = new GridView({
             container: panel.$,
-            primaryKey: 'id',
-            check: false,
-            order: true,
-            class: '',
-            footer: false,
 
             fields: [
-                { caption: '模块ID', name: 'id', width: 400, class: 'name', dragable: true, delegate: '[data-cmd]', },
-                { caption: '所在文件', name: 'file', width: 400, class: 'file', dragable: true, delegate: '[data-cmd]', },
+                { caption: '序号', name: 'order', width: 40, class: 'order', },
+                { caption: '模块ID', name: 'id', width: 400, class: 'name', },
+                { caption: '所在文件', name: 'file', width: 400, class: 'file', },
             ],
 
         });
 
-        gridview.on('process', 'row', function (row) {
-            
-            
-        });
 
         gridview.on('process', 'cell', {
+            'order': function (cell, { no, }) {
+                return no + 1;
+            },
+
             'id': function (cell) {
-                let item = cell.row.data;
+                let { item, } = cell.row;
 
                 let html = tpl.fill('href', {
                     'cmd': 'id',
@@ -43,7 +39,7 @@ define.panel('/ModuleTree/Main/ModuleInfo/Children/GridView', function (require,
             },
 
             'file': function (cell) {
-                let item = cell.row.data;
+                let { item, } = cell.row;
 
                 let html = tpl.fill('href', {
                     'cmd': 'file',
@@ -56,17 +52,16 @@ define.panel('/ModuleTree/Main/ModuleInfo/Children/GridView', function (require,
 
         });
 
-        gridview.on('click', 'cell', function (cell, event) {
-            let cmd = event.target.dataset.cmd;
+        gridview.on('click', 'cell', function (cell, { event, }) {
+            let { cmd, } = event.target.dataset;
+            let { item, } = cell.row;
 
             if (cmd) {
+                panel.fire('cmd', [cmd, item]);
                 event.stopPropagation();
-                panel.fire('cmd', [cmd, cell.row.data]);
             }
 
         });
-
-        gridview.render();
 
 
     });
@@ -79,9 +74,7 @@ define.panel('/ModuleTree/Main/ModuleInfo/Children/GridView', function (require,
     */
     panel.on('render', function (list) {
 
-      
-
-        gridview.fill(list);
+        gridview.render(list);
 
     });
 

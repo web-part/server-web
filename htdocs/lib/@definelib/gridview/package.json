@@ -1,0 +1,26 @@
+{
+  "name": "@definelib/gridview",
+  "version": "1.0.2",
+  "description": "带有分页功能、能拖拽表头调整列宽的列表类。",
+  "main": "index.js",
+  "scripts": {},
+  "keywords": [],
+  "author": "micty",
+  "email": "mictydeng@qq.com",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/definelib/gridview.git"
+  },
+  "dependencies": {
+    "@definejs/emitter": "^1.1.0",
+    "@definejs/id-maker": "^1.0.1",
+    "@definejs/panel": "^1.0.1",
+    "@definejs/style": "^1.0.0",
+    "@definejs/template": "^1.0.0",
+    "@definelib/jquery": "^1.0.0",
+    "@definelib/pager": "^1.0.1",
+    "@definelib/table": "^1.0.1",
+    "@definelib/table-resizer": "^1.0.1"
+  }
+}

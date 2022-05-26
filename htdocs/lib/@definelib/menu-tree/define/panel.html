@@ -1,0 +1,30 @@
+﻿<template id="tpl-MenuTree">
+    <div id="{id}" {class} {dataset} {style}>
+        <template name="root" placeholder="roots">
+            <ul class="root">
+                {root}
+
+                <template name="dir">
+                    <li data-id="{id}" class="item dir {open} {on}" {style}>
+                        <div data-cmd="item">
+                            <i data-cmd="icon-dir" class="icon {icon}"></i>
+                            <span>{name}</span>
+                        </div>
+                        <ul style="{ul-display}">
+                            {items}
+                        </ul>
+                    </li>
+                </template>
+
+                <template name="file">
+                    <li data-id="{id}" class="item file {on}" {style}>
+                        <div data-cmd="item">
+                            <i class="icon {icon}"></i>
+                            <span>{name}</span>
+                        </div>
+                    </li>
+                </template>
+            </ul>
+        </template>
+    </div>
+</template>

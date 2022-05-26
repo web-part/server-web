@@ -10,8 +10,8 @@ define('/FileList/Body/Main/List/File/Data', function (require, module, exports)
         md5$files: {},
     };
 
-    function filter(list, data, fn) {
-        if (data) {
+    function filter(list, condition, fn) {
+        if (condition) {
             list = list.filter(fn);
         }
 
@@ -128,7 +128,7 @@ define('/FileList/Body/Main/List/File/Data', function (require, module, exports)
             });
 
             if (!cwd) {
-                list = filter(list, childDirs, function (item) {
+                list = filter(list, childDirs.length > 0, function (item) {
                     let { name, } = item;
 
                     let isOK = childDirs.some((dir) => {

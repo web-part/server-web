@@ -1,7 +1,7 @@
 ﻿
 define.panel('/HtmlTree/Main/HtmlLink/BaseInfo/Children/GridView', function (require, module, panel) {
     const GridView = require('GridView');
- 
+
 
     let gridview = null;
     let tpl = null;
@@ -11,18 +11,14 @@ define.panel('/HtmlTree/Main/HtmlLink/BaseInfo/Children/GridView', function (req
 
         gridview = new GridView({
             container: panel.$,
-            primaryKey: 'id',
-            check: false,
-            order: true,
-            class: '',
-            footer: false,
 
             fields: [
-                // { caption: 'id', name: 'id', width: 200, class: 'name', dragable: true, delegate: '[data-cmd]', },
-                { caption: '节点名称', name: 'name', width: 300, class: 'name', dragable: true, delegate: '[data-cmd]', },
-                { caption: '所在文件', name: 'file', width: 500, class: 'file', dragable: true, delegate: '[data-cmd]', },
-                // { caption: '内容行数', name: 'lines', width: 74, class: 'number', dragable: true, delegate: '[data-cmd]', },
-                // { caption: '下级个数', name: 'list', width: 74, class: 'number', dragable: true, delegate: '[data-cmd]', },
+                { caption: '序号', name: 'order', width: 40, class: 'order', },
+                // { caption: 'id', name: 'id', width: 200, class: 'name', },
+                { caption: '节点名称', name: 'name', width: 300, class: 'name', },
+                { caption: '所在文件', name: 'file', width: 500, class: 'file', },
+                // { caption: '内容行数', name: 'lines', width: 74, class: 'number', },
+                // { caption: '下级个数', name: 'list', width: 74, class: 'number', },
             ],
 
         });
@@ -34,8 +30,12 @@ define.panel('/HtmlTree/Main/HtmlLink/BaseInfo/Children/GridView', function (req
 
 
         gridview.on('process', 'cell', {
+            'order': function (cell, { no, }) {
+                return no + 1;
+            },
+
             'name': function (cell) {
-                let item = cell.row.data;
+                let { item, } = cell.row;;
 
                 let html = tpl.fill('href', {
                     'cmd': 'id',
@@ -46,7 +46,7 @@ define.panel('/HtmlTree/Main/HtmlLink/BaseInfo/Children/GridView', function (req
             },
 
             'file': function (cell) {
-                let item = cell.row.data;
+                let { item, } = cell.row;;
 
                 let html = tpl.fill('href', {
                     'cmd': 'file',
@@ -56,23 +56,22 @@ define.panel('/HtmlTree/Main/HtmlLink/BaseInfo/Children/GridView', function (req
                 return html;
             },
 
-          
+
 
 
         });
 
-        gridview.on('click', 'cell', function (cell, event) {
-            let cmd = event.target.dataset.cmd;
+        gridview.on('click', 'cell', function (cell, { event, }) {
+            let { cmd, } = event.target.dataset;
 
             if (cmd) {
                 event.stopPropagation();
-                panel.fire('cmd', [cmd, cell.row.data]);
+                panel.fire('cmd', [cmd, cell.row.item]);
             }
 
         });
-       
 
-        gridview.render();
+
 
 
     });
@@ -85,9 +84,9 @@ define.panel('/HtmlTree/Main/HtmlLink/BaseInfo/Children/GridView', function (req
     */
     panel.on('render', function (list) {
 
-      
 
-        gridview.fill(list);
+
+        gridview.render(list);
 
     });
 

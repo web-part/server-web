@@ -1,4 +1,4 @@
-<div data-panel="/Home/Project" class="box cyan">
+<div data-panel="/Home/Project" class="box">
     <header>
         <span>项目</span>
         <i data-cmd="refresh" class="fas fa-sync" title="刷新当前模块"></i>
@@ -13,7 +13,12 @@
         <template name="table">
             <table>
                 <tbody>
-                    
+                    <tr class="status">
+                        <th>监控状态</th>
+                        <td>
+                            <i class="{status} far fa-{status}-circle"></i>{statusText}
+                        </td>
+                    </tr>
                     <tr class="name">
                         <th>项目名称</th>
                         <td>{name}</td>
@@ -49,12 +54,7 @@
                         <td>{cwd}</td>
                     </tr>
                     
-                    <tr class="status">
-                        <th>监控状态</th>
-                        <td>
-                            <i class="{status} far fa-{status}-circle"></i>{statusText}
-                        </td>
-                    </tr>
+                    
                     <tr class="">
                         <th>启动时间</th>
                         <td>{time}</td>

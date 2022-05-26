@@ -3,6 +3,12 @@
     overflow-x: scroll;
 
     .GridView { 
+
+        > main {
+            &.no-pager {
+                max-height: calc(100% - 49px);
+            }
+        }
         
         tr.error {
             &.dependents td.dependents,
@@ -12,6 +18,11 @@
                  font-weight: bold; 
                  background: #fff9c5;
             };
+        }
+
+        td.order {
+            color: #b1b1b1;
+            text-align: center;
         }
 
         td {

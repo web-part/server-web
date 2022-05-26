@@ -1,0 +1,38 @@
+table.Table {
+
+    border-spacing: 0;
+    table-layout: fixed;
+    // width: 100%;
+
+    thead {
+        background: #eee;
+    }
+
+    tr {
+
+        th {
+
+        }
+            
+        th, td {
+            border: solid 1px #9e9e9e;
+            border-bottom: none;
+            border-right: none;
+            padding: 4px 5px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+    
+        th:last-child, 
+        td:last-child {
+            border-right: solid 1px #9e9e9e;
+        }
+    }
+
+    tr:last-child{
+        td {
+            border-bottom: solid 1px #9e9e9e;
+        }
+    }
+
+}

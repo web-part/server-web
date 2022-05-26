@@ -1,0 +1,23 @@
+{
+  "name": "@definelib/pager",
+  "version": "1.0.1",
+  "description": "分页器类。",
+  "main": "index.js",
+  "scripts": {},
+  "keywords": [],
+  "author": "micty",
+  "email": "mictydeng@qq.com",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/definelib/pager.git"
+  },
+  "dependencies": {
+    "@definejs/array": "^1.1.0",
+    "@definejs/emitter": "^1.1.0",
+    "@definejs/string": "^1.0.0",
+    "@definejs/style": "^1.0.0",
+    "@definejs/template": "^1.0.0",
+    "@definelib/jquery": "^1.0.0"
+  }
+}

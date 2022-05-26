@@ -18,6 +18,9 @@
         '/ModuleTree/Tree/Data',
         '/ModuleTree/Tree',
         '/ModuleTree/Main/ModuleInfo/Base',
+        '/ModuleTree/Main/Tree/Main',
+        '/ModuleTree/Main/List/GridView',
+        '/ModuleTree/Main/Pair/GridView',
     ], {
         none: '(app)',
     });

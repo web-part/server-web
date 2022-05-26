@@ -5,10 +5,11 @@ define('/ModuleTree/Main/Dependent/List/GridView', function (require, module, ex
 
 
     let fields = [
-        { caption: '模块ID', name: 'id', width: 300, class: 'name', dragable: true, delegate: '[data-cmd]', },
-        { caption: '定义方法', name: 'method', width: 110, class: 'file', dragable: true, delegate: '[data-cmd]', },
-        { caption: '级别', name: 'level', width: 49, class: 'number level', dragable: true, },
-        { caption: '所在文件', name: 'file', width: 400, class: 'file', dragable: true, delegate: '[data-cmd]', },
+        { caption: '序号', name: 'order', width: 40, class: 'order', },
+        { caption: '模块ID', name: 'id', width: 300, class: 'name', },
+        { caption: '定义方法', name: 'method', width: 110, class: 'file', },
+        { caption: '级别', name: 'level', width: 49, class: 'number level', },
+        { caption: '所在文件', name: 'file', width: 400, class: 'file', },
     ];
 
 
@@ -24,32 +25,31 @@ define('/ModuleTree/Main/Dependent/List/GridView', function (require, module, ex
 
             let gridview = new GridView({
                 container: container,
-                primaryKey: 'id',
-                check: false,
-                order: true,
-                class: '',
-                footer: false,
                 fields: fields,
             });
 
             gridview.on('process', 'cell', {
+                'order': function (cell, { no, }) {
+                    return no + 1;
+                },
+
                 'id': function (cell) {
-                    let item = cell.row.data;
-                    let html = `<a data-cmd="id" href="javascript:">${item.id}</a>`;
+                    let { item, } = cell.row;
+                    let html = `<a data-cmd="id">${item.id}</a>`;
 
                     return html;
                 },
 
                 'file': function (cell) {
-                    let item = cell.row.data;
-                    let html = `<a data-cmd="file" href="javascript:">${item.file}</a>`;
+                    let { item, } = cell.row;
+                    let html = `<a data-cmd="file">${item.file}</a>`;
 
                     return html;
                 },
             });
 
-            gridview.on('click', 'cell', function (cell, event) {
-                let cmd = event.target.dataset.cmd;
+            gridview.on('click', 'cell', function (cell, { event, }) {
+                let { cmd, } = event.target.dataset;
 
                 if (cmd) {
                     event.stopPropagation();
@@ -59,8 +59,7 @@ define('/ModuleTree/Main/Dependent/List/GridView', function (require, module, ex
             });
 
 
-            gridview.render();
-            gridview.fill(list);
+            gridview.render(list);
 
             return gridview;
         },

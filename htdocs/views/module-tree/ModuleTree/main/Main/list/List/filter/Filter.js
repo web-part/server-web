@@ -91,7 +91,8 @@ define.panel('/ModuleTree/Main/List/Filter', function (require, module, panel) {
 
 
     panel.on('render', function (data, fields) {
-        Fields.render(fields);
+        // Fields.render(fields); //暂时隐藏，因为 gridview 还没实现显示/隐藏指定的列。
+        
         Childs.render(data.childs);
         ChildDependents.render();
         Dependents.render();

@@ -78,7 +78,7 @@ define.panel('/ModuleTree/Main/Dependent/List', function (require, module, panel
                     'list': item.list,
 
                     'cmdClick': function (cmd, cell) {
-                        panel.fire('cmd', [cmd, cell.row.data]);
+                        panel.fire('cmd', [cmd, cell.row.item]);
                     },
                 });
                

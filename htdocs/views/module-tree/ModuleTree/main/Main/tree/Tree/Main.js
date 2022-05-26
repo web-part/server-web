@@ -12,11 +12,21 @@ define.panel('/ModuleTree/Main/Tree/Main', function (require, module, panel) {
     panel.on('init', function () {
         tree = new TextTree({
             'container': panel.$,
-            'secondaryKey': 'file',   //如果不指定，则不生成对应的 html 内容。
         });
 
         tree.on('cmd', function (cmd, item) {
+            
             panel.fire('cmd', [cmd, item,]);
+        });
+
+        tree.on('click', {
+            'key': function (item, event) { 
+                panel.fire('cmd', ['id', item.data.id]);
+            },
+            'value': function (item, event) { 
+              
+                panel.fire('cmd', ['file', item.data.file]);
+            },
         });
 
      
@@ -30,13 +40,31 @@ define.panel('/ModuleTree/Main/Tree/Main', function (require, module, panel) {
 
         let list = ids.map((id) => {
             let file = id$file[id];
-            return { id, file, };
+            let keys = id.split('/');
+
+            keys = keys.map((key) => {
+                return key || module.data.none;
+            });
+
+            return {
+                'keys': keys,
+                'value': file,
+
+                //自定义数据，方便后续访问。
+                'data': {
+                    id,
+                    file,
+                },
+
+            };
         });
+
+       
         
         tree.render(list);
 
         if (typeof id == 'string') {
-            tree.highlight(id);
+            // tree.highlight(id);
         }
 
 

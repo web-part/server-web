@@ -48,17 +48,23 @@ define('/ModuleTree/Main/Dependent/List/Data', function (require, module, export
 
             list = list.sort();
 
+          
+
             list = list.map((id) => {
                 if (!checkValid(id)) {
                     return null;
                 }
 
                 let module = id$module[id];
-                let list = id$dependents[id] || [];
+                let list = id$dependents[id]; //可能是一个空串。
 
                 if (typeof list == 'string') {
                     list = [list];
                 }
+
+                //要放在判断 list 是否为 string 的后面。
+                //因为 list 可能为一个空串(definejs.launch()定义的模块)。
+                list = list || [];
 
                 list = list.map((id) => {
                     let module = id$module[id];

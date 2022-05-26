@@ -17,8 +17,8 @@ define.panel('/ModuleTree/Main/List', function (require, module, panel) {
                 let list = Data.filter(opt);
                 GridView.render(list);
 
-                console.log(opt)
-                GridView.toggleFields(opt.field$checked);
+                // console.log(opt)
+                // GridView.toggleFields(opt.field$checked);
             },
         });
 

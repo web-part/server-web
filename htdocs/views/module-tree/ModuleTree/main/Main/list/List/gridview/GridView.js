@@ -6,17 +6,18 @@ define.panel('/ModuleTree/Main/List/GridView', function (require, module, panel)
     let gridview = null;
 
     let fields = [
-        { caption: '模块ID', name: 'id', width: 300, class: 'name', dragable: true, delegate: '[data-cmd]', },
-        { caption: '定义方法', name: 'method', width: 110, class: 'file', dragable: true, delegate: '[data-cmd]', },
-        { caption: '级别', name: 'level', width: 49, class: 'number level', dragable: true, },
-        { caption: '被依赖模块数', name: 'dependents', width: 61, class: 'number dependents', dragable: true, },
-        { caption: '所依赖公共模块数', name: 'publics', width: 73, class: 'number publics', dragable: true, },
-        { caption: '所依赖私有模块数', name: 'privates', width: 73, class: 'number privates', dragable: true, },
-        { caption: '直接子模块数', name: 'childs', width: 61, class: 'number childs', dragable: true, },
-        { caption: '全部子模块数', name: 'children', width: 61, class: 'number children', dragable: true, },
-        { caption: '同级模块数', name: 'siblings', width: 61, class: 'number siblings', dragable: true, },
-        { caption: '所在的 js 文件', name: 'file', width: 400, class: 'file', dragable: true, delegate: '[data-cmd]', },
-        // { caption: '关联的 html 文件', name: 'htmlFile', width: 400, class: 'file', dragable: true, delegate: '[data-cmd]', },
+        { caption: '序号', name: 'order', width: 40, class: 'order', },
+        { caption: '模块ID', name: 'id', width: 300, class: 'name', },
+        { caption: '定义方法', name: 'method', width: 110, class: 'file', },
+        { caption: '级别', name: 'level', width: 49, class: 'number level', },
+        { caption: '被依赖模块数', name: 'dependents', width: 61, class: 'number dependents', },
+        { caption: '所依赖公共模块数', name: 'publics', width: 73, class: 'number publics', },
+        { caption: '所依赖私有模块数', name: 'privates', width: 73, class: 'number privates', },
+        { caption: '直接子模块数', name: 'childs', width: 61, class: 'number childs', },
+        { caption: '全部子模块数', name: 'children', width: 61, class: 'number children', },
+        { caption: '同级模块数', name: 'siblings', width: 61, class: 'number siblings', },
+        { caption: '所在的 js 文件', name: 'file', width: 400, class: 'file', },
+        // { caption: '关联的 html 文件', name: 'htmlFile', width: 400, class: 'file', },
     ];
 
 
@@ -30,6 +31,7 @@ define.panel('/ModuleTree/Main/List/GridView', function (require, module, panel)
         let htmls = list.map((file) => {
             let html = tpl.fill('href', {
                 'cmd': 'file',
+                'value': file,
                 'text': file,
             });
 
@@ -52,11 +54,6 @@ define.panel('/ModuleTree/Main/List/GridView', function (require, module, panel)
 
         gridview = new GridView({
             container: panel.$,
-            primaryKey: 'id',
-            check: false,
-            order: true,
-            class: '',
-            footer: false,
             fields: fields,
         });
 
@@ -79,19 +76,24 @@ define.panel('/ModuleTree/Main/List/GridView', function (require, module, panel)
         });
 
         gridview.on('process', 'cell', {
+            'order': function (cell, { no, }) {
+                return no + 1;
+            },
+
             'id': function (cell) {
-                let item = cell.row.data;
+                let { item, } = cell.row;
 
                 let html = tpl.fill('href', {
                     'cmd': 'id',
-                    'text': item.id,
+                    'value': item.id,
+                    'text': item.id || module.data.none,
                 });
 
                 return html;
             },
 
             'file': function (cell) {
-                let item = cell.row.data;
+                let { item, } = cell.row;
                 let { html, count, } = fillFile(item.file);
                 if (count > 1) {
                     cell.class += ' error';
@@ -101,7 +103,7 @@ define.panel('/ModuleTree/Main/List/GridView', function (require, module, panel)
             },
 
             'htmlFile': function (cell) {
-                let item = cell.row.data;
+                let { item, } = cell.row;
                 let { html, count, } = fillFile(item.htmlFile);
                 if (count > 1) {
                     cell.class += ' error';
@@ -112,20 +114,17 @@ define.panel('/ModuleTree/Main/List/GridView', function (require, module, panel)
 
         });
 
-        gridview.on('click', 'cell', function (cell, event) {
-            let cmd = event.target.dataset.cmd;
+        gridview.on('click', 'cell', function (cell, { event, }) {
+            let { cmd, value, } = event.target.dataset;
 
             if (!cmd) {
                 return;
             }
 
-            event.stopPropagation();
 
-            let value = event.target.text;
             panel.fire('cmd', [cmd, value]);
+            event.stopPropagation();
         });
-
-        gridview.render();
 
 
     });
@@ -138,8 +137,13 @@ define.panel('/ModuleTree/Main/List/GridView', function (require, module, panel)
     */
     panel.on('render', function (list) {
 
-        gridview.fill(list);
+        gridview.render(list);
 
+        // //内部分页。
+        // gridview.render(list, {
+        //     no: 1,
+        //     size: 20,
+        // });
 
     });
 
@@ -147,9 +151,9 @@ define.panel('/ModuleTree/Main/List/GridView', function (require, module, panel)
     return {
         fields,
 
-        toggleFields(index$checked) {
-            gridview.toggleFields(index$checked);
-        },
+        // toggleFields(index$checked) {
+        //     gridview.toggleFields(index$checked);
+        // },
     };
 
 

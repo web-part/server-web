@@ -38,7 +38,7 @@ define('/Home/Server/Status', function (require, module, exports) {
         test: function (server) {
             let url = Query.add(`${config.url}sse/Terminal.exec`, {
                 cmd: 'echo',
-                args: JSON.stringify(['hello']),
+                args: JSON.stringify([`Server is runnig, tested from '${module.id}'`]),
             });
 
             let status = true;
