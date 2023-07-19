@@ -6,20 +6,16 @@ define.panel('/FileList/Body/Main/Tree/Main', function (require, module, panel) 
  
     let tree = null;
 
-    let meta = {
-        $view: null,
-    };
-
-
 
     panel.on('init', function () {
         tree = new TextTree({
             'container': panel.$,
         });
 
-        tree.on('cmd', function (cmd, item) {
+        tree.on('cmd', function (cmd, item, event) {
             panel.fire('cmd', [cmd, item,]);
         });
+
 
         
     });
@@ -27,26 +23,53 @@ define.panel('/FileList/Body/Main/Tree/Main', function (require, module, panel) 
    
 
 
-    panel.on('render', function (opt) {
-        let { id, list, } = opt;
+    panel.on('render', function (item, dirOnly) {
+        let { parents, } = item;
+        let root = parents.slice(-1)[0] || item;
+
+        let list = [
+            ...parents,
+            item,
+        ];
+
+        if (dirOnly) {
+            list = [...list, ...item.data.global.dirs];
+        }
+        else {
+            list = [...list, ...item.children];
+        }
+
 
         list = list.map((item) => {
-            let keys = item.id.split('/');
+            let { id, type, } = item;
+            let keys = id.split('/');
+
+            if (type == 'dir') {
+                keys = keys.slice(0, -1); //最后一项是空串。
+            }
+
+            if (id == '/') {
+                keys = [item.name];
+            }
+            else {
+                keys = [root.name, ...keys];
+            }
 
             return {
-                'keys': keys,
+                type,
+                keys,
+                data: { item, },
+                dataset: { id, },
             };
         });
-
+        
+        
 
         tree.render(list);
 
-        // if (typeof id == 'string') {
-        //     tree.highlight(id);
-        // }
+        tree.$.find(`li[data-id="${item.id}"]`).addClass('current');
 
 
-        panel.fire('render');
 
 
     });

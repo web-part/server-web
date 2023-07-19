@@ -1,0 +1,89 @@
+
+[data-panel="/Tool/Less/Header"] {
+    position: relative;
+
+  
+    > ul.left {
+        display: inline-block;
+        // width: calc(50% - 3px);
+        width: 100%;
+        position: relative;
+        font-size: 18px;
+        padding: 9px 0px 7px 10px;
+        background: #444;
+        box-sizing: border-box;
+        color: #bbbbbb;
+        border-bottom: solid 1px #6b6055;
+        .icon {
+            cursor: pointer;
+            margin-left: 12px;
+
+            &:hover {
+                color: #fff;
+            }
+        }
+
+        li {
+            display: inline-block;
+            cursor: pointer;
+
+            &.spliter {
+                margin-left: 171px;
+            }
+           
+
+           
+        }
+
+        li.right {
+            float: right;
+            width: 50%;
+            cursor: unset;
+
+            li {
+                margin-right: 15px;
+            }
+
+            .md5 {
+                cursor: unset;
+                font-size: 18px;
+                font-family: monospace;
+                float: right;
+            }
+        }
+
+        button {
+            border: solid 1px #1ea2f1;
+            border-radius: 4px;
+            background: #1ea2f1;
+            color: #fff;
+            padding: 1px 6px;
+            cursor: pointer;
+
+            &:hover {
+                border: solid 1px #0d80c5;
+                background: #0d80c5;
+            }
+
+
+        }
+    }
+
+
+   
+    .icon.on{
+        color: #ff9800;
+
+        &:hover{
+            color: #ff9800 !important;
+        }
+    }
+
+    
+
+   
+
+   
+
+    
+}

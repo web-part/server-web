@@ -6,16 +6,17 @@ define.panel('/Log/Header', function (require, module, panel) {
     let chks = [
         { id: 'time', cmd: 'time', checked: true, fireNow: true, text: '时间', },
         { id: 'color', cmd: 'color', checked: true, fireNow: true, text: '彩色', },
-        { id: 'highlight', cmd: 'highlight', checked: false, fireNow: true, text: '高亮当前行', },
+        { id: 'highlight', cmd: 'highlight', checked: true, fireNow: true, text: '高亮当前行', },
         { id: 'border', cmd: 'border', checked: false, fireNow: true, text: '边线', },
+        { id: 'order', cmd: 'order', checked: false, fireNow: true, text: '序号', },
     ];
 
     panel.on('init', function () {
         panel.$on('click', {
             '[data-cmd]': function (event) {
+                //`reload`、`clear`
                 let { cmd, } = event.currentTarget.dataset;
-
-                panel.fire('cmd', cmd, []);
+                panel.fire(cmd, []);
             },
         });
 
@@ -47,9 +48,7 @@ define.panel('/Log/Header', function (require, module, panel) {
     });
 
     return {
-        close(closed) {
-            
-        },
+        
     };
 
 

@@ -4,12 +4,13 @@ define.panel('/ModuleTree/Main/Content', function (require, module, panel) {
     const Header = module.require('Header');
     const Tabs = module.require('Tabs');
     const MarkDoc = module.require('MarkDoc');
+    const API = module.require('API');
 
 
 
     let meta = {
-        jsInfo: null,
-        htmlInfo: null,
+        js: null,
+        html: null,
     };
 
     panel.on('init', function () {
@@ -18,7 +19,7 @@ define.panel('/ModuleTree/Main/Content', function (require, module, panel) {
             MarkDoc.render(info);
         }
 
-        
+
         Header.on({
             'file': function (file) {
                 panel.fire('file', [file]);
@@ -27,16 +28,36 @@ define.panel('/ModuleTree/Main/Content', function (require, module, panel) {
 
         Tabs.on({
             'js': function () {
-                render(meta.jsInfo);
+                render(meta.js);
             },
             'html': function () {
-                render(meta.htmlInfo);
+                render(meta.html);
             },
         });
 
         MarkDoc.on({
             'render': function (titles) {
                 panel.fire('render', [titles]);
+            },
+        });
+
+
+        API.on('success', {
+            'read': function (file$item) {
+                
+                let { js, html, } = meta;
+
+                if (js) {
+                    js.content = file$item[js.file].content;
+                }
+
+                if (html) {
+                    html.content = file$item[html.file].content;
+                }
+
+                console.log(meta)
+
+                Tabs.render({ js, html, });
             },
         });
 
@@ -57,18 +78,25 @@ define.panel('/ModuleTree/Main/Content', function (require, module, panel) {
         meta.item = item;
         meta.stat = stat;
 
-        let { id, } = item.data;
-        let jsInfo = stat.moduleStat.id$info[id];
-        let htmlInfo = stat.htmlStat.id$info[id];
 
-        meta.jsInfo = jsInfo;
-        meta.htmlInfo = htmlInfo;
+        let { id, file, } = item.data.module;
+        let { moduleStat, htmlStat, } = stat;
+        let html = htmlStat.id$module[id];
+        let files = [file];
 
+        meta.js = { file, };
+        meta.html = null;
 
-        Tabs.render({
-            'js': jsInfo,
-            'html': htmlInfo,
-        });
+        if (html) {
+            let { file, } = html;
+
+            files.push(file);
+            meta.html = { file, };
+        }
+
+       
+
+        API.read(files);
     });
 
 

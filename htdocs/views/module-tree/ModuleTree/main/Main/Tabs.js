@@ -1,50 +1,38 @@
 ﻿
 
 define.panel('/ModuleTree/Main/Tabs', function (require, module, panel) {
-    const Tabs = require('@definejs/tabs');
-    const Storage = require('@definejs/local-storage');
+    const Tabs = require('Tabs');
 
 
     let allList = [
-        { name: '依赖关系', cmd: 'dependent', root: true, },
-        { name: '模块列表', cmd: 'list', root: true, },
-        { name: '组织架构', cmd: 'tree', root: true, },
-        { name: '模块配对', cmd: 'pair', root: true, },
-        { name: '模块信息', cmd: 'module', },
-        { name: '文件信息', cmd: 'file', },
-        { name: '文件内容', cmd: 'content', },
+        { name: '统计', cmd: 'Stat', icon: 'fas fa-chart-bar', root: true, },
+        { name: '依赖关系', cmd: 'Dependent', icon: 'fas fa-share-nodes', root: true, },
+        { name: '模块列表', cmd: 'List', icon: 'fas fa-list', root: true, },
+        { name: '组织架构', cmd: 'Tree', icon: 'fas fa-folder-tree', root: true, },
+        { name: '模块信息', cmd: 'ModuleInfo', icon: 'fas fa-circle-info', },
+        { name: '文件信息', cmd: 'FileInfo', icon: 'fas fa-file', },
+        { name: '文件内容', cmd: 'Content', icon: 'fas fa-file-lines', },
+
     ];
 
 
-    let list = [];
     let tabs = null;
-    let storage = null;
 
     let meta = {
-        index: 0,
         cmd$module: null,
+        list: [],
     };
 
 
     panel.on('init', function () {
-        storage = new Storage(module.id);
-        meta.index = storage.get('index') || 0;
 
         tabs = new Tabs({
             container: panel.$.get(0),
-            activedClass: 'on',
-            eventName: 'click',
-            selector: '>li',
-            repeated: true, //这里要允许重复激活相同的项。
+            storage: module.id,
         });
 
 
         tabs.on('change', function (item, index) {
-            meta.index = index;
-            item = list[index];
-            storage.set('index', index);
-
-
             let { cmd, } = item;
             let { cmd$module, } = meta;
 
@@ -71,30 +59,18 @@ define.panel('/ModuleTree/Main/Tabs', function (require, module, panel) {
     /**
     * 渲染。
     */
-    panel.on('render', function (isRoot) {
+    panel.on('render', function (item) {
+        meta.list = allList;
 
-        list = allList;
-
-        if (isRoot) {
-            list = list.filter((item) => {
+        if (!item.parent) {
+            meta.list = meta.list.filter((item) => {
                 return item.root;
             });
         }
 
-        tabs.render(list, function (item, index) {
-            return {
-                'index': index,
-                'name': item.name,
-            };
-        });
+        tabs.render(meta.list);
 
-
-        //列表长度可能发生了变化。
-        if (meta.index > list.length - 1) {
-            meta.index = 0;
-        }
-
-        tabs.active(meta.index);
+        tabs.active();
 
     });
 

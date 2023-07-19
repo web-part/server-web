@@ -25,13 +25,15 @@ define.panel('/Log/Filter/Dates', function (require, module, panel) {
 
 
 
-    panel.on('render', function (list) {
+    panel.on('render', function (list, item$checked) {
 
         list = list.map((item) => {
 
+            let checked = item$checked[item];
+
             return {
                 'text': item,
-                'checked': true,
+                'checked': checked,
                 'value': item,
             };
         });

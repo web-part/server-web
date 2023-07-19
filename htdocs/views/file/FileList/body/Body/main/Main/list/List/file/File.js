@@ -7,8 +7,7 @@ define.panel('/FileList/Body/Main/List/File', function (require, module, panel) 
 
 
     let meta = {
-        'root': '',
-        'item': null,
+        item: null,
     };
 
 
@@ -17,18 +16,10 @@ define.panel('/FileList/Body/Main/List/File', function (require, module, panel) 
        
         Filter.on({
             'change': function (filter) {
-                
-                filter = Object.assign({}, filter, {
-                    'cwd': filter.cwd ? meta.item.id : '',
-                });
+                let keyword = filter.name;
+                let { list, isRepeatMode, } = Data.filter(meta.item, filter);
 
-                let {list, isMd5Mode, } = Data.filter(filter);
-
-                GridView.render(list, {
-                    'keyword': filter.name,
-                    'root': meta.root,
-                    'isMd5Mode': isMd5Mode,
-                });
+                GridView.render(list, { keyword, isRepeatMode, });
 
             },
         });
@@ -44,27 +35,16 @@ define.panel('/FileList/Body/Main/List/File', function (require, module, panel) 
 
     /**
     * 渲染内容。
-    *   opt = {
-    *       list:  [],  //文件列表。
-    *       item: {},   //当前菜单项。
-    *       root: '',   //根目录。
-    *   };
     */
-    panel.on('render', function (opt) {
-        if (opt.item === meta.item) {
+    panel.on('render', function (item) {
+        if (item === meta.item) {
             panel.show();
             return;
         }
         
-        let { exts, } = Data.init(opt.list);
 
-        meta.item = opt.item;
-        meta.root = opt.root;
-
-        Filter.render({
-            'exts': exts,
-            'item': meta.item,
-        });
+        meta.item = item;
+        Filter.render(item);
 
 
     });

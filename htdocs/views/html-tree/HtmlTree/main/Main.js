@@ -1,7 +1,6 @@
 ﻿
 define.panel('/HtmlTree/Main', function (require, module, panel) {
     const Nav = module.require('Nav');
-    
     const JsLink = module.require('JsLink');        //CssLink 和 LessLink 共用 JsLink。
     const HtmlLink = module.require('HtmlLink');
     const HtmlBlock = module.require('HtmlBlock');  //LessBlock 和 JsBlock 共用 HtmlBlock。

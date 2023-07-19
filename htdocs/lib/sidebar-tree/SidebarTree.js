@@ -79,11 +79,12 @@ define('SidebarTree', function (require, module, exports) {
             return html;
         }
 
-        render(options) {
+        //name 可选。
+        render(data) {
             let meta = mapper.get(this);
 
             this.init();
-            meta.panel.render(options);
+            meta.panel.render(data);
         }
 
         on(...args) {
@@ -95,6 +96,11 @@ define('SidebarTree', function (require, module, exports) {
             let meta = mapper.get(this);
 
             meta.panel.open(id);
+        }
+
+        each(fn) { 
+            let meta = mapper.get(this);
+            meta.panel.each(fn);
         }
 
     }

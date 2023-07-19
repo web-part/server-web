@@ -5,12 +5,13 @@ define('/Home/JsModule/Main/Data', function (require, module, exports) {
     return {
         
         parse(stat) {
-            let { ids, id$module, id$children, singles, level$ids, } = stat.moduleStat;
+            let { id$module, level$ids, } = stat.moduleStat;
 
+            let ids = Object.keys(id$module);
             let nones = [];         //空 id 的模块列表，一般只有一个，index.js 中的 launch()。
             let publics = [];       //公共模块列表。
             let privates = [];      //私有模块列表。
-            
+            let singles = [];       //单模块。
             let parents = [];       //父模块列表。
 
             //按定义的方式。
@@ -25,8 +26,7 @@ define('/Home/JsModule/Main/Data', function (require, module, exports) {
                     return;
                 }
 
-                let { level, } = id$module[id];
-                let children = id$children[id] || [];
+                let { level, children, method, } = id$module[id];
                 let hasChild = children.length > 0;
 
                 //有儿子的模块，即父模块。
@@ -36,15 +36,15 @@ define('/Home/JsModule/Main/Data', function (require, module, exports) {
 
                 if (level == 1) {
                     publics.push(id);
+                    if (!hasChild) {
+                        singles.push(id);
+                    }
                 }
                 else { //二级或以上。
                     privates.push(id);
                 }
 
                 //按模块的定义方式。
-                let module = id$module[id];
-                let { method, } = module;
-
                 if (method.endsWith('.view')) {
                     views.push(id);
                 }

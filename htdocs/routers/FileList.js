@@ -3,16 +3,15 @@
 
     return {
         'demo': function (file) {
-            let url = `#!${file}`;
-            window.open(url);
+            window.open(`#!${file}`);
         },
 
-        'open': function (url) {
-            window.open(url);
+        'open': function (file) {
+            window.open(file);
         },
         
-        'edit': function (name) {
-            Master.open('DocAdd', [{ name, }]);
+        'edit': function (file) {
+            Master.open('DocAdd', [file]);
         },
 
         'compile-less': function (content) {

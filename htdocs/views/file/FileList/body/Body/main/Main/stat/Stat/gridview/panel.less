@@ -1,0 +1,77 @@
+[data-panel="/FileList/Body/Main/Stat/GridView"] {
+    height: calc(100% - 38px);
+    font-size: 14px;
+    box-sizing: border-box;
+    overflow-x: scroll;
+
+    .GridView {
+
+        tr.top {
+            .bar {
+                background: #CDDC39;
+            }
+
+            td {
+                font-weight: bold;
+            }
+
+           
+        }
+
+        tr.group-begin {
+            td {
+                border-top-color: #000;
+            }
+        }
+
+        td.order {
+            color: #b1b1b1;
+            text-align: center;
+        }
+
+        td.icon {
+            text-align: center;
+
+            i {
+                font-size: 20px;
+            }
+        }
+
+        td.name {
+            color: #000;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+
+
+        }
+
+
+        td.number {
+            position: relative;
+            text-align: right !important;
+
+        }
+
+        .info {
+            position: relative;
+            z-index: 1;
+
+            .desc {
+                color: #00a8f4;
+            }
+        }
+
+        .bar {
+            background: #8BC34A;
+            width: 50%;
+            height: 100%;
+            position: absolute;
+            left: 0px;
+            z-index: 1;
+        }
+
+
+
+    }
+}

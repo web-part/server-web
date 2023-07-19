@@ -13,18 +13,28 @@
 
     table {
         font-size: 14px;
+        tr:hover {
+            background-color: #eee;
+        }
 
         th {
             text-align: right;
             box-sizing: border-box;
+            border-bottom: solid 1px #eee;
 
             &:after {
                 content: ':';
+                color: #4d4d4d;
+                font-weight: normal;
+                display: inline-block;
+                margin-left: 4px;
             }
         }
 
         td {
             padding-left: 10px;
+            text-align: right;
+            border-bottom: solid 1px #eee;
         }
 
         tr.sname {
@@ -68,7 +78,8 @@
         }
 
         .desc {
-            color: #d0d0d0;
+            // color: #d0d0d0;
+            color: #00a8f4,
         }
 
         tr.time {

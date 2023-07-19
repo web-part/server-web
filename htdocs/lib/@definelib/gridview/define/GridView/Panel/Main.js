@@ -1,4 +1,4 @@
-﻿
+
 
 define('GridView/Panel/Main', function (require, module, exports) {
     const Panel = require('@definejs/panel');
@@ -7,7 +7,6 @@ define('GridView/Panel/Main', function (require, module, exports) {
 
     return function (meta) {
         let panel = new Panel(`[data-panel="${meta.id}/Main"]`);
-
         let table = null;
         let resizer = null;
 
@@ -34,14 +33,14 @@ define('GridView/Panel/Main', function (require, module, exports) {
 
             tpl = panel.template();
 
-            table = new Table({
+            table = exports.table = new Table({
                 'container': panel.$,
                 'fields': fields,
                 'header': false,
                 'meta': true,
             });
 
-            resizer = new TableResizer({
+            resizer = exports.resizer = new TableResizer({
                 'container': `#${table.id}`,
                 'fields': fields,
                 'class': '',  //这里要去掉默认的 `TableResizer` 类名，可避免一些样式冲突。
@@ -95,11 +94,11 @@ define('GridView/Panel/Main', function (require, module, exports) {
                     let { click, } = cell.column.field; //如 { click: '[data-cmd]', }
 
                     if (click) {
-                        let target = $(element).find(click).get(0);
+                        let target = $(element).find(click).get(0); //可能为空。
 
                         //单元格里面的子元素触发的。
                         //符合监听的元素选择规则，则触发。
-                        if (target.contains(event.target)) {
+                        if (target && target.contains(event.target)) {
                             meta.emitter.fire('click', 'cell', cell.name, click, args);
                         }
                     }
@@ -124,6 +123,8 @@ define('GridView/Panel/Main', function (require, module, exports) {
 
 
         return panel.wrap({
+            exports,
+
             setWidth(index, width) {
                 resizer.set(index, width);
             },

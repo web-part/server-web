@@ -28,13 +28,13 @@ define.panel('/ModuleTree/Main/Content/MarkDoc', function (require, module, pane
             return;
         }
 
-        let { content, ext, } = info;
-        let language = ext.slice(1);
+        let { content, file, } = info;
+        let ext = file.split('.').slice(-1)[0];
 
 
         markdoc.render({
             'content': content,
-            'language': language,
+            'language': ext,
             'baseUrl': '',
             'code': {
                 'format': false,

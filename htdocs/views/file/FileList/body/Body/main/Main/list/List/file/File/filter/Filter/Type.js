@@ -27,11 +27,13 @@ define.panel('/FileList/Body/Main/List/File/Filter/Type', function (require, mod
 
 
 
-    panel.on('render', function (exts) {
+    panel.on('render', function (item) {
+
+        let { exts, } = item.data.global;
 
         list = exts.map((ext) => {
             return {
-                'text': `${ext.slice(1)} 文件`,
+                'text': ext ? `.${ext}` : `(无后缀)`,
                 'checked': true,
                 'value': ext,
             };

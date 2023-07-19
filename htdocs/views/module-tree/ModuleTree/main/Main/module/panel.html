@@ -22,8 +22,8 @@
                     <td>{method}</td>
                 </tr>
                 <tr class="type">
-                    <th>导出工厂</th>
-                    <td>{factory-type}</td>
+                    <th>工厂类型</th>
+                    <td>{factory}</td>
                 </tr>
                 <tr>
                     <th>级别</th>
@@ -37,59 +37,21 @@
         </template>
     </div>
 
-    <div data-panel="/ModuleTree/Main/ModuleInfo/Dependents">
-        <h1><i class="fa fa-folder"></i>被依赖的模块</h1>
-        <div data-panel="/ModuleTree/Main/ModuleInfo/Dependents/GridView">
-            <template name="href">
-                <a data-cmd="{cmd}">{text}</a>
-            </template>
-        </div>
-    </div>
 
-    <div data-panel="/ModuleTree/Main/ModuleInfo/Publics">
-        <h1><i class="fa fa-folder"></i>所依赖的公共模块</h1>
-        <div data-panel="/ModuleTree/Main/ModuleInfo/Publics/GridView">
-            <template name="href">
-                <a data-cmd="{cmd}">{text}</a>
-            </template>
-        </div>
-    </div>
+    <ul data-panel="/ModuleTree/Main/ModuleInfo/Groups">
+        <template name="group" placeholder="groups">
+            <li data-index="{index}">
+                <h1><i class="fa fa-folder"></i>{name}</h1>
+                <div data-id="gridview-{index}">
+                    <template name="href">
+                        <a data-cmd="{cmd}">{text}</a>
+                    </template>
+                </div>
+            </li>
+        </template>
+    </ul>
+  
 
-    <div data-panel="/ModuleTree/Main/ModuleInfo/Privates">
-        <h1><i class="fa fa-folder"></i>所依赖的私有模块</h1>
-        <div data-panel="/ModuleTree/Main/ModuleInfo/Privates/GridView">
-            <template name="href">
-                <a data-cmd="{cmd}">{text}</a>
-            </template>
-        </div>
-    </div>
-   
-
-    <div data-panel="/ModuleTree/Main/ModuleInfo/Childs" style="display: none;">
-        <h1><i class="fa fa-folder"></i>直接子模块</h1>
-        <div data-panel="/ModuleTree/Main/ModuleInfo/Childs/GridView">
-            <template name="href">
-                <a data-cmd="{cmd}">{text}</a>
-            </template>
-        </div>
-    </div>
-
-    <div data-panel="/ModuleTree/Main/ModuleInfo/Children" style="display: none;">
-        <h1><i class="fa fa-folder"></i>全部子模块</h1>
-        <div data-panel="/ModuleTree/Main/ModuleInfo/Children/GridView">
-            <template name="href">
-                <a data-cmd="{cmd}">{text}</a>
-            </template>
-        </div>
-    </div>
-
-    <div data-panel="/ModuleTree/Main/ModuleInfo/Siblings">
-        <h1><i class="fa fa-folder"></i>兄弟模块</h1>
-        <div data-panel="/ModuleTree/Main/ModuleInfo/Siblings/GridView">
-            <template name="href">
-                <a data-cmd="{cmd}">{text}</a>
-            </template>
-        </div>
-    </div>
+    
 
 </div>

@@ -17,9 +17,14 @@ define('MenuTree/Template', function (require, module, exports) {
             let tpl = new Template(meta.template);
 
             function fill(item, index) {
-                let isDir = item.list.length > 0;
-                let name = isDir ? 'dir' : 'file';
-                let html = tpl.fill('root', name, item);
+                let { id, type, list, } = item;
+
+                //未指定类型，则自动推断。
+                if (!type) {
+                    type = list.length > 0 || id.endsWith('/') ? 'dir' : 'file';
+                }
+
+                let html = tpl.fill('root', type, item);
 
                 return html;
             }
@@ -71,8 +76,8 @@ define('MenuTree/Template', function (require, module, exports) {
                         this.fix(['dataset', 'style',]);
 
                         let { current, } = meta;
-                        let { open, id, } = item;
-                        let items = item.list.map(fill);
+                        let { open, id, list, } = item;
+                        let items = list.map(fill);
                         let dirIcon = item.dirIcon || meta.dirIcon;
                         let style = Style.stringify(item.style);
                         let dataset = DataSet.stringify(item.dataset);
@@ -91,9 +96,10 @@ define('MenuTree/Template', function (require, module, exports) {
                             'name': name || '',
                             'open': open ? 'open' : '',
                             'on': current && id == current.id ? 'on' : '',
+                            'empty': list.length > 0 ? '' : 'empty',
                             'style': style,
                             'dataset': dataset,
-                            'ul-display': open ? 'display: block;' : 'display: none;',
+                            'ul-display': open ? '' : 'display: none;',
                             'icon': open ? dirIcon.open : dirIcon.close,
                             'items': items,
                         };

@@ -4,6 +4,9 @@ define.panel('/FileList/Body/Main/Icon', function (require, module, panel) {
     const List = module.require('List');
 
 
+    let meta = {
+        item: null,
+    };
 
 
     panel.on('init', function () {
@@ -18,15 +21,15 @@ define.panel('/FileList/Body/Main/Icon', function (require, module, panel) {
 
     /**
     * 渲染内容。
-    *   opt = {
-    *       list:  [],  //文件列表。
-    *       item: {},   //当前菜单项。
-    *       root: '',   //根目录。
-    *   };
     */
-    panel.on('render', function (opt) {
+    panel.on('render', function (item) {
+        if (item === meta.item) {
+            panel.show();
+            return;
+        }
 
-        List.render(opt.item.list);
+        meta.item = item;
+        List.render(item.list);
 
     });
 

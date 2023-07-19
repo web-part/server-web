@@ -15,7 +15,7 @@ define.panel('/HtmlTree/Main/HtmlBlock/BaseInfo/Children/GridView', function (re
             fields: [
                 { caption: '序号', name: 'order', width: 40, class: 'order', },
                 // { caption: 'id', name: 'id', width: 200, class: 'name', },
-                { caption: '节点名称', name: 'name', width: 300, class: 'name', },
+                { caption: '节点名称', name: 'name', width: 400, class: 'name', },
                 { caption: '所在文件', name: 'file', width: 500, class: 'file', },
                 // { caption: '内容行数', name: 'lines', width: 74, class: 'number', },
                 // { caption: '下级个数', name: 'list', width: 74, class: 'number', },

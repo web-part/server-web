@@ -30,7 +30,7 @@ define.panel('/HtmlTree/Tree', function (require, module, panel) {
                 let w = tree.$.outerWidth();
 
                 panel.$.width(w);
-                panel.fire('resize');
+                panel.fire('resize', [w]);
             },
             'fill': {
                 'name': function (item) {

@@ -9,6 +9,7 @@ define('MenuTree', function (require, module, exports) {
     const Events = module.require('Events');
     const Meta = module.require('Meta');
     const Template = module.require('Template');
+    const Files = module.require('Files');
 
    
     const mapper = new Map();
@@ -41,6 +42,13 @@ define('MenuTree', function (require, module, exports) {
             this.id = meta.id;
         }
 
+        each(fn) { 
+            let meta = mapper.get(this);
+            meta.list.forEach((node) => {
+                Data.each(node, fn);
+            });
+        }
+
         /**
         * 渲染 HTML 到容器中以生成 DOM 节点。
         * @returns
@@ -58,7 +66,10 @@ define('MenuTree', function (require, module, exports) {
             }
 
             //首次渲染。
-            Data.make(list, meta);
+            //data = { list, items, id$item, cid$item, };
+            let data = Data.make(list);
+            Object.assign(meta, data);
+            
 
             let html = meta.tpl.fill({}); //填充全部。
 
@@ -74,7 +85,10 @@ define('MenuTree', function (require, module, exports) {
         update(list) {
             let meta = mapper.get(this);
 
-            Data.make(list, meta);
+            //data = { list, items, id$item, cid$item, };
+            let data = Data.make(list);
+            Object.assign(meta, data);
+
 
             let html = meta.tpl.fill('root', meta.list);
 
@@ -124,6 +138,7 @@ define('MenuTree', function (require, module, exports) {
             }
 
             let $li = item.$ = item.$ || meta.$.find(`li[data-id="${item.id}"]`);
+
             $li.find(`>[data-cmd="item"]`).trigger('click');
 
         }
@@ -136,7 +151,12 @@ define('MenuTree', function (require, module, exports) {
             meta.emitter.on(...args);
         }
 
+        
+
     }
+
+    //静态方法。
+    MenuTree.parse = Files.parse;
 
 
     module.exports = exports = MenuTree;

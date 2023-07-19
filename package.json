@@ -1,6 +1,6 @@
 {
     "name": "@webpart/server-web",
-    "version": "1.0.0",
+    "version": "2.0.0",
     "description": "用于开发阶段的本地 web 服务器的页面部分。",
     "scripts": {
         "server": "webpart server --open",
@@ -20,8 +20,7 @@
         "url": "git+https://github.com/web-part/server-web.git"
     },
     "devDependencies": {
-        "@webpart/cli": "^2.2.6",
-        "@webpart/proxy": "^1.0.0"
+      
     },
     "bugs": {
         "url": "https://github.com/web-part/server-web/issues"

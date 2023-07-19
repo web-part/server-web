@@ -20,8 +20,8 @@ define('/Terminal/Command/FileList', function (require, module, exports) {
         /**
         * 读取指定文件系统信息。
         */
-        get: function () {
-            let api = new API('FileList.read', {
+        get() {
+            let api = new API('FileSystem.list', {
                 // proxy: '.json',
             });
 
@@ -47,9 +47,7 @@ define('/Terminal/Command/FileList', function (require, module, exports) {
                 },
             });
 
-            api.get({
-                'id': '/',
-            });
+            api.get();
 
         },
 

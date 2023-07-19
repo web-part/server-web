@@ -1,19 +1,25 @@
 ﻿
 define.panel('/ModuleTree/Main/List/Filter', function (require, module, panel) {
+    const Keyword = module.require('Keyword');
     const Fields = module.require('Fields');
     const Childs = module.require('Childs');
     const ChildDependents = module.require('ChildDependents');
     const Dependents = module.require('Dependents');
     const Levels = module.require('Levels');
     const Methods = module.require('Methods');
+    const HtmlFile = module.require('HtmlFile');
+
 
     let meta = {
+        keyword: '',
         field$checked: null,
         child$checked: null,
         childDependent$checked: null,
         dependent$checked: null,
         level$checked: null,
         method$checked: null,
+        html$checked: null,
+
     };
 
     panel.on('init', function () {
@@ -39,6 +45,13 @@ define.panel('/ModuleTree/Main/List/Filter', function (require, module, panel) {
 
             return key$checked;
         }
+
+        Keyword.on({
+            'change': function (keyword) {
+                meta.keyword = keyword;
+                fireChange();
+            },
+        });
 
         Fields.on({
             'check': function (list) {
@@ -84,6 +97,13 @@ define.panel('/ModuleTree/Main/List/Filter', function (require, module, panel) {
             },
         });
 
+        HtmlFile.on({
+            'check': function (list) {
+                meta.html$checked = make(list);
+                fireChange();
+            },
+        });
+
         
   
     });
@@ -93,11 +113,15 @@ define.panel('/ModuleTree/Main/List/Filter', function (require, module, panel) {
     panel.on('render', function (data, fields) {
         // Fields.render(fields); //暂时隐藏，因为 gridview 还没实现显示/隐藏指定的列。
         
+        Keyword.render();
         Childs.render(data.childs);
         ChildDependents.render();
         Dependents.render();
         Levels.render(data.levels);
         Methods.render(data.methods);
+
+        HtmlFile.render();
+
 
 
     });

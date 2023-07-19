@@ -1,43 +1,34 @@
 ﻿
 define.panel('/Log/List', function (require, module, panel) {
+    const $Date = require('@definejs/date');
+    const API = module.require('API');
+    const Data = module.require('Data');
     const Template = module.require('Template');
 
     let meta = {
-        list: [],
+        data: null,
+        filter: null,
+        date$group: null,
         groups: [],
-        date$list: [],
-        date$time$list: [],
     };
 
-    function scrollToBottom() {
-        let maxNo = meta.groups.length - 1;
-        if (maxNo < 0) {
-            return;
-        }
-
-        let maxIndex = meta.groups[maxNo].list.length - 1;
-
-        let li = panel.$.find(`li[data-id="${maxNo}-${maxIndex}"]`).get(0);
-
-        if (li) {
-            li.scrollIntoViewIfNeeded();
-        }
-    }
 
     panel.on('init', function () {
-        Template.init(panel, meta);
+        Template.init(panel);
+
 
 
         panel.$on('click', {
-            '[data-date]': function (event) {
+            '[data-id="header"]': function (event) {
                 let { no, } = this.dataset;
-                let $parent = $(this.parentNode);
-                let { $ul, filled, } = Template.getGroup(no);
+                let group = meta.groups[no];
+                let $group = $(this.parentNode);
+                let $ul = $group.find(`>ul`);
 
-                $parent.toggleClass('hide');
+                $group.toggleClass('hide');
 
                 //已填充，直接展开。
-                if (filled) {
+                if (group.filled) {
                     $ul.slideToggle('fast');
                     return;
                 }
@@ -46,20 +37,45 @@ define.panel('/Log/List', function (require, module, panel) {
                 $ul.slideDown('fast');
 
                 setTimeout(() => {
-                    Template.fillGroup(no);
+                    API.get(group.date, function (list) {
+                        list = Data.normalize(list);
+
+                        list = list.filter(({ type, }) => {
+                            return !!meta.filter.type$checked[type];
+                        });
+                        
+                        console.log({ list });
+                        group.list = list;
+
+                        
+                        let tpl = panel.template();
+                        let info = { list, no, };
+                        let html = tpl.fill('group', 'item', list, info);
+
+                        $ul.html(html);
+                        group.filled = true;
+                    });
+
                 }, 200);
 
             },
 
-            '[data-cmd="datetime"]': function (event) {
+            '[data-cmd="time"]': function (event) {
                 let li = this.parentNode;
                 let { no, index, } = li.dataset;
-                let group = meta.groups[no];
-                let {date, time, } = group.list[index];
+                let { list, } = meta.groups[no];
+                let $li = $(li);
                 let $ul = $(li.parentNode);
 
-                $(li).toggleClass('fold-same-time');
-                $ul.find(`li[data-dt="${date} ${time}"]`).slideToggle('fast');
+                index = Number(index);
+
+                let maxIndex = Data.findMaxIndex(list, index);
+
+                if (maxIndex > -1) {
+                    $li.toggleClass('fold-same-time');
+                    $ul.find(`>li:lt(${maxIndex + 1}):gt(${index})`).slideToggle('fast');
+                }
+
             },
         });
 
@@ -67,63 +83,75 @@ define.panel('/Log/List', function (require, module, panel) {
     });
 
 
-    
 
 
-    panel.on('render', function (data) {
-        meta.list = data.list;
-        meta.groups = data.groups;
-        meta.date$list = data.date$list;
-        meta.date$time$list = data.date$time$list;
 
+    panel.on('render', function (stat, filter) {
+        let { date$group, groups, } = Data.parse(stat, filter);
+       
+        meta.filter = filter;
+        meta.date$group = date$group;
+        meta.groups = groups;
 
-        panel.fill(meta);
-        scrollToBottom();
-
+        panel.fill({ groups, });
 
     });
 
     
 
+
+    
     return {
-        add(data) {
-            let { list, groups, } = data;
-            let group = groups.length == 1 ? groups[0] : null;  //首组。
-            let last = meta.groups.slice(-1)[0] || null;        //最后一组。
-        
-            //不符合直接在最后一组追加，则全部重新渲染。
-            //全部重新渲染，代码简单，但性能不好。
-            if (!group || !last || group.date != last.date) {
-                return false;
+        add(list) {
+            if (meta.groups.length == 0) {
+                panel.fire('reset');
+                return;
             }
 
-            //大多数情况都符合直接在最后一组追加。
-            list = group.list;
+            list = Data.normalize(list);
 
-            
-            let no = meta.groups.length - 1;
-            let { $ul, filled, } = Template.getGroup(no);
-
-            if (!filled) {
-                Template.fillGroup(no);
-            }
-
-
-            let tpl = panel.template();
-
-            let html = tpl.fill('group', 'item', list, {
-                'list': list,
-                'no': no,
-                'baseIndex': last.list.length, //追加数据，需要修正索引。
+            list = list.filter(({ type, }) => {
+                return !!meta.filter.type$checked[type];
             });
 
-            $ul.append(html);
 
-            last.list = [...last.list, ...list,]; //合并分组。
-            scrollToBottom();
-            return true;
+            list.forEach((item) => {
+                let { date, time, type, msg, } = item;
+                let group = meta.date$group[date];
+
+                if (!group) {
+                   
+                    panel.fire('reset');
+                    return;
+                }
+     
+                let { list, no, } = group;
+
+                list.push(item);
+                group.total++;
+
+                let index = list.length - 1;
+                let info = { list, no, };
+                let tpl = panel.template();
+                let html = tpl.fill('group', 'item', item, index, info);
+
+                let $group = panel.$.find(`>li[data-group="${date}"]`);
+                let $ul = $group.find('>ul');
+                let $total = $group.find('[data-id="total"]');
+
+
+                $ul.append(html);
+                $total.html(`(${group.total})`);
+
+
+
+
+
+            });
+
+
+          
         },
-
 
 
         clear() {

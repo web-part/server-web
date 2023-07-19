@@ -2,7 +2,7 @@
 
 define('/ModuleTree/API', function (require, module, exports) {
     const Emitter = require('@definejs/emitter');
-    
+
     const Loading = require('@definejs/loading');
     const API = require('API');
     const Data = module.require('Data');
@@ -23,8 +23,8 @@ define('/ModuleTree/API', function (require, module, exports) {
         /**
         * 获取。
         */
-        get: function () {
-            let api = new API('Stat.get', {
+        get() {
+            let api = new API('ModuleSystem.parse', {
                 // proxy: '.json',
             });
 
@@ -37,11 +37,10 @@ define('/ModuleTree/API', function (require, module, exports) {
                     loading.hide();
                 },
 
-                'success': function (stat, json, xhr) {
-                    
-                    let tree = Data.make(stat);
+                'success': function (data, json, xhr) {
+                    data = Data.make(data);
 
-                    emitter.fire('success', 'get', [stat, tree]);
+                    emitter.fire('success', 'get', [data]);
                 },
 
                 'fail': function (code, msg, json, xhr) {
@@ -57,7 +56,7 @@ define('/ModuleTree/API', function (require, module, exports) {
 
         },
 
-       
+
 
     };
 

@@ -10,14 +10,19 @@ define('/ModuleTree/Main/Nav/Data', function (require, module, exports) {
             });
 
 
-            let icon = {
-                'type': item.list.length > 0 ? 'dir' : 'file',
-                'ext': '.js',
-            };
+            let { module, } = item.data;
+            let path = '/';
+            let icon = { type: 'dir', ext: '', };
 
 
-            let path = item.data.id || '/';
+            if (module) {
+                let { file, id, } = module;
+                let ext = file.split('.').slice(-1)[0];
 
+                path = id || '/';
+                icon = { type: 'file', ext: `.${ext}`, };
+            }
+           
             return {
                 list,
                 names,

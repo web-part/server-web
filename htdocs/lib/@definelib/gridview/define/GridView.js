@@ -9,6 +9,7 @@ define('GridView', function (require, module, exports) {
     const Meta = module.require('Meta');
     const Template = module.require('Template');
     const Panel = module.require('Panel');
+    const Sort = module.require('Sort');
     
 
 
@@ -28,6 +29,8 @@ define('GridView', function (require, module, exports) {
             });
 
             meta.tpl = Template.create(meta);
+            meta.Sort = Sort.create(meta);
+            
             mapper.set(this, meta);
 
             //指定了公开 meta 对象。
@@ -65,9 +68,10 @@ define('GridView', function (require, module, exports) {
                 this.$ = meta.panel.$;
             }
 
-            meta.panel.render(list, page);
+            list = meta.Sort.init(list);
 
-            
+            meta.list = list;
+            meta.panel.render(list, page);
            
         }
 

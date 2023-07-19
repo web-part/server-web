@@ -23,6 +23,8 @@ define.panel('/HtmlTree/Main/HtmlBlock/BaseInfo/Childs', function (require, modu
 
     panel.on('render', function (node) {
 
+        console.log({ node });
+        
         let list = node.list.map((node) => {
 
             let { data, } = node;

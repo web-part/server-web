@@ -2,8 +2,9 @@
 
 define.panel('/ModuleTree/Tree', function (require, module, panel) {
     const SidebarTree = require('SidebarTree');
+
     const Data = module.require('Data');
-    const none = module.data.none;
+   
 
 
     let tree = null;
@@ -31,7 +32,7 @@ define.panel('/ModuleTree/Tree', function (require, module, panel) {
                 let w = tree.$.outerWidth();
 
                 panel.$.width(w);
-                panel.fire('resize');
+                panel.fire('resize', [w]);
             },
         });
 
@@ -45,18 +46,18 @@ define.panel('/ModuleTree/Tree', function (require, module, panel) {
     * 渲染。
     *   
     */
-    panel.on('render', function (stat) {
-        let list = Data.make(stat);
-
+    panel.on('render', function ({ htmlStat, moduleStat, }) {
+        let list = Data.make({ htmlStat, moduleStat, });
 
         tree.render(list);
-
     });
 
 
     return {
-        open: function (id) {
-            tree.open(id);
+
+        open(id) {
+            let node = Data.getNode(id);
+            tree.open(node.id);
         },
     };
 

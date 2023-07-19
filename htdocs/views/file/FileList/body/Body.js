@@ -9,11 +9,8 @@ define.panel('/FileList/Body', function (require, module, panel) {
 
     panel.on('init', function () {
         Nav.on({
-            'render': function (path) {
+            'path': function (path) {
                 panel.fire('path', [path]);
-            },
-            'item': function (item) {
-                panel.fire('item', [item]);
             },
         });
 
@@ -24,8 +21,8 @@ define.panel('/FileList/Body', function (require, module, panel) {
         });
 
         Preview.on({
-            'render': function (titles) {
-                panel.fire('outline', [titles]);
+            'outlines': function (outlines) {
+                panel.fire('outlines', [outlines]);
             },
         });
 
@@ -35,16 +32,16 @@ define.panel('/FileList/Body', function (require, module, panel) {
     /**
     * 渲染内容。
     */
-    panel.on('render', function (type, data) {
-        Nav.render(data);
+    panel.on('render', function (item) {
+        Nav.render(item);
 
-        if (type == 'file') {
-            Main.hide();
-            Preview.render(data);
-        }
-        else if (type == 'dir') {
+        if (item.type == 'dir') {
             Preview.hide();
-            Main.render(data);
+            Main.render(item);
+        }
+        else {
+            Main.hide();
+            Preview.render(item);
         }
 
 

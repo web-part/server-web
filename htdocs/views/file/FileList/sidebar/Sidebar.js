@@ -8,6 +8,7 @@ define.panel('/FileList/Sidebar', function (require, module, panel) {
 
 
     let meta = {
+        item: null,
         width: 0,
     };
 
@@ -31,13 +32,14 @@ define.panel('/FileList/Sidebar', function (require, module, panel) {
 
         Operation.on({
             'cmd': function (cmd) {
-                panel.fire('operation', cmd);
+                panel.fire('operation', cmd, [meta.item]);
             },
 
             'detail': function (visible) {
                 meta.width = meta.width || panel.$.width();
 
                 let w = visible ? meta.width : 0;
+
                 panel.$.width(w);
                 panel.fire('hide', [w]);
             },
@@ -58,15 +60,15 @@ define.panel('/FileList/Sidebar', function (require, module, panel) {
     /**
     * 渲染。
     */
-    panel.on('render', function ({ detail, item, }) {
-        let hasOutline = item.data.type == 'file' && !detail.isImage;
+    panel.on('render', function (item) {
+        meta.item = item;
 
-        Stat.render(detail);
-        Operation.render({ detail, item, });
+        Stat.render(item);
+        Operation.render(item);
 
 
         Tabs.render({
-            'outline': hasOutline,
+            outline: item.type == 'file',
         });
 
 

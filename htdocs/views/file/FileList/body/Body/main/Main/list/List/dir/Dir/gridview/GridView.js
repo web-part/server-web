@@ -1,8 +1,6 @@
 ﻿
 define.panel('/FileList/Body/Main/List/Dir/GridView', function (require, module, panel) {
     const GridView = require('GridView');
-    const File = require('File');
-
 
     let gridview = null;
     let tpl = null;
@@ -34,17 +32,15 @@ define.panel('/FileList/Body/Main/List/Dir/GridView', function (require, module,
             },
 
             'name': function (cell) {
-                let { name, raw, } = cell.row.item;
-                let icon = File.getIcon(raw);
+                let { name, icon, } = cell.row.item;
+
+                // name = name.split(meta.item.id).join(`<span class="base-dir">${meta.item.id}</span>`);
 
                 if (meta.keyword) {
                     name = name.split(meta.keyword).join(meta.keywordHtml);
                 }
 
-                let html = tpl.fill('name', {
-                    'icon': icon.html,
-                    'name': name,
-                });
+                let html = tpl.fill('name', { name, icon, });
 
                 return html;
             },
@@ -81,43 +77,37 @@ define.panel('/FileList/Body/Main/List/Dir/GridView', function (require, module,
     *       root: '',   //根目录。
     *   },    
     */
-    panel.on('render', function (list, opt = {}) {
-        let keyword = meta.keyword = opt.keyword || '';
-        let root = opt.root || '';
+    panel.on('render', function (list, { keyword, item, }) {
+        meta.item = item;
+        meta.keyword = keyword;
+        meta.keywordHtml = `<span class="keyword">${keyword}</span>`;
 
-        if (keyword) {
-            meta.keywordHtml = '<span class="keyword">' + keyword + '</span>';
-        }
 
         list = list.map(function (item, index) {
-            let isFile = item.type == 'file';
-            let size = File.getSizeDesc(item.size);
-            let { name, } = item;
-
-            if (isFile) {
-
-            }
-            else { //目录。
-                name += '/';
-            }
+            
+            let { icon, } = item.data;
+            let { size, dirs, files, } = item.data.global;
 
 
             return {
-                'name': root + name,
-                'size': size.value + ' ' + size.desc,
-                'dirs': item.dirs.length,
-                'files': item.files.length,
+                'name': item.id,
+                'size': `${size.value} ${size.desc}`,
+                'dirs': dirs.length,
+                'files': files.length,
+                'icon': icon.html,
                 'raw': item,       //点击时会用到。
             };
 
         });
 
 
-        //内部分页。
-        gridview.render(list, {
-            no: 1,
-            size: 20,
-        });
+        gridview.render(list);
+
+        // //内部分页。
+        // gridview.render(list, {
+        //     no: 1,
+        //     size: 20,
+        // });
 
     });
 

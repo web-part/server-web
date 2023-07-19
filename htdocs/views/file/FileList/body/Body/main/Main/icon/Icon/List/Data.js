@@ -1,11 +1,9 @@
 
 
 define('/FileList/Body/Main/Icon/List/Data', function (require, module, exports) {
-    const File = require('File');
-
     function sort(a, b) {
-        a = a.name;
-        b = b.name;
+        a = a.name.toLowerCase();
+        b = b.name.toLowerCase(); 
 
         return a == b ? 0 :
             a > b ? 1 : -1;
@@ -18,14 +16,14 @@ define('/FileList/Body/Main/Icon/List/Data', function (require, module, exports)
             let files = [];
 
             list.forEach((item) => {
-                let { data, } = item;
-                let { name, type, } = data;
-                let ext = File.getExt(name);
-                let sname = name.split('/').slice(-1)[0];
-                let oItem = { ...data, ext, sname, };
-                let list = type == 'dir' ? dirs : files;
+                let { icon, } = item.data;
+                let list = item.type == 'dir' ? dirs : files;
 
-                list.push(oItem);
+                list.push({
+                    'name': item.name,
+                    'icon': icon.html,
+                    'raw': item,
+                });
             });
 
 

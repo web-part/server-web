@@ -1,7 +1,6 @@
 
 
 define.panel('/Home/FileList/Main', function (require, module, panel) {
-    const File = require('File');
     const Data = module.require('Data');
 
    
@@ -17,38 +16,31 @@ define.panel('/Home/FileList/Main', function (require, module, panel) {
             'html': {
                 '': function (data) {
                     let {
-                        list,
                         dirs,
                         files,
                         images,
-                        ext$files,
-                        exts,
+                        types,
                         size,
-                        utf8,
                     } = data;
 
-                    let types = this.fill('type', exts);
-
-                    let sizeInfo = File.getSizeDesc(size);
-
+                    types = this.fill('type', types);
+                 
 
                     return {
-                        'all': list.length,
-                        'sizeValue': sizeInfo.value,
-                        'sizeDesc': sizeInfo.desc,
+                        'all': dirs.length + files.length,
+                        'sizeValue': size.value,
+                        'sizeDesc': size.desc,
                         'dir': dirs.length,
                         'file': files.length,
                         'image': images.length,
                         'types': types,
-                        'isUTF8': utf8.is,
-                        'notUTF8': utf8.not,
                     };
                 },
 
                 'type': function (item, index) {
                     let { ext, files, } = item;
 
-                    ext = ext.slice(1) || '(none)';
+                    ext = ext|| '(无后缀)';
 
                     return {
                         'ext': ext,
@@ -64,7 +56,7 @@ define.panel('/Home/FileList/Main', function (require, module, panel) {
 
 
     panel.on('render', function (data) {
-        data = Data.parse(data.list);
+        data = Data.parse(data);
         panel.fill(data);
     });
 

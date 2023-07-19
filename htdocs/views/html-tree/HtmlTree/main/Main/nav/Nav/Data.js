@@ -1,5 +1,20 @@
 ﻿
 define('/HtmlTree/Main/Nav/Data', function (require, module, exports) {
+
+    
+    function getIcon(item) { 
+        let { fileIcon, dirIcon, } = item;
+        if (fileIcon) {
+            return fileIcon;
+        }
+
+        if (dirIcon) {
+            return dirIcon.close;
+        }
+
+        return `FileIcon file html fab fa-html5`;
+    }
+
     
     return {
         make(item) {
@@ -10,18 +25,14 @@ define('/HtmlTree/Main/Nav/Data', function (require, module, exports) {
             });
 
 
-            let icon = {
-                'type': item.list.length > 0 ? 'dir' : 'file',
-                'name': item.data.file || '.html',
-            };
+            let path = names.join('>');
 
-
-            let path = names.join('>')
+            let icon = { html: `<i class="${getIcon(item)}"></i>`, };
 
             return {
                 list,
                 names,
-                // path,
+                path,
                 icon,
             };
         },

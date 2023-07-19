@@ -1,26 +1,29 @@
 
 
 define.panel('/FileList/Body/Preview/MarkDoc', function (require, module, panel) {
-    const Escape = require('@definejs/escape');
     const MarkDoc = require('MarkDoc');
 
     let markdoc = null;
 
-    //预览模式下，需要保持为代码模式展示的。 
-    //但又跟源码模式不完全一样。
-    let exts = ['.json', '.js', '.css', '.html', '.htm', '.less', ];
+    let previewExts = [
+        'md',
+        'markdown',
+        'txt',
+        // 'html',
+    ];
+
+    
 
     panel.on('init', function () {
         markdoc = new MarkDoc({
             container: panel.$,
-
         });
 
         markdoc.on('render', function (info) {
            
             let list = markdoc.getOutlines();
 
-            panel.fire('render', [list]);
+            panel.fire('outlines', [list]);
 
         });
        
@@ -30,43 +33,37 @@ define.panel('/FileList/Body/Preview/MarkDoc', function (require, module, panel)
 
     /**
     * 渲染。
-    *   opt = {
-    *       content: '',                    //文件内容。
-    *       ext: '',                        //如 `.json`。
-    *       type: 'source' | 'preview',     //是源码视图，还是预览视图。
-    *       isImage: false,                 //是否为图片。 图片的则需要对样式进行微调。
-    *   };
     */
-    panel.on('render', function (opt) {
-        let content = opt.content;
-        let ext = opt.ext.toLowerCase();
+    panel.on('render', function ({ content, type, ext, isImage, }) {
+        console.log({ type })
+        
+        if (isImage) {
+            ext = 'md';
+        }
+
         let language = '';
         let format = true;
 
-
-        //以源码方式展示
-        if (opt.type == 'source') {
-            // content = Escape.html(content); //需要进行 html 编码。
-            language = ext.slice(1);
-            format = false; //不格式化代码，以保留源格式。
+        if (previewExts.includes(ext)) {
+            if (type == 'code') {
+                language = ext;
+            }
         }
-        else { //预览模式
-            if (exts.includes(ext)) {
-                language = ext.slice(1); //强制变为代码模式。
+        else {
+            language = ext;
+            if (type == 'code') {
+                format = false;
             }
         }
 
 
         markdoc.render({
-            'content': content,
-            'language': language,
-            'baseUrl': '',
-            'code': {
-                'format': format,
-            },
+            content,
+            language,
+            code: { format, },
         });
 
-        panel.$.toggleClass('image', opt.isImage);
+        panel.$.toggleClass('image', !!isImage);
 
        
     });

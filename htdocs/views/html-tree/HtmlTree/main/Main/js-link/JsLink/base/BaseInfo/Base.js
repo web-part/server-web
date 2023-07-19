@@ -48,15 +48,15 @@ define.panel('/HtmlTree/Main/JsLink/BaseInfo/Base', function (require, module, p
 
             'static': function (node) {
                 let { data, parent, } = node;
-                let html = getHtml(data.html);
-                let dir = data.file.split('/').slice(0, -1).join('/');
+                let { file, } = data;
+                let dir = file.split('/').slice(0, -1).join('/') + '/';
 
-                meta.dir = dir;
+                let html = getHtml(data.html);
 
                 return {
                     'type': data.link.type,
                     'href': data.href,
-                    'file': data.file,
+                    'file': file,
                     'tabs': data.tabs,
                     'no': data.no + 1,
                     'dir': dir,
@@ -67,14 +67,13 @@ define.panel('/HtmlTree/Main/JsLink/BaseInfo/Base', function (require, module, p
 
             'block': function (node) {
                 let { data, parent, } = node;
+                let { file, } = data;
+                let dir = file.split('/').slice(0, -1).join('/') + '/';
 
-                let dir = data.file.split('/').slice(0, -1).join('/');
-
-                meta.dir = dir;
 
                 return {
                     'type': data.link.type,
-                    'file': data.file,
+                    'file': file,
                     'dir': dir,
                     'parent': `${parent.cid} - ${parent.name}`,
                 };
@@ -91,14 +90,12 @@ define.panel('/HtmlTree/Main/JsLink/BaseInfo/Base', function (require, module, p
             },
 
             '[data-cmd="file"]': function (event) {
-                let file = meta.node.data.file;
+                let file = this.innerText;
 
                 panel.fire('file', [file]);
             },
 
-            '[data-cmd="dir"]': function (event) {
-                panel.fire('file', [meta.dir]);
-            },
+            
 
             '[data-cmd="rel"]': function (event) {
                 panel.fire('rel');
@@ -114,6 +111,7 @@ define.panel('/HtmlTree/Main/JsLink/BaseInfo/Base', function (require, module, p
 
 
     panel.on('render', function (node) {
+        console.log({node})
         meta.node = node;
         panel.fill(node);
 

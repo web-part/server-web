@@ -4,6 +4,7 @@ define('/Home/JsModule/API', function (require, module, exports) {
     const Emitter = require('@definejs/emitter');
     
     const API = require('API');
+    const Data = module.require('Data');
 
 
     let emitter = new Emitter();
@@ -17,8 +18,8 @@ define('/Home/JsModule/API', function (require, module, exports) {
         /**
         * 获取。
         */
-        get: function () {
-            let api = new API('Stat.get', {
+        get() {
+            let api = new API('ModuleSystem.parse', {
                 // proxy: '.json',
             });
 
@@ -31,8 +32,10 @@ define('/Home/JsModule/API', function (require, module, exports) {
                     // loading.hide();
                 },
 
-                'success': function (stat, json, xhr) {
-                    emitter.fire('success', 'get', [stat]);
+                'success': function (data, json, xhr) {
+                    data = Data.make(data);
+
+                    emitter.fire('success', 'get', [data]);
                 },
 
                 'fail': function (code, msg, json, xhr) {

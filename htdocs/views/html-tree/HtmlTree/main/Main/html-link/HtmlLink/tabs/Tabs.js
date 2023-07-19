@@ -1,47 +1,43 @@
 ﻿
 
 define.panel('/HtmlTree/Main/HtmlLink/Tabs', function (require, module, panel) {
-    const Tabs = require('@definejs/tabs');
-    const Storage = require('@definejs/local-storage');
-
+    const Tabs = require('Tabs');
 
     let allList = [
-        { name: '基本信息', cmd: 'base', },
-        { name: '引用原文', cmd: 'rel', },
-        { name: '渲染内容', cmd: 'render', },
-        { name: '文件内容', cmd: 'content', },
-        { name: '文件信息', cmd: 'file', },
+        { name: '基本信息', cmd: 'base', icon: 'fas fa-circle-info', },
+        { name: '引用原文', cmd: 'rel', icon: 'fas fa-quote-left', },
+        { name: '渲染内容', cmd: 'render', icon: 'fas fa-code', },
+        { name: '文件内容', cmd: 'content', icon: 'fas fa-file-lines', },
+        { name: '文件信息', cmd: 'file', icon: 'fas fa-file', },
+
+       
     ];
+
+    // let allList = [
+    //     { name: '基本', cmd: 'base', },
+    //     { name: '引', cmd: 'rel', },
+    //     { name: '渲染内', cmd: 'render', },
+    //     { name: '文件内容', cmd: 'content', },
+    //     { name: '文件信息', cmd: 'file', },
+    // ];
 
 
     let tabs = null;
-    let storage = null;
 
     let meta = {
-        index: 0,
         list: [],
         cmd$module: null,
     };
 
 
     panel.on('init', function () {
-        storage = new Storage(module.id);
-        meta.index = storage.get('index') || 0;
-
         tabs = new Tabs({
             container: panel.$.get(0),
-            activedClass: 'on',
-            eventName: 'click',
-            selector: '>li',
-            repeated: true, //这里要允许重复激活相同的项。
+            storage: module.id,
         });
 
 
         tabs.on('change', function (item, index) {
-            meta.index = index;
-            item = meta.list[index];
-            storage.set('index', index);
-
             let { cmd, } = item;
             let { cmd$module, } = meta;
 
@@ -69,7 +65,6 @@ define.panel('/HtmlTree/Main/HtmlLink/Tabs', function (require, module, panel) {
     * 渲染。
     */
     panel.on('render', function (isRoot) {
-
         meta.list = allList;
 
         if (isRoot) {
@@ -78,20 +73,8 @@ define.panel('/HtmlTree/Main/HtmlLink/Tabs', function (require, module, panel) {
             });
         }
 
-        tabs.render(meta.list, function (item, index) {
-            return {
-                'index': index,
-                'name': item.name,
-            };
-        });
-
-
-        //列表长度可能发生了变化。
-        if (meta.index > meta.list.length - 1) {
-            meta.index = 0;
-        }
-
-        tabs.active(meta.index);
+        tabs.render(meta.list);
+        tabs.active();
 
     });
 

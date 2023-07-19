@@ -7,33 +7,26 @@ define.view('/HtmlTree', function (require, module, view) {
 
     let storage = new SessionStorage(module.id);
 
-    let meta = {
-        cid: 0,
-    };
-
 
     view.on('init', function () {
         
 
         API.on('success', {
-            'get': function (json) {
-                Tree.render(json);
-                Tree.open(meta.cid);
+            'get': function (data) {
+                let cid = storage.get('cid') || 1;
+
+                Tree.render(data);
+                Tree.open(cid);
             },
         });
 
         Tree.on({
             'item': function (item) {
-                console.log(item);
-
-                meta.cid = item.cid;
                 storage.set('cid', item.cid); //保存到 storage。
-
                 Main.render(item);
             },
-            'resize': function () {
-                let w1 = Tree.$.outerWidth();
-                Main.resize(w1, 6);
+            'resize': function (w) {
+                Main.resize(w, 6);
             },
         });
 
@@ -57,9 +50,6 @@ define.view('/HtmlTree', function (require, module, view) {
     */
     view.on('render', function () {
         
-        meta.cid = storage.get('cid') || 1;
-
-
         API.get();
 
        

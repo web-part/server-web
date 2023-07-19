@@ -11,12 +11,13 @@ define('/Log/SSE', function (require, module, exports) {
 
     return exports = {
 
+
         on: emitter.on.bind(emitter),
 
         /**
         * 
         */
-        open: function () {
+        open() {
             let url = `${config.url}sse/Log.watch`;
 
 
@@ -54,23 +55,24 @@ define('/Log/SSE', function (require, module, exports) {
                 }
 
                 data = JSON.parse(data);
-
                 data.msg = JSON.stringify(JSON.parse(data.msg), null, 4);
-            
 
                 emitter.fire('error', [data]);
             });
 
 
 
-           
+
             sse.onmessage = function (event) {
                 console.log('onmessage', event)
             };
 
-            
+
 
         },
+
+
+        
 
 
         close() {

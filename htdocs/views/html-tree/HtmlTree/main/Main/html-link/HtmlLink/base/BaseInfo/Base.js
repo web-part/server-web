@@ -46,6 +46,7 @@ define.panel('/HtmlTree/Main/HtmlLink/BaseInfo/Base', function (require, module,
             'static': function (node) {
                 let { data, parent, } = node;
                 let html = getHtml(data.item);
+              
 
                 return {
                     'href': data.href,
@@ -79,21 +80,13 @@ define.panel('/HtmlTree/Main/HtmlLink/BaseInfo/Base', function (require, module,
             },
 
             '[data-cmd="file"]': function (event) {
-                let file = meta.node.data.file;
+               
+                let file = this.innerText;
 
                 panel.fire('file', [file]);
             },
 
-            '[data-cmd="dir"]': function (event) {
-                let dir = meta.node.data.link.dir;
-
-                if (dir.endsWith('/')) {
-                    dir = dir.slice(0, -1);
-                }
-
-                panel.fire('file', [dir]);
-            },
-
+       
             '[data-cmd="rel"]': function (event) {
                 panel.fire('rel');
             },

@@ -2,15 +2,7 @@
 
 define('/Home/FileList/Main/Data', function (require, module, exports) {
 
-    
-
-    const imgExts = new Set([
-        '.png',
-        '.jpg',
-        '.jpeg',
-        '.gif',
-        '.bmp',
-    ]);
+    const File = require('File');
 
 
     function add(key$list, key, item) {
@@ -26,55 +18,45 @@ define('/Home/FileList/Main/Data', function (require, module, exports) {
 
     return {
         
-        parse(list) {
-            let dirs = [];
-            let files = [];
+        parse({ dir$info, file$info, }) {
+            let dirs = Object.keys(dir$info);
+            let files = Object.keys(file$info);
+
             let images = [];
             let ext$files = {};
             let size = 0;
 
-            let utf8 = {
-                is: 0,
-                not: 0,
-            };
+            files.forEach((file) => {
+                let { md5, stat, } = file$info[file];
+                let ext = File.getExt(file);
+                let isImage = File.checkImage(file);
+          
+                add(ext$files, ext, file);
 
-            list.forEach((item) => {
-                let { type, ext, stat, isUTF8, } = item;
-                
-                if (type == 'dir') {
-                    dirs.push(item);
-                    return;
-                }
-                
-
-                files.push(item);
-                add(ext$files, ext, item);
-
-                if (imgExts.has(ext)) {
-                    images.push(item);
+                if (isImage) {
+                    images.push(file);
                 }
 
                 size += stat.size;
 
-                utf8[isUTF8 ? 'is' : 'not']++;
-
             });
 
+            
 
-            let exts = Object.keys(ext$files).map((ext) => {
+
+            let types = Object.keys(ext$files).sort().map((ext) => {
                 let files = ext$files[ext];
                 return { ext, files, };
             });
 
+            size = File.getSize(size);
+
             return {
-                list,
                 dirs,
                 files,
                 images,
-                ext$files,
-                exts,
+                types,
                 size,
-                utf8,
             };
 
 

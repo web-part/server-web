@@ -1,4 +1,4 @@
-﻿
+
 
 define('GridView/Panel/Pager', function (require, module, exports) {
     const Panel = require('@definejs/panel');
@@ -9,10 +9,9 @@ define('GridView/Panel/Pager', function (require, module, exports) {
         let pager = null;
 
 
-
         //初始阶段适合用来绑定事件。
         panel.on('init', function () {
-            pager = new Pager({
+            pager = exports.pager = new Pager({
                 'container': panel.$,
             });
 
@@ -34,7 +33,7 @@ define('GridView/Panel/Pager', function (require, module, exports) {
 
 
         return panel.wrap({
-
+            exports,
         });
     };
 

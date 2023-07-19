@@ -4,6 +4,7 @@ define('/HtmlTree/Tree/Data', function (require, module, exports) {
     const File = require('File');
 
 
+
  
     function getNode(item, dir) {
         let { link, } = item;
@@ -95,6 +96,8 @@ define('/HtmlTree/Tree/Data', function (require, module, exports) {
                     open: 'js-block far fa-list-alt',
                     close: 'js-block fas fa-list-alt',
                 });
+
+
 
 
                 return {

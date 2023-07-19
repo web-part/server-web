@@ -36,7 +36,8 @@ define('TextTree/Events', function (require, module, exports) {
                 let { cmd, id, } = this.dataset;
                 let item = meta.id$item[id];
 
-                meta.emitter.fire('click', cmd, [item, event]);
+                meta.emitter.fire('cmd', cmd, [item, event]);
+                meta.emitter.fire('cmd', [cmd, item, event]);
 
             });
 

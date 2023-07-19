@@ -3,10 +3,9 @@
 define.panel('/FileList/Body/Preview/Tabs', function (require, module, panel) {
     const Tabs = require('@definejs/tabs');
 
-
     var list = [
         { name: '预览', type: 'preview', },
-        { name: '源码', type: 'source', },
+        { name: '源码', type: 'code', },
     ];
 
     var currentIndex = 0;

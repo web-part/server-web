@@ -7,7 +7,7 @@ define('File/Size', function (require, module, exports) {
         /**
         * 获取文件大小的描述。
         */
-        getDesc: function (size) {
+        get: function (size) {
             if (!size) {
                 return { 'value': 0, 'desc': '', };
             }
@@ -16,6 +16,7 @@ define('File/Size', function (require, module, exports) {
                 return { 'value': size, 'desc': 'B', };
             }
 
+            
             size = size / 1024; //KB
 
             if (size < 1024) {

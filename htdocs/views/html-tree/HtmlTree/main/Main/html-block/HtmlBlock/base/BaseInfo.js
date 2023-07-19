@@ -36,6 +36,8 @@ define.panel('/HtmlTree/Main/HtmlBlock/BaseInfo', function (require, module, pan
 
 
     panel.on('render', function (item) {
+        console.log({ item });
+        
         Base.render(item);
         Childs.render(item);
 

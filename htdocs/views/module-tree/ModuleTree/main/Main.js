@@ -2,35 +2,33 @@
 define.panel('/ModuleTree/Main', function (require, module, panel) {
     const Nav = module.require('Nav');
     const Tabs = module.require('Tabs');
+
+    const Stat = module.require('Stat');
     const Content = module.require('Content');
+    const Dependent = module.require('Dependent');
     const FileInfo = module.require('FileInfo');
+    const List = module.require('List');
     const ModuleInfo = module.require('ModuleInfo');
     const Tree = module.require('Tree');
-    const List = module.require('List');
-    const Dependent = module.require('Dependent');
-    const Pair = module.require('Pair');
 
     let meta = {
         item: null,
         stat: null,
     };
 
+    
+
     panel.on('init', function () {
+        let modules = { Stat, Content, Dependent, FileInfo, List, ModuleInfo, Tree, };
+
         Nav.on({
-            'item': function (item) {
-                panel.fire('item', [item]);
+            'path': function (path) {
+                panel.fire('path', [path]);
             },
         });
+      
 
-        Tabs.map({
-            'module': ModuleInfo,
-            'file': FileInfo,
-            'content': Content,
-            'tree': Tree,
-            'list': List,
-            'dependent': Dependent,
-            'pair': Pair,
-        });
+        Tabs.map(modules);
 
         Tabs.on({
             'change': function (M) {
@@ -39,9 +37,7 @@ define.panel('/ModuleTree/Main', function (require, module, panel) {
         });
 
 
-
-        [ModuleInfo, FileInfo, Tree, List, Dependent, Content, Pair, ].forEach((M) => {
-
+        Object.values(modules).forEach((M) => {
             M.on({
                 'item': function (item) {
                     panel.fire('item', [item]);
@@ -61,20 +57,14 @@ define.panel('/ModuleTree/Main', function (require, module, panel) {
 
     /**
     * 渲染内容。
-    *   opt = {
-    *       item: {},   //当前菜单项。
-    *       stat: {},   //
-    *   };
     */
-    panel.on('render', function (opt) {
-        let item = meta.item = opt.item;
-        let isRoot = !item.parent;
+    panel.on('render', function (item, stat) {
+        
+        meta.item = item;
+        meta.stat = stat;
 
-        meta.stat = opt.stat;
-
-        Nav.render(opt);
-
-        Tabs.render(isRoot);
+        Nav.render(item);
+        Tabs.render(item);
 
     });
 
@@ -82,18 +72,14 @@ define.panel('/ModuleTree/Main', function (require, module, panel) {
 
 
     return {
-        
 
         resize(...args) {
             let w = args.reduce(function (sum, value) {
                 return sum + value;
             }, 0);
 
-
-            let calc = 'calc(100% - ' + w + 'px)';
-
             panel.$.css({
-                'width': calc,
+                width: `calc(100% - ${w}px)`,
             });
 
         },

@@ -83,11 +83,15 @@ define('Table/Template', function (require, module) {
                         meta.emitter.fire('process', 'row', `${no}`, args);
                         meta.emitter.fire('process', 'row', args);
 
+                        //这句写在前面。
+                        //让外界有机会处理/更改 row 对象。
+                        let cells = this.fill('cell', row.cells, no);
+
                         let cssClass = Class.stringify(row.class);
                         let title = Title.stringify(row.title);
                         let dataset = DataSet.stringify(row.dataset);
                         let style = Style.stringify(row.style);
-                        let cells = this.fill('cell', row.cells, no);
+                       
 
                         return {
                             'id': row.id,

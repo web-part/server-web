@@ -1,0 +1,216 @@
+[data-panel="/ModuleTree/Main/Stat/GridView"] {
+    height: calc(100% - 38px);
+    font-size: 14px;
+    box-sizing: border-box;
+    overflow-x: scroll;
+
+    .GridView {
+
+        th.group {
+            padding: 0px;
+        }
+
+        tr.group-begin {
+            td {
+                border-top-color: #000 !important;
+            }
+        }
+
+        tr.method {
+            @color: #8BC34A;
+
+            td.group {
+                background-color: @color;
+                border-top-color: @color;
+            }
+
+            .bar {
+                border-color: @color;
+
+                .main {
+                    background: @color;
+                }
+            }
+        }
+
+        tr.level {
+            @color: #00a8f4;
+
+            td.group {
+                background-color: @color;
+                border-top-color: @color;
+            }
+
+            .bar {
+                border-color: @color;
+
+                .main {
+                    background: @color;
+                }
+            }
+        }
+
+        tr.factory {
+
+
+            @color: #b38df6;
+
+            td.group {
+                background-color: @color;
+                border-top-color: @color;
+            }
+
+            .bar {
+                border-color: @color;
+
+                .main {
+                    background: @color;
+                }
+            }
+        }
+
+        tr.outer {
+
+
+            @color: rgb(255, 205, 88);
+
+            td.group {
+                background-color: @color;
+                border-top-color: @color;
+            }
+
+            .bar {
+                border-color: @color;
+
+                .main {
+                    background: @color;
+                }
+            }
+        }
+
+        tr.public {
+
+
+            @color: rgb(211, 35, 176);
+
+            td.group {
+                background-color: @color;
+                border-top-color: @color;
+            }
+
+            .bar {
+                border-color: @color;
+
+                .main {
+                    background: @color;
+                }
+            }
+        }
+
+        tr.name {
+
+            @color: #009688;
+
+            td.group {
+                background-color: @color;
+                border-top-color: @color;
+            }
+
+            .bar {
+                border-color: @color;
+
+                .main {
+                    background: @color;
+                }
+            }
+        }
+
+        tr.dir {
+
+
+            @color: yellow;
+
+            td.group {
+                background-color: @color;
+                border-top-color: @color;
+            }
+
+            .bar {
+                border-color: @color;
+
+                .main {
+                    background: @color;
+                }
+            }
+        }
+
+
+
+        td.order {
+            color: #b1b1b1;
+            text-align: center;
+        }
+
+        td.icon {
+            text-align: center;
+
+            i {
+                font-size: 20px;
+            }
+        }
+
+        td.name {
+            color: #000;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+
+
+        }
+
+
+        td.number {
+            position: relative;
+            text-align: right !important;
+
+
+
+
+
+
+        }
+
+        .info {
+            position: relative;
+            z-index: 1;
+
+            .desc {
+                color: #00a8f4;
+            }
+        }
+
+
+
+        .bar {
+            width: calc(100% - 60px);
+            height: calc(100% - 0px);
+            position: relative;
+            position: absolute;
+            left: 0px;
+            // border: solid 0px #4CAF50;
+            box-sizing: border-box;
+            top: 0px;
+
+            .main {
+                background: #8BC34A;
+                width: 50%;
+                height: 100%;
+                position: absolute;
+                left: 0px;
+                z-index: 1;
+            }
+        }
+
+
+    }
+}

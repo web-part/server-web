@@ -1,71 +1,52 @@
 ﻿
 define.panel('/ModuleTree/Main/Nav', function (require, module, panel) {
     const MenuNav = require('MenuNav');
-    const Data = module.require('Data');
 
+
+    let meta = {
+        item: null,
+    };
 
     let nav = null;
 
 
 
-    let meta = {
-        list: [],
-        item: null,
-        stat: null,
-    };
-
-
     panel.on('init', function () {
-
         nav = new MenuNav({
             'container': panel.$,
         });
 
         nav.on({
-            'item': function (names, index) {
-                let item = meta.list[index];
-                panel.fire('item', [item]);
+            'item': function ({ names, index, }) {
+                console.log({ index, names, });
+
+                let parents = meta.item.parents.slice(0).reverse(); //复制一份再反转。
+                let target = parents[index];
+                let { id, } = target.data;
+
+                panel.fire('path', [id]);
             },
 
-            'text': function (id) {
-                if (id == '/') {
-                    panel.fire('item', [{ id, }]);
-                    return;
-                }
-
-                let item = meta.stat.moduleStat.id$module[id];
-
-                if (!item) {
-                    return false; //归位。
-                }
-                
-                panel.fire('item', [item]);
+            'text': function (text) {
+                panel.fire('path', [text]);
             },
-
         });
-
-
-
-
-
     });
 
 
     /**
     * 渲染内容。
-    *   opt = {
-    *       
-    *   };
     */
-    panel.on('render', function ({ item, stat, }) {
-        let { list, names, path, icon, } = Data.make(item);
+    panel.on('render', function (item) {
+        let { id, parents, name, data, } = item;
+        let root = parents.slice(-1)[0];
+        let path = root ? `${root.name}/${id}` : `${name}/`;
+        let text = data.id;
 
         meta.item = item;
-        meta.stat = stat;
-        meta.list = list;
 
-        
-        nav.render({ names, path, icon, });
+        nav.render({ path, text, });
+
     });
 
 

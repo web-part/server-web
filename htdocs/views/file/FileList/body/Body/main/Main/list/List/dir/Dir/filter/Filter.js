@@ -103,11 +103,13 @@ define.panel('/FileList/Body/Main/List/Dir/Filter', function (require, module, p
     * 外界传进来的参数会原样传到这里。
     */
     panel.on('render', function (item) {
+       
+        ChildDirs.render(item);
+
         Name.render();
         CWD.render(meta.cwd);
         Files.render();
         Dirs.render();
-        ChildDirs.render(item.list);
     });
 
 

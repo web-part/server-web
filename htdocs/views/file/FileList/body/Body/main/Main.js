@@ -1,33 +1,26 @@
 define.panel('/FileList/Body/Main', function (require, module, panel) {
     const Tabs = module.require('Tabs');
+    const Stat = module.require('Stat'); 
     const Tree = module.require('Tree');
     const List = module.require('List');
     const Icon = module.require('Icon');
 
- 
-
 
     let meta = {
-        'root': '',
-        'list': [],
-        'item': null,
+        item: null,
     };
 
 
 
     panel.on('init', function () {
-        Tabs.map({
-            'tree': Tree,
-            'list': List,
-            'icon': Icon,
-        });
+        Tabs.map({ Stat, Tree, List, Icon, });
 
         Tabs.on({
             'change': function (M) {
-                M.render(meta);
+                M.render(meta.item);
             },
         });
-        
+
 
         List.on({
             'item': function (item) {
@@ -42,37 +35,20 @@ define.panel('/FileList/Body/Main', function (require, module, panel) {
         });
 
         Tree.on('cmd', {
-            'id': function (item) {
-                let name = item.id.slice(meta.root.length);
-
-                panel.fire('item', [{
-                    'name': name || '/',
-                }]);
+            'key': function (item) {
+                panel.fire('item', [item.data.item]);
             },
         })
-        
+
 
     });
 
 
     /**
     * 渲染内容。
-    *   opt = {
-    *       list:  [],  //文件列表。
-    *       item: {},   //当前菜单项。
-    *       root: '',   //根目录。
-    *   };
     */
-    panel.on('render', function (opt) {
-        let root = opt.root;
-
-        if (root.endsWith('/')) {
-            root = root.slice(0, -1); //去掉后缀 `/`。
-        }
-
-        meta.root = root;
-        meta.list = opt.list;
-        meta.item = opt.item;
+    panel.on('render', function (item) {
+        meta.item = item;
 
         Tabs.render();
 
@@ -80,10 +56,10 @@ define.panel('/FileList/Body/Main', function (require, module, panel) {
 
 
 
-    
+
 
     return {
-       
+
     };
 
 });

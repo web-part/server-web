@@ -1,43 +1,31 @@
 ﻿
 
 define.panel('/FileList/Body/Main/Tabs', function (require, module, panel) {
-    const Tabs = require('@definejs/tabs');
-    const Storage = require('@definejs/local-storage');
-
+    const Tabs = require('Tabs');
 
     let tabs = null;
-    let storage = null;
 
     let meta = {
-        index: 0,
-        list: [
-            { name: '平铺', cmd: 'icon', root: true, },
-            { name: '列表', cmd: 'list', root: true, },
-            { name: '架构', cmd: 'tree', root: true, },
-        ],
+        item: null,
         cmd$module: null,
+        list: [
+            { name: '统计', cmd: 'Stat', icon: 'fas fa-chart-bar', },
+            { name: '平铺', cmd: 'Icon', icon: 'fas fa-folder', },
+            { name: '列表', cmd: 'List', icon: 'fas fa-list', },
+            { name: '架构', cmd: 'Tree', icon: 'fas fa-folder-tree', },
+        ],
     };
 
 
     panel.on('init', function () {
-        storage = new Storage(module.id);
-        meta.index = storage.get('index') || 0;
 
         tabs = new Tabs({
             container: panel.$.get(0),
-            activedClass: 'on',
-            eventName: 'click',
-            selector: '>li',
-            repeated: true, //这里要允许重复激活相同的项。
+            storage: module.id,
         });
 
 
         tabs.on('change', function (item, index) {
-            meta.index = index;
-            item = meta.list[index];
-
-            storage.set('index', index);
-
             let { cmd, } = item;
             let { cmd$module, } = meta;
 
@@ -65,17 +53,8 @@ define.panel('/FileList/Body/Main/Tabs', function (require, module, panel) {
     * 渲染。
     */
     panel.on('render', function () {
-
-        tabs.render(meta.list, function (item, index) {
-            return {
-                'index': index,
-                'name': item.name,
-            };
-        });
-
-
-        tabs.active(meta.index);
-
+        tabs.render(meta.list);
+        tabs.active();
     });
 
     return {

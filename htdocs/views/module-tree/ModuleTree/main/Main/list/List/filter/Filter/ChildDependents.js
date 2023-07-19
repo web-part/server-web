@@ -14,7 +14,7 @@ define.panel('/ModuleTree/Main/List/Filter/ChildDependents', function (require, 
 
         chk = new DropCheckList({
             'container': panel.$,
-            'text': '所依赖私有模块数 - 直接子模块数',
+            'text': '私有生产者数 - 直接子模块数',
         });
 
         chk.on({

@@ -30,13 +30,14 @@ define('MenuTree/Data', function (require, module, exports) {
                 'id': id,
                 'cid': context.cid,
                 'level': 0,
-                'name': item.name ,
+                'type': item.type,
+                'name': item.name,
                 'open': item.open,
                 'dirIcon': item.dirIcon,
                 'fileIcon': item.fileIcon,
                 'style': item.style,
                 'dataset': item.dataset,
-                'data': item.data,
+                'data': item.data || {},
                 'list': [],
                 'parent': parent || null,
                 'parents': [],      //向上追溯所有的父节点。
@@ -72,7 +73,7 @@ define('MenuTree/Data', function (require, module, exports) {
 
     return exports = {
 
-        make(list, meta) {
+        make(list) {
             let id$item = {};
             let cid$item = {};
             let items = [];
@@ -86,10 +87,6 @@ define('MenuTree/Data', function (require, module, exports) {
             
 
             let data = { list, items, id$item, cid$item, };
-
-            if (meta) {
-                Object.assign(meta, data);
-            }
 
             return data;
 
@@ -111,7 +108,17 @@ define('MenuTree/Data', function (require, module, exports) {
             fn(parent);
 
             exports.trace(parent, fn);
-        }
+        },
+
+
+        each(node, fn) { 
+            fn(node);
+
+            node.list.forEach((node, index) => {
+                exports.each(node, fn);
+            });
+           
+        },
        
     };
 

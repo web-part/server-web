@@ -4,8 +4,8 @@ define.panel('/Log/Filter', function (require, module, panel) {
     const Dates = module.require('Dates');
 
     let meta = {
-        'type$checked': null,
-        'date$checked': null,
+        type$checked: {},
+        date$checked: {},
     };
 
     panel.on('init', function () {
@@ -41,15 +41,23 @@ define.panel('/Log/Filter', function (require, module, panel) {
     
 
 
-    panel.on('render', function (data) {
-        
-        // meta.type$checked = null;
-        // meta.date$checked = null;
+    panel.on('render', function ({ dates, types, }) {
+        let type$checked = meta.type$checked = {};
+        let date$checked = meta.date$checked = {};
 
-        Types.render(data.names);
-        Dates.render(data.dates);
 
-        panel.fire('change', [meta]);
+        dates.forEach((date) => { 
+            date$checked[date] = true;
+        });
+
+        types.forEach((type) => {
+            type$checked[type] = true;
+        });
+
+        Types.render(types, type$checked);
+        Dates.render(dates, date$checked);
+
+        panel.fire('change', [{ type$checked, date$checked, }]);
 
 
     });
@@ -57,7 +65,6 @@ define.panel('/Log/Filter', function (require, module, panel) {
     
 
     return {
-        
         
     };
 

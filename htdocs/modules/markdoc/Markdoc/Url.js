@@ -26,10 +26,12 @@ define('/Markdoc/Url', function (require, module, exports) {
 
 
     return {
-        parse (sUrl) {
+        parse(sUrl) {
+            console.log({ sUrl });
+
             let isOrigin = sUrl.startsWith('@');            //是否明确指定作为源码模式。
             let url = isOrigin ? sUrl.slice(1) : sUrl;      //
-            let ext = url.split('.').slice(-1)[0];          //
+            let ext = url.split('.').slice(-1)[0].toLowerCase();          //
             let name = url.split('/').slice(-1)[0];         //取最后一部分的短名称
             let dir = getDir(url);
             

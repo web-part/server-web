@@ -14,7 +14,7 @@
                 </tr>
                 <tr class="">
                     <th>所在目录</th>
-                    <td><a data-cmd="dir">{dir}</a></td>
+                    <td><a data-cmd="file">{dir}</a></td>
                 </tr>
                 <tr class="type">
                     <th>文件类型</th>
@@ -32,6 +32,18 @@
                     <th>内容行数</th>
                     <td>{lines}</td>
                 </tr>
+                <tr class="">
+                    <th>内容字符数</th>
+                    <td>{length}</td>
+                </tr>
+                <tr class="">
+                    <th>内容字节数</th>
+                    <td>{byteLength}</td>
+                </tr>
+                <tr class="">
+                    <th>模块数</th>
+                    <td>{modules}</td>
+                </tr>
                 <tr class="time">
                     <th>创建时间</th>
                     <td>{birthtime}</td>
@@ -39,10 +51,6 @@
                 <tr class="time">
                     <th>修改时间</th>
                     <td>{mtime}</td>
-                </tr>
-                <tr class="">
-                    <th>UTF8 编码</th>
-                    <td>{isUTF8}</td>
                 </tr>
             </table>
         </li>

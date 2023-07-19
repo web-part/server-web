@@ -13,7 +13,7 @@ define.panel('/ModuleTree/Main/List/Filter/Dependents', function (require, modul
 
         chk = new DropCheckList({
             'container': panel.$,
-            'text': '被依赖模块数',
+            'text': '消费者数',
         });
 
         chk.on({

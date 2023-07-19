@@ -7,71 +7,35 @@ define.view('/FileList', function (require, module, view) {
     const Sidebar = module.require('Sidebar');
     const Body = module.require('Body');
     
-
-
-    let storage = new SessionStorage(module.id);
-
-    let meta = {
-        item: { id: '/', },     //当前激活的菜单项。 在菜单树填充后首先激活根节点。
-        detail: null,           //API.read(item) 的结果。
-    };
-
-
-    function formatId(root, id) {
-        if (id == root) {
-            return '/';
-        }
-
-        if (id.startsWith(`${root}/`)) {
-            id = id.slice(root.length);
-        }
-
-        return id;
-    }
+    let storage = null;
 
     view.on('init', function () {
 
+        storage = new SessionStorage(module.id);
+
         API.on('success', {
-            'get': function (data) {
-                let id = formatId(data.root, meta.item.id);
+            'get': function (data, fromCache) {
+                let id = storage.get('id') || '/';
+                
+                if (!fromCache) {
+                    Tree.render(data); //这个渲染很费时。
+                }
 
-                meta.item.id = id;
-
-                Tree.render(data);
                 Tree.open(id);
             },
-            'read': {
-                'dir': function ({ detail, item, }) {
-                    Body.render('dir', {
-                        'list': detail.list,
-                        'item': item,
-                        'root': detail.root,
-                    });
-
-                    Sidebar.render({ detail, item, });
-                },
-
-                'file': function ({ detail, item, }) {
-                    meta.detail = detail;
-
-                    Body.render('file', detail);
-                    Sidebar.render({ detail, item, });
-                },
-            },
-            'delete': function (data) {
-                meta.item.id = data.parent;
-                API.get();
+            'delete': function (item) {
+                storage.set('id', item.parent.id); 
+                API.get(true);
             },
         });
 
         Tree.on({
             'item': function (item) {
-                storage.set('id', item.id); //保存到 storage。
-                meta.item = item;
-                API.read(item);
+                storage.set('id', item.id); 
+                Body.render(item);
+                Sidebar.render(item);
             },
-            'resize': function () {
-                let w1 = Tree.$.outerWidth();
+            'resize': function (w1) {
                 let w2 = Sidebar.$.outerWidth();
                 Body.resize(w1, w2, 6);
             },
@@ -80,16 +44,15 @@ define.view('/FileList', function (require, module, view) {
 
 
         Body.on({
-            'outline': function (titles) {
-                Sidebar.outline(titles);
+            'outlines': function (outlines) {
+                Sidebar.outline(outlines);
             },
             'item': function (item) {
-                Tree.open(item.name);
+                Tree.open(item.id);
             },
 
-            //path 发生变化时触发。
             'path': function (path) {
-             
+                Tree.open(path);
             },
         });
 
@@ -106,28 +69,31 @@ define.view('/FileList', function (require, module, view) {
 
         Sidebar.on('operation', {
             'refresh': function () {
-                API.get();
+                API.get(true);
             },
-            'delete': function () {
-                API.delete(meta.item);
+            'open': function (item) {
+                view.fire('open', [item.id]);
             },
-            'open': function () {
-                view.fire('open', [meta.detail.url]);
+            'edit': function (item) {
+                view.fire('edit', [item.id]);
             },
-            'edit': function () {
-                view.fire('edit', [meta.item.id]);
+            'demo': function (item) {
+                view.fire('demo', [item.id]);
             },
-            'demo': function () {
-                view.fire('demo', [meta.item.id]);
+
+            'copy': function (item) {
+                Clipboard.copy(item.data.content);
             },
-            'copy': function () {
-                Clipboard.copy(meta.detail.content);
+
+            'delete': function (item) {
+                API.delete(item);
             },
-            'compile-less': function () {
-                view.fire('compile-less', [meta.detail.content]);
+            
+            'compile-less': function (item) {
+                view.fire('compile-less', [item.data.content]);
             },
-            'minify-js': function () {
-                view.fire('minify-js', [meta.detail.content]);
+            'minify-js': function (item) {
+                view.fire('minify-js', [item.data.content]);
             },
         });
 
@@ -138,14 +104,15 @@ define.view('/FileList', function (require, module, view) {
 
     /**
     * 渲染内容。
-    *   file: '',   //渲染完成后要打开的文件。
+    *   id: '',   //渲染完成后要打开的文件。
     */
-    view.on('render', function (file) {
-        let id = file || storage.get('id') || '/';
+    view.on('render', function (id) {
+        if (id) {
+            storage.set('id', id);
+        }
 
-        meta.path = id; //避免 view.show 事件中再次实际执行。
-        meta.item = { 'id': id, }; //使用完全重新的方式。
         API.get();
+       
 
        
     });

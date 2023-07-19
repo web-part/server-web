@@ -63,9 +63,9 @@ define.panel('/FileList/Sidebar/Operation', function (require, module, panel) {
 
 
 
-    panel.on('render', function (opt) {
+    panel.on('render', function (item) {
         let visible = meta.visible;
-        let list = meta.list = Data.make(opt);
+        let list = meta.list = Data.make(item);
 
         panel.fill(list);
         panel.fire('detail', [visible]);

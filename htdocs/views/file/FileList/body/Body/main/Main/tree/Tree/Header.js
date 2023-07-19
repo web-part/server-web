@@ -5,11 +5,11 @@ define.panel('/FileList/Body/Main/Tree/Header', function (require, module, panel
 
 
     let chks = [
-        
         { id: 'icon', text: '图标', chk: null,},
         { id: 'tab', text: '缩进', chk: null, },
         { id: 'color', text: '彩色', chk: null, },
         { id: 'hover', text: '悬停', chk: null, },
+        { id: 'dirOnly', text: '仅目录', chk: null, },
     ];
 
     /**
@@ -19,18 +19,38 @@ define.panel('/FileList/Body/Main/Tree/Header', function (require, module, panel
     */
     panel.on('init', function () {
 
+        //把短时间内的多次触发合并成一次对外触发。
+        let tid = null;
+        let key$checked = {};
+
+        function fireCheck(key, checked) { 
+            clearTimeout(tid);
+
+            key$checked[key] = checked;
+
+            tid = setTimeout(() => {
+                panel.fire('check', [key$checked]);
+            }, 20);
+        }
+
         chks.forEach((item) => {
+            let { id, } = item;
             let chk = new CheckBox({
                 'fireNow': true,
-                'container': panel.$.find(`[data-id="chk-${item.id}"]`),
+                'container': panel.$.find(`[data-id="chk-${id}"]`),
                 'text': item.text,
             });
 
             chk.on('checked', function (checked) {
+                if (id == 'dirOnly') {
+                    panel.fire('dirOnly', [checked]);
+                }
+                else {
+                    fireCheck(id, checked);
+                }
 
-                panel.fire('check', [{
-                    [item.id]: checked,
-                }]);
+
+                
             });
 
             item.chk = chk;

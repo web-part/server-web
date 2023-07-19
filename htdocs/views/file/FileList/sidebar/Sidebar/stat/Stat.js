@@ -1,10 +1,7 @@
 ﻿
 
 define.panel('/FileList/Sidebar/Stat', function (require, module, panel) {
-    const File = require('File');
-    const $Date = require('@definejs/date');
     const Types = module.require('Types');
-
 
     panel.on('init', function () {
     
@@ -16,27 +13,23 @@ define.panel('/FileList/Sidebar/Stat', function (require, module, panel) {
             },
 
             'table': {
-                '': function (data) {
-                    let { stat, type, name, } = data;
-                    let desc = type == 'dir' ? '目录' : data.ext.slice(1) + ' 文件';
-                    let birthtime = $Date.format(stat.birthtime, 'yyyy-MM-dd HH:mm:ss');
-                    let mtime = $Date.format(stat.mtime, 'yyyy-MM-dd HH:mm:ss');
-                    let size = File.getSizeDesc(stat.size);
-                    let types = Types.get(data.list);
-                    let sname = name.split('/').slice(-1)[0];
-                    let root = data.root.slice(0, -1);
+                '': function (item) {
+                    let { type, name, data, } = item;
+                    let { ext, size, md5, birthtime, mtime, } = data;
+                    let desc = type == 'dir' ? '目录' :  `${ext} 文件`;
+                    let types = Types.get(item);
                     
                     types = this.fill('type', types);
 
                     return {
-                        'sname': sname,
-                        'name': root + name,
-                        'ext': data.ext,
-                        'md5': data.md5,
-                        'size': size.value,
+                        name,
+                        ext,
+                        md5,
+                        birthtime,
+                        mtime,
+
+                        'sizeValue': size.value,
                         'sizeDesc': size.desc,
-                        'birthtime': birthtime,
-                        'mtime': mtime,
                         'type': desc,
                         'types': types,
                     };
@@ -46,8 +39,11 @@ define.panel('/FileList/Sidebar/Stat', function (require, module, panel) {
                     return {
                         'name': item.name,
                         'value': item.value,
-                        'desc': item.desc || '',
-                        'class': item.class || '',
+                        'desc': item.desc,
+                        'value1': item.value1,
+                        'desc1': item.desc1,
+                        'class': item.class,
+
                     };
 
                 },
@@ -58,11 +54,11 @@ define.panel('/FileList/Sidebar/Stat', function (require, module, panel) {
 
 
 
-    panel.on('render', function (data) {
+    panel.on('render', function (item) {
         
-        panel.fill(data);
+        panel.fill(item);
 
-        panel.$.toggleClass('dir', data.type == 'dir');
+        panel.$.toggleClass('dir', item.type == 'dir');
     });
 
 

@@ -1,6 +1,6 @@
 {
   "name": "@definelib/table",
-  "version": "1.0.1",
+  "version": "2.0.0---changed",
   "description": "通用的 HTML 表格类。",
   "main": "index.js",
   "scripts": {},

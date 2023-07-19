@@ -13,14 +13,33 @@ define('/Log/API', function (require, module, exports) {
     });
 
 
+
+    function onSuccess(stat) { 
+        let dates = [];
+        let type$count = {};
+
+        Object.entries(stat.date$info).forEach(([date, info]) => {
+            dates.push(date);
+            Object.assign(type$count, info.type$count);
+        });
+
+        let types = Object.keys(type$count);
+
+
+        dates.sort();
+        Object.assign(stat, { types, dates, });
+
+        emitter.fire('success', 'get', [stat]);
+    }
+
     return {
         on: emitter.on.bind(emitter),
 
         /**
-        * 获取。
+        * 获取统计信息。
         */
-        get: function () {
-            let api = new API('Log.get', {
+        get() {
+            let api = new API('Log.stat', {
                 // proxy: '.json',
             });
 
@@ -33,8 +52,8 @@ define('/Log/API', function (require, module, exports) {
                     loading.hide();
                 },
 
-                'success': function (list, json, xhr) {
-                    emitter.fire('success', 'get', [list]);
+                'success': function (stat, json, xhr) {
+                    onSuccess(stat);
                 },
 
                 'fail': function (code, msg, json, xhr) {
@@ -50,10 +69,9 @@ define('/Log/API', function (require, module, exports) {
 
         },
 
+
         clear() {
-            let api = new API('Log.clear', {
-                // proxy: '.json',
-            });
+            let api = new API('Log.clear');
 
             api.on({
                 'request': function () {
@@ -64,8 +82,9 @@ define('/Log/API', function (require, module, exports) {
                     loading.hide();
                 },
 
-                'success': function (data, json, xhr) {
-                    emitter.fire('success', 'clear', []);
+                'success': function (stat, json, xhr) {
+                    onSuccess(stat);
+
                 },
 
                 'fail': function (code, msg, json, xhr) {

@@ -2,7 +2,7 @@
 
 define.panel('/HtmlTree/Main/JsLink/Content', function (require, module, panel) {
     const File = require('File');
-    const API = File.API();
+    const API = module.require('API');
     const Header = module.require('Header');
     const MarkDoc = module.require('MarkDoc');
 
@@ -21,8 +21,9 @@ define.panel('/HtmlTree/Main/JsLink/Content', function (require, module, panel) 
        
 
         API.on('success', {
-            'read': function (data) {
-                MarkDoc.render(data);
+            'read': function (content) {
+                let { file, } = meta;
+                MarkDoc.render({ file, content, });
 
             },
         });

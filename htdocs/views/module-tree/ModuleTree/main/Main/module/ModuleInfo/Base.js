@@ -21,29 +21,27 @@ define.panel('/ModuleTree/Main/ModuleInfo/Base', function (require, module, pane
 
 
 
-    panel.on('render', function ({ item, stat, }) {
-        let { module, parent, dependents = [], } = item.data;
+    panel.on('render', function ({ item, }) {
+   
+        meta.item = item;
 
-        if (typeof dependents == 'string') {
-            dependents = [dependents];
-        }
+        let { module, } = item.data;
+        let { id, parent, name, method, factory, dependents, level, } = module;
 
-        //这里要用全等。
+        
         if (parent === '') {
             parent = none;
         }
-        
 
-        meta.item = item;
-        
+
         panel.fill({
-            'id': module.id || none,
-            'name': module.name || none,
+            'id': id || none,
+            'name': name || none,
             'parent': parent || '',
-            'method': module.method,
-            'factory-type': module.factory.type,
+            'method': method,
+            'factory': factory.type,
             'dependents': dependents.length,
-            'level': module.level,
+            'level': level,
         });
 
     });

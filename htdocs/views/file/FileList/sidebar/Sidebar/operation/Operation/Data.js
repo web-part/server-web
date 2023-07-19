@@ -2,18 +2,6 @@
 
 define('/FileList/Sidebar/Operation/Data', function (require, module, exports) {
   
-    let copyExts = [
-        '.css',
-        '.less',
-        '.sass',
-        '.html',
-        '.htm',
-        '.txt',
-        '.json',
-        '.js',
-        '.md',
-    ];
-
     let list = [
         { name: '详情', cmd: 'detail', icon: 'fas fa-angle-double-{icon}', },
         { name: '刷新', cmd: 'refresh', icon: 'fa fa-sync-alt', },
@@ -30,25 +18,25 @@ define('/FileList/Sidebar/Operation/Data', function (require, module, exports) {
         'detail': function () {
             return true;
         },
-        'open': function ({ detail, }) {
-            return detail.type == 'file';
+        'open': function (item) {
+            return item.type == 'file';
         },
-        'edit': function ({ detail, }) {
-            return detail.type == 'file';
+        'edit': function (item) {
+            return item.type == 'file';
         },
-        'demo': function ({ detail, }) {
-            return detail.type == 'file';
+        'demo': function (item) {
+            return item.type == 'file';
         },
-        'copy': function ({ detail, }) {
-            return detail.type == 'file' && copyExts.includes(detail.ext);
+        'copy': function (item) {
+            return item.type == 'file';
         },
-        'compile-less': function ({ detail, }) {
-            return detail.type == 'file' && detail.ext == '.less';
+        'compile-less': function (item) {
+            return item.type == 'file' && item.data.ext == 'less';
         },
-        'minify-js': function ({ detail, }) {
-            return detail.type == 'file' && detail.ext == '.js';
+        'minify-js': function (item) {
+            return item.type == 'file' && item.data.ext == 'js';
         },
-        'delete': function ({ item, }) {
+        'delete': function (item) {
             return !!item.parent;
         },
     };
@@ -62,13 +50,12 @@ define('/FileList/Sidebar/Operation/Data', function (require, module, exports) {
 
 
     return {
-        make(opt) {
-            let items = list.filter((item) => {
-                let { cmd, } = item;
+        make(item) {
+            let items = list.filter(({ cmd, }) => {
                 let filter = cmd$filter[cmd];
 
                 if (filter) {
-                    return filter(opt);
+                    return filter(item);
                 }
 
                 return true;

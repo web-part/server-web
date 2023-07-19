@@ -49,7 +49,7 @@ define('SidebarTree/Panel/Main', function (require, module, exports) {
                 if (fileIcon) {
                     config.fileIcon = fileIcon;
                 }
-                
+
                 if (dirIcon) {
                     config.dirIcon = dirIcon;
                 }
@@ -58,11 +58,11 @@ define('SidebarTree/Panel/Main', function (require, module, exports) {
 
                 tree.on({
                     //点击某一项时触发。
-                    'item': function (item) {
+                    'item'(item) {
                         let id = item.id;
 
                         //空目录的指示文件。
-                        if (id != '/' && id.endsWith('/')) {
+                        if (id.endsWith('/.')) {
                             tree.open(item.parent.id);
                         }
                         else {
@@ -84,7 +84,8 @@ define('SidebarTree/Panel/Main', function (require, module, exports) {
             /**
             * 渲染。
             */
-            panel.on('render', function (list) {
+            panel.on('render', function (data) {
+                let { list,  } = MenuTree.parse(data);
 
                 meta.item = null;
                 meta.list = [];
@@ -95,13 +96,18 @@ define('SidebarTree/Panel/Main', function (require, module, exports) {
 
             });
 
-            
+
             return panel.wrap({
-                open: function (id) {
+
+                each(fn) { 
+                    tree.each(fn);
+                },
+
+                open(id) {
                     tree.open(id);
                 },
 
-                back: function () {
+                back() {
                     let index = meta.index - 1;
                     let item = meta.list[index];
 
@@ -113,7 +119,7 @@ define('SidebarTree/Panel/Main', function (require, module, exports) {
                     this.open(item.id);
                 },
 
-                forward: function () {
+                forward() {
                     let index = meta.index + 1;
                     let item = meta.list[index];
 
@@ -124,7 +130,7 @@ define('SidebarTree/Panel/Main', function (require, module, exports) {
                     this.open(item.id);
                 },
 
-                up: function () {
+                up() {
                     let item = meta.item;
                     let parent = item ? item.parent : null;
 
@@ -135,16 +141,16 @@ define('SidebarTree/Panel/Main', function (require, module, exports) {
                     this.open(parent.id);
                 },
 
-                root: function () {
+                root() {
                     this.open(1); //cid 从 1 开始。
                 },
 
-                dirOnly: function (checked) {
+                dirOnly(checked) {
                     panel.$.toggleClass('dir-only', !!checked);
                 },
             });
 
-           
+
 
         },
     };

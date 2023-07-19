@@ -2,10 +2,10 @@
 
 define('/FileList/API', function (require, module, exports) {
     const Emitter = require('@definejs/emitter');
-    const $String = require('@definejs/string');
     const Loading = require('@definejs/loading');
     const Toast = require('@definejs/toast');
     const API = require('API');
+    const Data = module.require('Data');
 
 
     let emitter = new Emitter();
@@ -19,6 +19,10 @@ define('/FileList/API', function (require, module, exports) {
         mask: 0,
     });
 
+    let meta = {
+        data: null,
+    };
+
 
     return {
         on: emitter.on.bind(emitter),
@@ -26,10 +30,15 @@ define('/FileList/API', function (require, module, exports) {
         /**
         * 获取。
         */
-        get: function () {
-            let api = new API('FileList.get', {
-                // proxy: '.json',
-            });
+        get(refresh) {
+
+            if (!refresh && meta.data) {
+                emitter.fire('success', 'get', [meta.data, true]);
+                return;
+            }
+
+
+            let api = new API('FileSystem.list');
 
             api.on({
                 'request': function () {
@@ -38,10 +47,39 @@ define('/FileList/API', function (require, module, exports) {
 
                 'response': function () {
                     loading.hide();
+
                 },
 
                 'success': function (data, json, xhr) {
-                    emitter.fire('success', 'get', [data]);
+                    let { dir, dir$info, file$info, } = data;
+                    let { dirs, files, } = Data.make(data);
+
+                    data = meta.data = {
+                        dir, dir$info, file$info,
+                        dirs, files,
+                    };
+
+                    emitter.fire('success', 'get', [data, false]);
+
+                   
+
+
+
+                    // let worker = new Worker('./worker/FileList.js');
+
+                    // worker.addEventListener('message', (event) => {
+                    //     worker.terminate();
+
+                    //     loading.hide();
+                    //     let data = meta.data = event.data;
+                    //     emitter.fire('success', 'get', [data, false]);
+                      
+
+                    // });
+
+                    // worker.postMessage(data);
+
+
                 },
 
                 'fail': function (code, msg, json, xhr) {
@@ -57,65 +95,12 @@ define('/FileList/API', function (require, module, exports) {
 
         },
 
-        /**
-        * 读取指定文件或目录的信息。
-        */
-        read: function (item) {
-            let api = new API('FileList.read', {
-                // proxy: '.json',
-            });
-
-            api.on({
-                'request': function () {
-                    loading.show('加载中...');
-                },
-
-                'response': function () {
-                    loading.hide();
-                },
-
-                'success': function (data, json, xhr) {
-                    let content = data.content;
-
-                    if (data.isImage) {
-                        let sample = '![ ]({url})';                   //markdown 语法。 中括号之间要留个空格，才能在 markdoc 的源码中语法高亮。
-
-                        data.content = $String.format(sample, {
-                            'url': data.url,
-                        });
-
-                        //data.ext = '.md';
-                    }
-
-
-                    let type = item.data.type;
-
-                    let options = {
-                        'detail': data,     //服务器读取到的信息。
-                        'item': item,       //菜单项的信息。
-                    };
-
-                    emitter.fire('success', 'read', type, [options]);
-                },
-
-                'fail': function (code, msg, json, xhr) {
-                    definejs.alert('获取文件内容失败: {0}', msg);
-                },
-
-                'error': function (code, msg, json, xhr) {
-                    definejs.alert('获取文件内容错误: 网络繁忙，请稍候再试');
-                },
-            });
-
-            api.get({'id': item.id, });
-
-        },
 
         /**
        * 删除指定的文件或目录。
        */
-        delete: function (item) {
-            let type = item.data.type;
+        delete(item) {
+            let type = item.type;
 
             let type$desc = {
                 file: '文件',
@@ -135,7 +120,7 @@ define('/FileList/API', function (require, module, exports) {
 
             definejs.confirm(msg, function () {
 
-                let api = new API('FileList.delete');
+                let api = new API('FileSystem.delete');
 
                 api.on({
                     'request': function () {
@@ -148,10 +133,7 @@ define('/FileList/API', function (require, module, exports) {
 
                     'success': function (data, json, xhr) {
                         toast.show('删除成功', function (params) {
-                            emitter.fire('success', 'delete', [{
-                                'id': item.id,
-                                'parent': item.parent.id,
-                            }]);
+                            emitter.fire('success', 'delete', [item]);
                         });
                     },
 
@@ -166,7 +148,6 @@ define('/FileList/API', function (require, module, exports) {
 
                 api.post({
                     'id': item.id,
-                    'type': type,
                 });
 
             });

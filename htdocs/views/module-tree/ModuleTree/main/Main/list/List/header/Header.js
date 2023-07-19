@@ -17,8 +17,11 @@ define.panel('/ModuleTree/Main/List/Header', function (require, module, panel) {
 
 
 
-    panel.on('render', function () {
+    panel.on('render', function (list) {
 
+        panel.fill({
+            'count': list.length,
+        });
         
 
     });

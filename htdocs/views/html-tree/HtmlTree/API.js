@@ -5,6 +5,8 @@ define('/HtmlTree/API', function (require, module, exports) {
     const Loading = require('@definejs/loading');
     const API = require('API');
 
+    const Data = module.require('Data');
+
 
     let emitter = new Emitter();
 
@@ -19,7 +21,7 @@ define('/HtmlTree/API', function (require, module, exports) {
         /**
         * 获取。
         */
-        get: function () {
+        get() {
             let api = new API('HtmlTree.parse', {
                 // proxy: '.json',
             });
@@ -35,16 +37,12 @@ define('/HtmlTree/API', function (require, module, exports) {
                 },
 
                 'success': function (data, json, xhr) {
-                    // debugger
-                    console.log(data);
+                    Data.make(data);
                     emitter.fire('success', 'get', [data]);
                 },
 
                 'fail': function (code, msg, json, xhr) {
-                    
-                    // definejs.alert('获取解析数据失败: {0}', msg);
-
-                    // emitter.fire('success', 'get', [json]);
+                    definejs.alert(`获取解析数据失败 ${msg}`);
                 },
 
                 'error': function (code, msg, json, xhr) {

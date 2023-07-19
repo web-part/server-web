@@ -2,6 +2,7 @@
 
 define.panel('/HtmlTree/Main/JsLink/Content/MarkDoc', function (require, module, panel) {
     const MarkDoc = require('MarkDoc');
+    
     const $ = require('$');
 
     let markdoc = null;
@@ -20,12 +21,12 @@ define.panel('/HtmlTree/Main/JsLink/Content/MarkDoc', function (require, module,
     /**
     * 渲染。
     */
-    panel.on('render', function ({ content, ext, }) {
-        let language = ext.startsWith('.') ? ext.slice(1) : ext;
+    panel.on('render', function ({ content, file, }) {
+        let ext = file.split('.').slice(-1)[0];
 
         markdoc.render({
             'content': content,
-            'language': language,
+            'language': ext,
             'baseUrl': '',
             'code': {
                 'format': true,

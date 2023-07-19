@@ -69,13 +69,37 @@ define('Table', function (require, module, exports) {
             Events.bind(meta);
         }
 
+
+        /**
+        * 迭代执行每一表格行。
+        */
+        eachRow(fn) {
+            let meta = mapper.get(this);
+            let { rows, } = meta;
+            rows.forEach(function (row, index) {
+                fn.apply(meta.this, [row, index, rows]);
+            });
+        }
+
+        /**
+        * 迭代执行每一表格列。
+        */
+        eachColumn(fn) {
+            let meta = mapper.get(this);
+            let { columns, } = meta;
+
+            columns.forEach(function (column, index) {
+                fn.apply(meta.this, [column, index, columns]);
+            });
+        }
+
         /**
         * 插入一行表格行。
         * @param {Object} item 要插入的数据行记录，为 list 中的项。
         * @param {number} [index] 可选，要插入的位置。
         *   如果不指定，则在末尾插入，此时变成了追加一行。
         */
-        insert(item, index) {
+        insertRow(item, index) {
             let meta = mapper.get(this);
             let { row, no, } = Row.insert(meta, item, index);
             let html = meta.tpl.fill('row', row, no);
@@ -103,7 +127,7 @@ define('Table', function (require, module, exports) {
         *   当传入一个 string 时，则表示该表格行的 id。
         *   当传一个 Object 时，则取其 `id` 字段进行匹配。
         */
-        remove(item, fn) {
+        removeRow(item, fn) {
             let meta = mapper.get(this);
             let { row, no, msg, } = Row.get(meta, item);
 
@@ -150,7 +174,7 @@ define('Table', function (require, module, exports) {
         *   如果为正数，则向后移动。
         *   如果为负数，则向前移动。
         */
-        move(item, step) {
+        moveRow(item, step) {
             if (step == 0) {
                 return;
             }
@@ -196,7 +220,7 @@ define('Table', function (require, module, exports) {
         /**
         * 清空表格。
         * 会触发每行单元格和每行表格行的清空事件。
-        * @returns
+        * @returns   
         */
         clear() {
             let meta = mapper.get(this);
@@ -237,8 +261,6 @@ define('Table', function (require, module, exports) {
             let meta = mapper.get(this);
             meta.emitter.on(...args);
         }
-
-
 
 
     }

@@ -20,7 +20,6 @@ define('/ModuleTree/Main/List/Data', function (require, module, exports) {
             let methods = new Set();
             let levels = new Set();
 
-
             children.forEach((item) => {
                 let { level, method, } = item.data.module;
 
@@ -43,11 +42,13 @@ define('/ModuleTree/Main/List/Data', function (require, module, exports) {
         */
         filter(opt = {}) {
             let {
+                keyword = '',
                 child$checked = null,
                 childDependent$checked = null,
                 dependent$checked = null,
                 level$checked = null,
                 method$checked = null,
+                html$checked = null,
             } = opt;
 
             let { item, stat, } = meta;
@@ -59,10 +60,13 @@ define('/ModuleTree/Main/List/Data', function (require, module, exports) {
             }
 
             list = list.map((item) => {
+                let { id, module, html, } = item.data;
+                let htmlFile = html ? html.file : '';
+
                 let {
-                    id,
                     file,
-                    module,
+                    level,
+                    method,
                     children = [],
                     childs = [],
                     dependents = [],
@@ -70,9 +74,10 @@ define('/ModuleTree/Main/List/Data', function (require, module, exports) {
                     privates = [],
                     publics = [],
                     siblings = [],
-                } = item.data;
+                } = module;
 
-                let htmlFile = stat.htmlStat.id$file[id];
+
+
 
                 if (typeof dependents == 'string') {
                     dependents = [dependents];
@@ -125,22 +130,38 @@ define('/ModuleTree/Main/List/Data', function (require, module, exports) {
                 }
 
 
-                if (level$checked && !level$checked[module.level]) {
+                if (level$checked && !level$checked[level]) {
                     return;
                 }
 
-                if (method$checked && !method$checked[module.method]) {
+                if (method$checked && !method$checked[method]) {
                     return;
+                }
+
+                //所在 html 文件。
+                if (html$checked) {
+                    let N = htmlFile ? 1 : 0;
+
+                    //`N = 0` 没有勾选。
+                    if (!html$checked['N=0'] && N == 0) {
+                        return;
+                    }
+
+                    //`N = 1` 没有勾选。
+                    if (!html$checked['N=1'] && N == 1) {
+                        return;
+                    }
+
                 }
 
                 return {
-                    'id': id,
-                    'method': module.method,
-                    'level': module.level,
-                    'htmlFile': htmlFile,
+                    id,
+                    method,
+                    level,
+                    file,
+                    htmlFile,
+                    'name': module.name,
                     'dependents': dependents.length,    //
-
-                    'file': file,
                     'childs': childs.length,            //直接子模块数。
                     'children': children.length,
                     'publics': publics.length,
@@ -151,7 +172,22 @@ define('/ModuleTree/Main/List/Data', function (require, module, exports) {
 
            
             list = list.filter((item) => {
-                return !!item;
+                if (!item) {
+                    return false;
+                }
+
+                let { id, file, htmlFile, } = item;
+
+                if (keyword) {
+                    let includes =
+                        id.includes(keyword) ||
+                        file.includes(keyword) ||
+                        htmlFile.includes(keyword);
+                    
+                    return includes;
+                }
+                
+                return true;
             });
 
            

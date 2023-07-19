@@ -45,6 +45,7 @@ define('TextTree/Data', function (require, module, exports) {
                     'value': raw.value,
                     'icon': raw.icon,
                     'data': raw.data, //节点的自定义数据，仅用来存储在当前节点，以便后续用户再读取出来使用。
+                    'type': raw.type, //`dir` 或 `file`，如果未指定，则自动推算。
 
                     'isRoot': node.isRoot,
                     'key': node.key,
@@ -53,7 +54,6 @@ define('TextTree/Data', function (require, module, exports) {
                     'y': node.y,
                     'tabs': tabs,
                     'linker': linker,
-                    'type': '',     //`dir` 或 `file`
 
                     'parent': null,
                     'childs': [],
@@ -77,7 +77,10 @@ define('TextTree/Data', function (require, module, exports) {
                     return node$item.get(node);
                 });
 
-                item.type = childs.length > 0 ? 'dir' : 'file';
+                if (!item.type) {
+                    item.type = childs.length > 0 ? 'dir' : 'file';
+                }
+
                 item.childs = childs;
 
                 item.parent = node$item.get(node.parent);

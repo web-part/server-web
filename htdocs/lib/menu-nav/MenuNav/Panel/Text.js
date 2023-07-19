@@ -10,7 +10,7 @@ define.panel('MenuNav/Panel/Text', function (require, module, panel) {
             let txt = null;
 
             let meta = {
-                path: '',
+                value: '',
             };
 
             panel.set('show', false);
@@ -28,6 +28,7 @@ define.panel('MenuNav/Panel/Text', function (require, module, panel) {
                     },
 
                     'click': function (event) {
+                        
                         let len = txt.value.length;
                         let d = txt.selectionEnd - txt.selectionStart;
 
@@ -40,10 +41,10 @@ define.panel('MenuNav/Panel/Text', function (require, module, panel) {
                     },
 
                     'change': function (event) {
-                        let path = txt.value;
+                        let value = txt.value;
 
 
-                        if (path == meta.path) {
+                        if (value == meta.value) {
                             return;
                         }
 
@@ -51,11 +52,11 @@ define.panel('MenuNav/Panel/Text', function (require, module, panel) {
                         //因为：
                         //1，如果新值不正确，外面一样会显示回原值的，但外面没机会告诉本界面，所以本界面可以提前先设置回原值。
                         //2，如果正确，则由外面再切换到新值，同时也会触发事件导致本界面设置成新值。
-                        txt.value = meta.path;
+                        txt.value = meta.value;
 
-                        meta.path = path;
+                        meta.value = value;
 
-                        panel.fire('change', [path]);
+                        panel.fire('change', [value]);
                     },
 
                     'keyup': function (event) {
@@ -72,9 +73,9 @@ define.panel('MenuNav/Panel/Text', function (require, module, panel) {
             * 渲染内容。
          
             */
-            panel.on('render', function (path) {
+            panel.on('render', function (value) {
 
-                meta.path = txt.value = path;
+                meta.value = txt.value = value;
 
             });
 

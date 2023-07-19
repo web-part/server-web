@@ -5,15 +5,26 @@ define.panel('/FileList/Body/Main/Tree', function (require, module, panel) {
     const Main = module.require('Main');
 
 
+    let meta = {
+        item: null,
+        dirOnly: true, //仅显示目录。
+    };
 
     panel.on('init', function () {
-        Header.on('check', function (opt) {
-            Main.check(opt);
-        });
+      
 
-        Header.on('cmd', {
-            'copy' : function () {
-                Main.copy();
+        Header.on({
+            'check': function (key$checked) {
+                Main.check(key$checked);
+            },
+            'dirOnly': function (checked) { 
+                meta.dirOnly = checked;
+                Main.render(meta.item, checked);
+            },
+            'cmd': {
+                'copy': function () {
+                    Main.copy();
+                },
             },
         });
 
@@ -22,16 +33,6 @@ define.panel('/FileList/Body/Main/Tree', function (require, module, panel) {
             'cmd': function (cmd, item) {
                 panel.fire('cmd', cmd, [item,]);
             },
-
-            'render': function () {
-                Header.render({
-                    // 'file': false,
-                    'icon': false,
-                    'tab': true,
-                    'color': true,
-                    'hover': false,
-                });
-            },
         });
 
     });
@@ -39,30 +40,25 @@ define.panel('/FileList/Body/Main/Tree', function (require, module, panel) {
 
 
 
-    panel.on('render', function (opt) {
-        let { item, list, root, } = opt;
+    panel.on('render', function (item) {
+        if (item === meta.item) {
+            panel.show();
+            return;
+        }
 
-        
-        list = list.map((item) => {
-            let id = root + item.name;
-            return {id,};
-        });
+        console.log(item);
 
-        //要把当前节点向上所有的父节点都加进来。
-        let id = item.id == '/' ? root : root + item.id;
-        let names = id.split('/');
+        meta.item = item;
 
-        let parents = names.map((name, index) => {
-            let id = names.slice(0, index + 1).join('/');
-            return {id,};
-        });
+        // Main.render(item, meta.dirOnly);
 
-        list = [...parents, ...list,];
-        
-
-        Main.render({
-            'id': id,
-            'list': list,
+        Header.render({
+            // 'file': false,
+            'icon': false,
+            'tab': true,
+            'color': true,
+            'hover': true,
+            'dirOnly': meta.dirOnly,
         });
         
 

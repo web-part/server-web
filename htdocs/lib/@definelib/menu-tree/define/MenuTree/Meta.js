@@ -32,7 +32,7 @@ define('MenuTree/Meta', function (require, module, exports) {
                 'tpl': null,
 
                
-                'list': [],         //
+                'list': [],         //根节点列表。
                 'items': [],        //list 的一维数组。
                 'id$item': {},      //id 作为主键关联到项。
                 'cid$item': {},     //cid 作为主键关联到项。

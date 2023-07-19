@@ -1,4 +1,4 @@
-﻿
+
 
 define('GridView/Panel/Data', function (require, module, exports) {
     
@@ -14,9 +14,9 @@ define('GridView/Panel/Data', function (require, module, exports) {
             let items = list.slice(beginIndex, endIndex);
 
             return items;
-
         },
     };
+    
 
 });
 

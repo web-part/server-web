@@ -1,19 +1,17 @@
 ﻿
 
 define.panel('/HtmlTree/Main/HtmlBlock/Tabs', function (require, module, panel) {
-    const Tabs = require('@definejs/tabs');
-    const Storage = require('@definejs/local-storage');
+    const Tabs = require('Tabs');
 
 
     let allList = [
-        { name: '基本信息', cmd: 'base', },
-        { name: '引用原文', cmd: 'rel', },
-        { name: '渲染内容', cmd: 'render', },
+        { name: '基本信息', cmd: 'base', icon: 'fas fa-circle-info', },
+        { name: '引用原文', cmd: 'rel', icon: 'fas fa-quote-left', },
+        { name: '渲染内容', cmd: 'render', icon: 'fas fa-code', },
     ];
 
 
     let tabs = null;
-    let storage = null;
 
     let meta = {
         index: 0,
@@ -23,23 +21,13 @@ define.panel('/HtmlTree/Main/HtmlBlock/Tabs', function (require, module, panel) 
 
 
     panel.on('init', function () {
-        storage = new Storage(module.id);
-        meta.index = storage.get('index') || 0;
-
         tabs = new Tabs({
             container: panel.$.get(0),
-            activedClass: 'on',
-            eventName: 'click',
-            selector: '>li',
-            repeated: true, //这里要允许重复激活相同的项。
+            storage: module.id,
         });
 
 
         tabs.on('change', function (item, index) {
-            meta.index = index;
-            item = meta.list[index];
-            storage.set('index', index);
-
             let { cmd, } = item;
             let { cmd$module, } = meta;
 
@@ -67,7 +55,6 @@ define.panel('/HtmlTree/Main/HtmlBlock/Tabs', function (require, module, panel) 
     * 渲染。
     */
     panel.on('render', function (isRoot) {
-
         meta.list = allList;
 
         if (isRoot) {
@@ -76,20 +63,8 @@ define.panel('/HtmlTree/Main/HtmlBlock/Tabs', function (require, module, panel) 
             });
         }
 
-        tabs.render(meta.list, function (item, index) {
-            return {
-                'index': index,
-                'name': item.name,
-            };
-        });
-
-
-        //列表长度可能发生了变化。
-        if (meta.index > meta.list.length - 1) {
-            meta.index = 0;
-        }
-
-        tabs.active(meta.index);
+        tabs.render(meta.list);
+        tabs.active();
 
     });
 

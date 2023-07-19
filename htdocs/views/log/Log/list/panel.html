@@ -1,19 +1,22 @@
 ﻿<ul data-panel="/Log/List">
     <template name="group" placeholder="groups">
-        <li class="group hide">
-            <h2 data-date="{date}" data-no="{no}">
-                <span class="date">{date}</span> <span class="total">({total})</span>
+        <li data-group="{date}" class="group hide">
+            <h2 data-id="header" data-no="{no}">
+                <span class="date {hasError}">{date}</span> <span data-id="total" class="total">({total})</span>
             </h2>
-            <ul data-group="{date}" style="display: none;">
+            
+            <ul style="display: none;">
                 <template name="item" placeholder="items">
-                    <li data-no="{no}" data-index="{index}" {datetime} class="item {type} {sameTime}">
+                    <li data-no="{no}" data-index="{index}" class="item {type} {sameTime}">
                         <template name="time" placeholder="time">
-                            <span data-cmd="datetime" class="time">{time}</span>
+                            <span data-cmd="time" class="time">{time}</span>
                         </template>
+                        <span class="order">[{order}]</span>
                         {icon}<span class="msg">{msg}</span>
                     </li>
                 </template>
             </ul>
+
         </li>
     </template>
 </ul>

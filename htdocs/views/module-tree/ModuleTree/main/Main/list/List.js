@@ -13,11 +13,13 @@ define.panel('/ModuleTree/Main/List', function (require, module, panel) {
        
 
         Filter.on({
-            'change': function (opt) {
-                let list = Data.filter(opt);
-                GridView.render(list);
+            'change': function (filter) {
+                let { keyword, } = filter;
+                let list = Data.filter(filter);
 
-                // console.log(opt)
+                Header.render(list);
+                GridView.render(list, { keyword, });
+
                 // GridView.toggleFields(opt.field$checked);
             },
         });
@@ -34,11 +36,11 @@ define.panel('/ModuleTree/Main/List', function (require, module, panel) {
 
 
 
-    panel.on('render', function (opt) {
-        let data = Data.init(opt);
+    panel.on('render', function ({ item, stat, }) {
+        let data = Data.init({ item, stat, });
         let fields = GridView.fields;
 
-        Header.render();
+       
         Filter.render(data, fields);
         
         panel.show();

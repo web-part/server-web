@@ -1,9 +1,10 @@
-﻿
+
 /**
 * 
 */
 define('GridView/Meta', function (require, module, exports) {
     const IDMaker = require('@definejs/id-maker');
+   
 
     let idmaker = new IDMaker('GridView');
 
@@ -14,7 +15,7 @@ define('GridView/Meta', function (require, module, exports) {
 
         create: function (config, others) {
             let id = config.id || idmaker.next();
-            
+
             let meta = {
                 'id': id,                           //会生成到 DOM 中。
                 'container': config.container,      //容器。
@@ -30,7 +31,10 @@ define('GridView/Meta', function (require, module, exports) {
                 'tpl': null,
                 'panel': null,
                 'page': null,   //如果有值，则表示分页。 为了方便在 `process` 事件中传出去，以让外界知道当前的分页信息。
-              
+                'list': [],     //调用 render 时传入的数据列表。
+
+                'Sort': null,
+
             };
 
 
@@ -39,12 +43,12 @@ define('GridView/Meta', function (require, module, exports) {
 
 
             return meta;
-           
+
         },
 
 
     };
-    
+
 });
 
 

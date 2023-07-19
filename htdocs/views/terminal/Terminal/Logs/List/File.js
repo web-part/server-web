@@ -17,7 +17,9 @@ define('/Terminal/Logs/List/File', function (require, module, exports) {
         }
 
 
-        let { list, root, } = fs;
+        let root = fs.dir;
+        let list = Object.keys(fs.file$info);
+
 
         if (root.endsWith('/')) {
             root = root.slice(0, -1);

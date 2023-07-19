@@ -18,7 +18,7 @@ define('/Home/FileList/API', function (require, module, exports) {
         * 获取。
         */
         get: function () {
-            let api = new API('FileList.read', {
+            let api = new API('FileSystem.list', {
                 // proxy: '.json',
             });
 
@@ -31,8 +31,8 @@ define('/Home/FileList/API', function (require, module, exports) {
                     // loading.hide();
                 },
 
-                'success': function (stat, json, xhr) {
-                    emitter.fire('success', 'get', [stat]);
+                'success': function (data, json, xhr) {
+                    emitter.fire('success', 'get', [data]);
                 },
 
                 'fail': function (code, msg, json, xhr) {

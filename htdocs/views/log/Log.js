@@ -2,14 +2,21 @@
 define.view('/Log', function (require, module, view) {
     const API = module.require('API');
     const SSE = module.require('SSE');
-    const Data = module.require('Data');
     const Filter = module.require('Filter');
     const Header = module.require('Header');
     const List = module.require('List');
 
     let meta = {
-        list: [],
+        stat: null,
+
     };
+
+
+
+
+
+
+
 
 
 
@@ -20,78 +27,62 @@ define.view('/Log', function (require, module, view) {
                 List.check(key, checked);
             },
 
-            'cmd': {
-                'reload': function () {
-                    API.get();
-                },
-                'clear': function () {
-                    definejs.confirm('确认要清空服务器端的日志列表？', function () {
-                        API.clear();
-                    });
-                },
-                'close': function () {
-                    panel.fire('close');
-                },
+            'reload': function () {
+                API.get();
             },
-
-            
+            'clear': function () {
+                definejs.confirm('确认要清空服务器端的日志列表？', function () {
+                    API.clear();
+                });
+            },
         });
 
         Filter.on({
-            'change': function (opt) {
-                let data = Data.parse(meta.list, opt);
-                List.render(data);
+            'change': function (filter) {
+                List.render(meta.stat, filter);
             },
         });
         
-
 
 
         List.on({
             'cmd': function (cmd, value) {
                 panel.fire('cmd', [cmd, value]);
             },
+            'reset': function () { 
+                API.get();
+            },
         });
 
+
+
         API.on('success', {
-            'get': function (list) {
-                let data = Data.parse(list);
+            'get': function (stat) {
+                meta.stat = stat;
 
-                meta.list = list;
                 Header.render();
-                Filter.render(data);
-                
+                Filter.render(stat);
                 SSE.open();
-            },
-
-            'clear': function () {
-                List.clear();
             },
         });
        
 
+
+
+
         SSE.on({
-            'reset': function (list) {
-                List.render(list);
+            'reset': function () {
+                
             },
 
             'add': function (list) {
-                let data = Data.parse(list);
-                let added = List.add(data);
-
-                //添加失败
-                if (!added) {
-                    meta.list = [...meta.list, ...list];
-                    data = Data.parse(meta.list);
-                    Filter.render(data);
-                    List.render(data);
-                }
-
+                List.add(list);
             },
         });
   
     });
 
+    
 
     view.on('render', function () {
         API.get();

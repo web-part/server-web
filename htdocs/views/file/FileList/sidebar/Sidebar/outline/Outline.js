@@ -1,10 +1,9 @@
 ﻿
 
 define.panel('/FileList/Sidebar/Outline', function (require, module, panel) {
-    var Outline = require('Outline');
+    const Outline = require('Outline');
 
-
-    var outline = null;
+    let outline = null;
 
 
     panel.set('show', false); //不要在 render 后自动显示。

@@ -46,6 +46,7 @@ define('TextTree', function (require, module, exports) {
         * @param {Array} raws 数据列表。 其中列表中的每个元素为：
         *   item = {
         *       keys: [],       //必选，节点名称数组。 如 ['foo', 'bar']
+        *       type: '',       //可选，节点的类型，为 `dir` 或 `file`。 如果未指定，则自动根据是否有下级节点进行推算。
         *       id: '',         //可选，会生成在 DOM 节点中。 如果指定，请确保唯一。
         *       class: '',      //可选，生成在 DOM 节点中的样式类名。
         *       dataset: {},    //可选，生成在 DOM 节点中的以 `data-` 开头的自定义属性。
@@ -137,8 +138,7 @@ define('TextTree', function (require, module, exports) {
                 
                 //切换显示某种效果，如显示或隐藏颜色。
                 case 'object':
-                    Object.keys(opt).forEach((key) => {
-                        let visible = opt[key];
+                    Object.entries(opt).forEach(([key, visible]) => {
                         meta.$.toggleClass(`hide-${key}`, !visible);
                     });
                     break;

@@ -39,15 +39,15 @@ define.panel('/FileList/Body/Main/List/Dir/Filter/ChildDirs', function (require,
 
 
 
-    panel.on('render', function (list) {
-        list = $Array.map(list, (item) => {
-            let { type, name, } = item.data;
+    panel.on('render', function (item) {
+        let { dirs, } = item.data.current;
 
-            return type == 'dir' ? {
+        let list = dirs.map((item) => {
+            return {
                 'text': item.name,
+                'value': item.name,
                 'checked': true,
-                'value': name,
-            } : null;
+            };
         });
 
         chk.render(list);

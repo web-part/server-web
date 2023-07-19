@@ -5,49 +5,28 @@ define.panel('/ModuleTree/Main/List/GridView', function (require, module, panel)
     let tpl = null;
     let gridview = null;
 
+    let meta = {
+        keyword: '',
+        keywordHtml: '',
+    };
+
     let fields = [
         { caption: '序号', name: 'order', width: 40, class: 'order', },
-        { caption: '模块ID', name: 'id', width: 300, class: 'name', },
-        { caption: '定义方法', name: 'method', width: 110, class: 'file', },
-        { caption: '级别', name: 'level', width: 49, class: 'number level', },
-        { caption: '被依赖模块数', name: 'dependents', width: 61, class: 'number dependents', },
-        { caption: '所依赖公共模块数', name: 'publics', width: 73, class: 'number publics', },
-        { caption: '所依赖私有模块数', name: 'privates', width: 73, class: 'number privates', },
-        { caption: '直接子模块数', name: 'childs', width: 61, class: 'number childs', },
-        { caption: '全部子模块数', name: 'children', width: 61, class: 'number children', },
-        { caption: '同级模块数', name: 'siblings', width: 61, class: 'number siblings', },
-        { caption: '所在的 js 文件', name: 'file', width: 400, class: 'file', },
-        // { caption: '关联的 html 文件', name: 'htmlFile', width: 400, class: 'file', },
+        { caption: '模块ID', name: 'id', width: 300, class: 'name', sort: true, },
+        { caption: '模块名称', name: 'name', width: 71, class: 'name', sort: true, },
+        { caption: '定义方法', name: 'method', width: 110, class: 'file', sort: true, },
+        { caption: '级别', name: 'level', width: 48, class: 'number level', sort: true, },
+        { caption: '消费者', name: 'dependents', width: 59, class: 'number dependents', sort: true, },
+        { caption: '公共生产者', name: 'publics', width: 48, class: 'number publics', sort: true, },
+        { caption: '私有生产者', name: 'privates', width: 48, class: 'number privates', sort: true, },
+        { caption: '直接子模块', name: 'childs', width: 48, class: 'number childs', sort: true, },
+        { caption: '全部子模块', name: 'children', width: 48, class: 'number children', sort: true, },
+        { caption: '同级模块', name: 'siblings', width: 71, class: 'number siblings', sort: true, },
+        { caption: '所在的 js 文件', name: 'file', width: 520, class: 'file', sort: true, },
+        { caption: '关联的 html 文件', name: 'htmlFile', width: 520, class: 'file', sort: true,},
     ];
 
 
-    function fillFile(file) {
-        if (!file) {
-            return '';
-        }
-
-        let list = Array.isArray(file) ? file : [file];
-
-        let htmls = list.map((file) => {
-            let html = tpl.fill('href', {
-                'cmd': 'file',
-                'value': file,
-                'text': file,
-            });
-
-            return html;
-        });
-
-        let html = htmls.join('<br />');
-
-
-
-        return {
-            'html': html,
-            'count': list.length,
-        };
-
-    }
 
     panel.on('init', function () {
         tpl = panel.template();
@@ -55,6 +34,7 @@ define.panel('/ModuleTree/Main/List/GridView', function (require, module, panel)
         gridview = new GridView({
             container: panel.$,
             fields: fields,
+            meta: true,
         });
 
         gridview.on('process', 'row', function (row) {
@@ -81,33 +61,60 @@ define.panel('/ModuleTree/Main/List/GridView', function (require, module, panel)
             },
 
             'id': function (cell) {
-                let { item, } = cell.row;
+                let { id, } = cell.row.item;
+                let text = module.data.none;
+                let { keyword, keywordHtml, } = meta;
 
+                if (id) {
+                    text = id;
+
+                    if (keyword) {
+                        text = text.split(keyword).join(keywordHtml);
+                    }
+                }
+
+                
                 let html = tpl.fill('href', {
                     'cmd': 'id',
-                    'value': item.id,
-                    'text': item.id || module.data.none,
+                    'value': id,
+                    'text': text,
                 });
 
                 return html;
             },
-
             'file': function (cell) {
-                let { item, } = cell.row;
-                let { html, count, } = fillFile(item.file);
-                if (count > 1) {
-                    cell.class += ' error';
+                let { file, } = cell.row.item;
+                let text = file;
+                let { keyword, keywordHtml, } = meta;
+
+                if (keyword) {
+                    text = text.split(keyword).join(keywordHtml);
                 }
+
+
+                let html = tpl.fill('href', {
+                    'cmd': 'file',
+                    'value': file,
+                    'text': text,
+                });
 
                 return html;
             },
-
             'htmlFile': function (cell) {
-                let { item, } = cell.row;
-                let { html, count, } = fillFile(item.htmlFile);
-                if (count > 1) {
-                    cell.class += ' error';
+                let { htmlFile, } = cell.row.item;
+                let text = htmlFile;
+                let { keyword, keywordHtml, } = meta;
+
+                if (keyword) {
+                    text = text.split(keyword).join(keywordHtml);
                 }
+
+                let html = tpl.fill('href', {
+                    'cmd': 'file',
+                    'value': htmlFile,
+                    'text': text,
+                });
+
                 return html;
             },
 
@@ -126,6 +133,31 @@ define.panel('/ModuleTree/Main/List/GridView', function (require, module, panel)
             event.stopPropagation();
         });
 
+        gridview.on('sort', {
+            'id': function ({ a, b, }) {
+                a = a.id.toUpperCase();
+                b = b.id.toUpperCase();
+                return { a, b, };
+            },
+
+            'name': function ({ a, b, }) {
+                a = a.name.toUpperCase();
+                b = b.name.toUpperCase();
+                return { a, b, };
+            },
+
+            'file': function ({ a, b, }) {
+                a = a.file.toUpperCase();
+                b = b.file.toUpperCase();
+                return { a, b, };
+            },
+            'htmlFile': function ({ a, b, }) {
+                a = a.htmlFile.toUpperCase();
+                b = b.htmlFile.toUpperCase();
+                return { a, b, };
+            },
+        });
+
 
     });
 
@@ -135,7 +167,10 @@ define.panel('/ModuleTree/Main/List/GridView', function (require, module, panel)
     *   list: [],       //必选，数据列表。
    
     */
-    panel.on('render', function (list) {
+    panel.on('render', function (list, { keyword, }) {
+
+        meta.keyword = keyword;
+        meta.keywordHtml = `<span class="keyword">${keyword}</span>`;
 
         gridview.render(list);
 
@@ -145,15 +180,18 @@ define.panel('/ModuleTree/Main/List/GridView', function (require, module, panel)
         //     size: 20,
         // });
 
+        console.log(gridview);
+
+        // setInterval(function () { 
+        //     gridview.meta.table.toggleColumn('id');
+
+        // },2000);
+
     });
 
 
     return {
         fields,
-
-        // toggleFields(index$checked) {
-        //     gridview.toggleFields(index$checked);
-        // },
     };
 
 

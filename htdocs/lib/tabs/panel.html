@@ -1,0 +1,12 @@
+﻿<template id="tpl-Tabs">
+    <div id="{id}" {class} {dataset} {style}>
+        <ul>
+            <template name="item" placeholder="items">
+                <li data-index="{index}">
+                    <template name="icon" placeholder="icon"><i class="{icon}"></i></template>{name}
+                </li>
+            </template>
+        </ul>
+        <b data-id="slider"></b>
+    </div>
+</template>

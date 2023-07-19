@@ -1,0 +1,43 @@
+﻿
+
+.Tabs {
+    position: relative;
+    width: 100%;
+    vertical-align: middle;
+    color: #5A646E;
+    overflow: hidden;
+    background-color: #fff;
+    display: inline-block;
+    border-bottom: solid 1px #e8ecf0;
+
+    li[data-index] {
+        margin-left: 10px;
+        display: inline-block;
+        font-size: 16px;
+        cursor: pointer;
+        padding: 5px 8px;
+
+        i {
+            margin-right: 5px;
+        }
+
+
+        &.on {
+            border-bottom: 4px solid #03A9F400;
+            color: #03A9F4;
+        }
+    }
+
+    [data-id="slider"] {
+        background-color: #03A9F4;
+        border-radius: 2px;
+        position: absolute;
+        left: 10px;
+        top: 32px;
+        transition: left 0.15s ease-in-out, width 0.15s ease-in-out;
+        display: inline-block;
+        height: 4px;
+        width: 60px;
+    }
+
+}

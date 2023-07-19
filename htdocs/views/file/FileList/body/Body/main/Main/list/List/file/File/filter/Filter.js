@@ -4,9 +4,8 @@
 */
 define.panel('/FileList/Body/Main/List/File/Filter', function (require, module, panel) {
     const Type = module.require('Type');
-    const Encoding = module.require('Encoding');
     const Name = module.require('Name');
-    const CWD = module.require('CWD');
+    const OnlyCurrent = module.require('OnlyCurrent');
     const MD5 = module.require('MD5');
     const ChildDirs = module.require('ChildDirs');
 
@@ -14,9 +13,8 @@ define.panel('/FileList/Body/Main/List/File/Filter', function (require, module, 
     //当前选中的数据字段。
     let meta = {
         name: '',
-        cwd: false, //是否仅限当前目录。
+        onlyCurrent: false, //是否仅限当前目录。
         ext$checked: null,
-        encoding$checked: null,
         md5$checked: null,
         childDirs: null,         //选中的直接子目录。 如果非空，则为一个数组。
     };
@@ -61,9 +59,9 @@ define.panel('/FileList/Body/Main/List/File/Filter', function (require, module, 
             },
         });
 
-        CWD.on({
+        OnlyCurrent.on({
             'change': function (checked) {
-                change({ 'cwd': checked, });
+                change({ 'onlyCurrent': checked, });
             },
         });
 
@@ -76,13 +74,6 @@ define.panel('/FileList/Body/Main/List/File/Filter', function (require, module, 
             },
         });
 
-        Encoding.on({
-            'check': function (list) {
-                change({
-                    'encoding$checked': make(list),
-                });
-            },
-        });
 
         MD5.on({
             'check': function (list) {
@@ -109,15 +100,14 @@ define.panel('/FileList/Body/Main/List/File/Filter', function (require, module, 
     * 即外界显式调用 render() 时触发，且每次调用都会触发一次。
     * 外界传进来的参数会原样传到这里。
     */
-    panel.on('render', function ({ exts, item, }) {
-        
-        Type.render(exts);
-        Encoding.render();
-        CWD.render(meta.cwd);
+    panel.on('render', function (item) {
+        ChildDirs.render(item);
+        Type.render(item);
+        OnlyCurrent.render(meta.onlyCurrent);
         Name.render();
         MD5.render();
 
-        ChildDirs.render(item.list);
+       
 
     });
 

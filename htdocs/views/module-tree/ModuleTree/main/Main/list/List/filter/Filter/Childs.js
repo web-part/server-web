@@ -33,7 +33,7 @@ define.panel('/ModuleTree/Main/List/Filter/Childs', function (require, module, p
             return {
                 'text': item.name,
                 'checked': true,
-                'value': item.id,
+                'value': item.data.id,
             };
         });
 

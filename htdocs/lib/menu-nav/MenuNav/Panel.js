@@ -5,6 +5,7 @@ define('MenuNav/Panel', function (require, module, exports) {
     const $Icon = module.require('Icon');
     const $List = module.require('List');
     const $Text = module.require('Text');
+    const Data = module.require('Data');
 
 
     return {
@@ -18,8 +19,9 @@ define('MenuNav/Panel', function (require, module, exports) {
 
 
             let meta = {
-                names: [],
                 path: '',
+                text: '',
+                names: [],
             };
 
 
@@ -27,15 +29,13 @@ define('MenuNav/Panel', function (require, module, exports) {
 
                 List.on({
                     'item': function (index) {
-                        let names = meta.names.slice(0, index + 1);
-                        panel.fire('item', [names, index]);
+                        let { names, } = meta;
+                        panel.fire('item', [{ names, index, }]);
                     },
 
                     'text': function () {
-                        if (typeof meta.path == 'string') {
-                            List.hide();
-                            Text.show();
-                        }
+                        List.hide();
+                        Text.show();
                     },
                 });
 
@@ -44,12 +44,12 @@ define('MenuNav/Panel', function (require, module, exports) {
                         List.show();
                         Text.hide();
                     },
-                    'change': function (path) {
-                        let values = panel.fire('text', [path]);
+                    'change': function (text) {
+                        let values = panel.fire('text', [text]);
 
                         //外部明确返回了 false，则表示归位。
                         if (values.includes(false)) {
-                            Text.render(meta.path);
+                            Text.render(meta.text);
                         }
                     },
                 });
@@ -63,28 +63,26 @@ define('MenuNav/Panel', function (require, module, exports) {
             *       names: [],
             *       path: '',
             *       icon: '',
+            *       text: '',
             *   };
             */
             panel.on('render', function (opt) {
-                let { names, path, icon, } = opt;
-
+                let { path, text, icon, names, } = Data.parse(opt);
               
-               
-                meta.names = names;
                 meta.path = path;
+                meta.text = text;
+                meta.names = names;
 
                 Icon.render(icon);
                 List.render(names);
-             
-
-                if (typeof path == 'string') {
-                    Text.render(path);
-                }
+                Text.render(text);
 
                 panel.$.toggleClass('no-icon', !icon);
                 panel.fire('render', [opt]);
 
             });
+
+
 
             return panel.wrap({
                 

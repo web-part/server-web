@@ -2,25 +2,13 @@
 
 define.panel('/ModuleTree/Main/ModuleInfo', function (require, module, panel) {
     const Base = module.require('Base');
-    const Childs = module.require('Childs');
-    const Children = module.require('Children');
-    const Siblings = module.require('Siblings');
-    const Publics = module.require('Publics');
-    const Privates = module.require('Privates');
-    const Dependents = module.require('Dependents');
+
+
+    const Groups = module.require('Groups');
 
 
     panel.on('init', function () {
-        [
-            Base,
-            Childs,
-            Children,
-            Siblings,
-            Publics,
-            Privates,
-            Dependents,
-            
-        ].forEach((M) => {
+        [Base, Groups,].forEach((M) => {
             M.on({
                 'item': function (item) {
                     panel.fire('item', [item]);
@@ -39,14 +27,12 @@ define.panel('/ModuleTree/Main/ModuleInfo', function (require, module, panel) {
 
 
 
-    panel.on('render', function (data) {
-        Base.render(data);
-        Childs.render(data);
-        Children.render(data);
-        Siblings.render(data);
-        Publics.render(data);
-        Privates.render(data);
-        Dependents.render(data);
+    panel.on('render', function ({ item, stat, }) {
+        Base.render({ item, stat, });
+
+        Groups.render({ item, stat, });;
+
+
     });
 
 

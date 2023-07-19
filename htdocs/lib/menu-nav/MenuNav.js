@@ -55,8 +55,8 @@ define('MenuNav', function (require, module, exports) {
             this.$ = meta.panel.$;
 
             meta.panel.on({
-                'item': function (names, index) {
-                    meta.emitter.fire('item', [names, index]);
+                'item': function ({ names, index, }) {
+                    meta.emitter.fire('item', [{ names, index, }]);
                 },
                 'text': function (path) {
                     let values = meta.emitter.fire('text', [path]);

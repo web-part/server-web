@@ -55,7 +55,10 @@ define('TextTree/Template', function (require, module, exports) {
                     
                     meta.emitter.fire('process', 'item', [item]);
 
-                    let cssClass = Class.stringify([item.class, item.type]);
+                    let { type, childs, } = item;
+                    let emptyDir = type == 'dir' && childs.length == 0 ? 'empty' : '';
+
+                    let cssClass = Class.stringify([item.class, item.type, emptyDir, ]);
                     let dataset = DataSet.stringify(item.dataset);
                     let style = Style.stringify(item.style);
                     let title = Title.stringify(item.title);

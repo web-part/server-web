@@ -7,8 +7,7 @@ define.panel('/FileList/Body/Main/List/Dir', function (require, module, panel) {
 
 
     let meta = {
-        'root': '',
-        'item': null,
+        item: null,
     };
 
 
@@ -17,18 +16,14 @@ define.panel('/FileList/Body/Main/List/Dir', function (require, module, panel) {
        
         Filter.on({
             'change': function (filter) {
-                
-                filter = Object.assign({}, filter, {
-                    'cwd': filter.cwd ? meta.item.id : '',
-                });
+                let { item, } = meta;
+                let keyword = filter.name;
+                let list = Data.filter(item, filter);
+
+                console.log({ list, });
 
 
-                let list = Data.filter(filter);
-
-                GridView.render(list, {
-                    'keyword': filter.name,
-                    'root': meta.root,
-                });
+                GridView.render(list, { keyword, item, });
 
             },
         });
@@ -50,18 +45,15 @@ define.panel('/FileList/Body/Main/List/Dir', function (require, module, panel) {
     *       root: '',   //根目录。
     *   };
     */
-    panel.on('render', function (opt) {
-        if (opt.item === meta.item) {
+    panel.on('render', function (item) {
+        if (item === meta.item) {
             panel.show();
             return;
         }
 
         
-        meta.item = opt.item;
-        meta.root = opt.root;
-
-        Data.init(opt.list);
-        Filter.render(opt.item);
+        meta.item = item;
+        Filter.render(item);
 
 
     });

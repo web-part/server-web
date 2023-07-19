@@ -51,7 +51,7 @@ define('MenuTree/Events', function (require, module, exports) {
                 let { id, } = li.dataset;
                 let item = meta.id$item[id];
                 let isCurrent = item === meta.current;  //是否为当前已激活的节点。
-                let isDir = item.list.length > 0;       //是否为目录。
+                let isDir = item.type == 'dir';       //是否为目录。
                 let $li = $(li);
 
                 if (meta.allowActiveDir) { //允许激活目录项。
@@ -84,7 +84,12 @@ define('MenuTree/Events', function (require, module, exports) {
                     }
                 }
 
-                this.scrollIntoViewIfNeeded();
+                //需要延迟一下。
+                setTimeout(function () { 
+                    li.scrollIntoViewIfNeeded();
+                }, 100);
+
+                
 
             });
 

@@ -14,6 +14,7 @@ define.panel('/FileList/Body/Main/List/File/Filter/ChildDirs', function (require
             list = $Array.map(list, function (item) {
                 return item.checked ? item.value : null;
             });
+            
             panel.fire('check', [list]);
         }
 
@@ -25,6 +26,7 @@ define.panel('/FileList/Body/Main/List/File/Filter/ChildDirs', function (require
 
         chk.on({
             'check': function (list) {
+                console.log(list);
                 fireCheck(list);
             },
             'fill': function (list) {
@@ -38,15 +40,15 @@ define.panel('/FileList/Body/Main/List/File/Filter/ChildDirs', function (require
 
 
 
-    panel.on('render', function (list) {
-        list = $Array.map(list, (item) => {
-            let { type, name, } = item.data;
+    panel.on('render', function (item) {
+        let { dirs, } = item.data.current;
 
-            return type == 'dir' ? {
+        let list = dirs.map((item) => {
+            return {
                 'text': item.name,
+                'value': item,
                 'checked': true,
-                'value': name,
-            } : null;
+            };
         });
 
         chk.render(list);

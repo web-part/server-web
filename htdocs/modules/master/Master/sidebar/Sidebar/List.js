@@ -65,7 +65,9 @@ define.panel('/Master/Sidebar/List', function (require, module, panel) {
     panel.on('render', function (items) {
         let list = meta.list = Data.make(items);
 
-        tabs.render(list);
+        panel.fill(list);
+        
+        tabs.render();
         panel.fire('render', [list]);
 
 

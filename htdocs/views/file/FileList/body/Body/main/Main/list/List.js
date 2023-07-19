@@ -7,19 +7,19 @@ define.panel('/FileList/Body/Main/List', function (require, module, panel) {
 
 
     let meta = {
-        opt: null,  //render() 中传进来的 opt。
+        item: null,
     };
 
     panel.on('init', function () {
 
         Tabs.on({
             'file': function () {
-                File.render(meta.opt);
+                File.render(meta.item);
                 Dir.hide();
             },
             'dir': function () {
                 File.hide();
-                Dir.render(meta.opt);
+                Dir.render(meta.item);
             },
         });
 
@@ -40,14 +40,16 @@ define.panel('/FileList/Body/Main/List', function (require, module, panel) {
 
     /**
     * 渲染内容。
-    *   opt = {
-    *       list:  [],  //文件列表。
-    *       item: {},   //当前菜单项。
-    *       root: '',   //根目录。
-    *   };
     */
-    panel.on('render', function (opt) {
-        meta.opt = opt;
+    panel.on('render', function (item) {
+        if (item === meta.item) {
+            panel.show();
+            return;
+        }
+
+        console.log(item);
+        
+        meta.item = item;
 
         Tabs.render();
 

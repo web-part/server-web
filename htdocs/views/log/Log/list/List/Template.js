@@ -1,7 +1,7 @@
 
 define('/Log/List/Template', function (require, module, exports) {
+    const $String = require('@definejs/string');
     const Colors = module.require('Colors');
-    const File = module.require('File');
     const HTML = module.require('HTML');
 
     let type$icon = {
@@ -10,66 +10,51 @@ define('/Log/List/Template', function (require, module, exports) {
         stdout: ``,
     };
 
-    let $meta = {
-        panel: null,
-        meta: null,
-    };
+    function getOrder(list, index) {
+        let width = list.length.toString().length;
+        let order = index + 1;
 
+        order = order.toString();
+        order = $String.padLeft(order, width, '0');
 
+        return order;
+    }
 
     return {
-        init(panel, meta) {
-            $meta.panel = panel;
-            $meta.meta = meta;
-
+        init(panel) {
             let tpl = panel.template();
-            let itemTpl = tpl.template('group', 'item');
-
-            itemTpl.fix('datetime');
-
 
             tpl.process({
-                '': function (data) {
-                    let groups = this.fill('group', data.groups);
-
-                    return { 'groups': groups, };
+                '': function ({ groups, }) {
+                    groups = this.fill('group', groups);
+                    return { groups, };
                 },
 
                 'group': {
                     '': function (group, no) {
-                        let { list, } = group;
-                        let info = { list, no, };
-                        // let items = this.fill('item', list, info);
+                        let { date, total, error, } = group;
 
                         return {
-                            'no': no,
-                            'date': group.date,
-                            'total': list.length,
-                            // 'items': items,
-                            // 'items': '加载中...', //展开时再填充。
-                            'items': '<li> loading... </li>', //展开时再填充。
+                            date,
+                            total,
+                            no,
+                            hasError: error> 0 ? 'has-error': '',
+                            items: `<li> loading... </li>`, //展开时再填充。
                         };
                     },
 
                     'item': {
                         '': function (item, index, info) {
-                            let { date, time, name, msg, } = item;
-                            let { list, no, baseIndex, } = info;
-
-                            //如果指定了，则表示追加元素时需要修正索引。
-                            if (typeof baseIndex == 'number') {
-                                index = index + baseIndex;
-                            }
-
+                            let { time, type, msg, } = item;
+                            let { list, no, } = info;
 
                             msg = HTML.render(msg);
                             msg = Colors.render(msg);
-                            msg = File.render(msg, meta.fs);
 
-                            let type = name || 'stdout';
+                         
                             let icon = type$icon[type] || '';
                             let prev = list[index - 1];
-                            let dt = `${date} ${time}`;
+                            let order = getOrder(list, index);
 
                             time = prev && time == prev.time ? '' : this.fill('time', item);
 
@@ -77,8 +62,8 @@ define('/Log/List/Template', function (require, module, exports) {
                             return {
                                 'no': no,
                                 'index': index,
+                                'order': order,
                                 'time': time,
-                                'datetime': time ? '' : `data-dt="${dt}"`,
                                 'sameTime': time ? '' : 'same-time', //time 为空说明时间一样。
                                 'type': type,
                                 'icon': icon,
@@ -96,37 +81,6 @@ define('/Log/List/Template', function (require, module, exports) {
             });
         },
 
-        fillGroup(no) {
-            let { panel, meta, } = $meta;
-            let group = meta.groups[no];
-
-            let { date, list, } = group;
-            let $ul = panel.$.find(`ul[data-group="${date}"]`);
-            let tpl = panel.template();
-            let info = { list, no, };
-            let html = tpl.fill('group', 'item', list, info);
-
-            $ul.html(html);
-        },
-
-        getGroup(no) {
-            let { panel, meta, } = $meta;
-            let group = meta.groups[no];
-
-            let { date, list, } = group;
-            let $ul = panel.$.find(`ul[data-group="${date}"]`);
-            let filled = $ul.find('>li[data-index]').length > 0;
-
-
-            return {
-                date,
-                list,
-                $ul,
-                filled,
-                no,
-            };
-
-        },
     };
 
 });

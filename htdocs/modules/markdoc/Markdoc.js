@@ -1,18 +1,12 @@
 ﻿
 
 define.panel('/Markdoc', function (require, module, panel) {
-    const API = module.require('API');
+    const File = require('File');
     const Header = module.require('Header');
     const Content = module.require('Content');
     const Url = module.require('Url');
     const Outline = module.require('Outline');
     const Tools = module.require('Tools');
-
-
-    let meta = {
-        info: null,
-    };
-
 
 
     panel.on('init', function () {
@@ -25,17 +19,7 @@ define.panel('/Markdoc', function (require, module, panel) {
        
 
 
-        API.on({
-            'loading': function (visible) {
-                panel.fire('loading', [visible]);
-            },
-
-            'success': function (content) {
-                Content.render(content, meta.info);
-            },
-           
-        });
-
+   
 
 
         Content.on({
@@ -91,7 +75,9 @@ define.panel('/Markdoc', function (require, module, panel) {
     *
     */
     panel.on('render', function (url) {
-        let info = meta.info = Url.parse(url);
+        let info = Url.parse(url);
+
+        console.log(info);
 
         //切换普通模式和代码模式。
         panel.$.toggleClass('source', info.isCode);
@@ -99,7 +85,13 @@ define.panel('/Markdoc', function (require, module, panel) {
         //针对代码模式的头部工具栏，仅代码模式时显示。
         Header.render(info);
 
-        API.read(info.url);
+
+        File.read(info.url, function (content) {
+            Content.render(content, info);
+
+            panel.fire('loading', [false]);
+
+        });
 
        
         

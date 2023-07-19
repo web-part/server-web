@@ -3,6 +3,7 @@
 
     return {
         'file': function (file) {
+            console.log(module.id, file);
             Master.open('FileList', [file]);
         },
     };

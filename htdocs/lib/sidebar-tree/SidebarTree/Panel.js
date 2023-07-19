@@ -99,9 +99,9 @@ define('SidebarTree/Panel', function (require, module, exports) {
             /**
             * 渲染。
             */
-            panel.on('render', function (list) {
+            panel.on('render', function (data) {
                 Header.render();
-                Main.render(list);
+                Main.render(data);
                 Resizer.render();
 
 
@@ -117,7 +117,11 @@ define('SidebarTree/Panel', function (require, module, exports) {
 
             });
 
-            return panel.wrap( {
+            return panel.wrap({
+                each: function (fn) { 
+                    Main.each(fn);
+                },
+
                 open: function (id) {
                     Main.open(id);
                 },

@@ -1,7 +1,7 @@
 {
   "name": "@definelib/gridview",
-  "version": "1.0.2",
-  "description": "带有分页功能、能拖拽表头调整列宽的列表类。",
+  "version": "1.1.0",
+  "description": "带有分页功能、排序和能拖拽表头调整列宽的列表类。",
   "main": "index.js",
   "scripts": {},
   "keywords": [],

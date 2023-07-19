@@ -5,36 +5,36 @@ define.view('/ModuleTree', function (require, module, view) {
     const Tree = module.require('Tree');
     const Main = module.require('Main');
 
-    let storage = new SessionStorage(module.id);
+    let storage = null;
 
     let meta = {
-        item: null,         //当前激活的菜单项。在菜单树填充后首先激活根节点。
+        id: '',
         stat: null,         //从后台获取到的所有统计数据。
     };
 
 
     view.on('init', function () {
-        
+        storage = new SessionStorage(module.id);
 
         API.on('success', {
-            'get': function (stat, tree) {
+            'get': function (stat) {
+                let id = storage.get('id') || '/';
+
                 meta.stat = stat;
 
                 Tree.render(stat);
-                Tree.open(meta.item.id);
+                Tree.open(id);
             },
         });
 
         Tree.on({
             'item': function (item) {
-                meta.item = item;
-                storage.set('id', item.id); //保存到 storage。
-                Main.render(meta);
+                storage.set('id', item.data.id); //这里取的是 mid，保存到 storage。
+                Main.render(item,  meta.stat);
                 
             },
-            'resize': function () {
-                let w1 = Tree.$.outerWidth();
-                Main.resize(w1, 6);
+            'resize': function (w) {
+                Main.resize(w, 6);
             },
         });
 
@@ -54,15 +54,15 @@ define.view('/ModuleTree', function (require, module, view) {
                 else {
                     Tree.open(id);
                 }
+            },
 
+            'path': function (id) {
+                Tree.open(id);
             },
 
             'file': function (file) {
                 view.fire('file', [file]);
             },
-
-
-
         });
 
        
@@ -71,13 +71,14 @@ define.view('/ModuleTree', function (require, module, view) {
 
     /**
     * 渲染内容。
-    *   id: '',   //渲染完成后要打开的节点。
+    *   id: '',   //渲染完成后要打开的模块 id。
     */
     view.on('render', function (id) {
         
-        id = id || storage.get('id') || 1;
+        if (id) {
+            storage.set('id', id);
+        }
 
-        meta.item = { id, };
 
         API.get();
 
